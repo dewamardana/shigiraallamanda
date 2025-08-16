@@ -1,0 +1,52 @@
+@import "tailwindcss";
+@import "flowbite/src/themes/default";
+
+@import "flowbite/src/themes/default";
+@plugin "flowbite/plugin";
+@source "../../node_modules/flowbite";
+@source "../node_modules/flowbite-datepicker";
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+
+    /* Warna utama dan hover dari tombol dan elemen */
+    --color-blue-1000: #003285; /* dashboard button */
+    --color-blue-1001: #0040a0;
+
+    --color-blue-2000: #2a629a; /* tambah anggota */
+    --color-blue-2001: #3a7dc0;
+
+    --color-blue-3000: #afddff; /* tombol plus bg (approximate blue-100) */
+    --color-blue-3001: #60b5ff; /* hover tombol plus (approximate blue-200) */
+
+    --color-green-1000: #006400; /* checker & office button */
+    --color-green-1001: #008000;
+
+    --color-green-2000: #e6f4f1; /* background form panel */
+    --color-green-2001: #cce7e2; /* hover variant (optional) */
+
+    --color-red-1000: #8b0000; /* logout button */
+    --color-red-1001: #a00000;
+
+    --color-red-2000: #ffcccc; /* tombol minus bg (approx red-100) */
+    --color-red-2001: #ff9999; /* hover tombol minus (approx red-200) */
+
+    --color-yellow-1000: #8b8000; /* cleaning button */
+    --color-yellow-1001: #a89f00;
+
+    --color-teal-1000: #00695c; /* var(--teal-dark) */
+    --color-teal-1001: #13484c; /* hover teal-dark */
+
+    --color-accent-1000: #00bfa5; /* var(--accent) */
+
+    --color-highlight-text-1000: #f1d6ab; /* total box text */
+    --color-gold: #fff3c1;
+    --color-goldHover: #f2e7b8;
+}

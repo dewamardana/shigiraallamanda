@@ -1,0 +1,362 @@
+@extends('Homepage.Layout.main')
+
+@section('content')
+<div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-full">
+    <h2 class="font-bold text-4xl text-center text-black-500 mb-8">Profile</h2>
+    
+    <form action="{{ route('userprofileUpdate', $user->slug) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="flex flex-col md:flex-row gap-8 justify-center p-6">
+
+            {{-- Foto --}}
+            <div class="w-full md:max-w-xs">
+                <h6 class="mb-2 text-lg font-semibold text-center">{{ __('dashboardUserEdit.profile_photo') }}</h6>
+                <p class="text-xs text-slate-500 mb-6 text-center">{{ __('dashboardUserEdit.photo_hint') }}</p>
+                <div class="relative w-40 h-40 rounded-full overflow-hidden mb-6 border-2 border-indigo-600 group cursor-pointer block mx-auto">
+                    <img id="preview-foto" src="{{ $user->foto ? asset('storage/'.$user->foto) : 'https://via.placeholder.com/150' }}" alt="" class="object-cover w-full h-full">
+                    <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                        <i class="fas fa-edit text-white text-2xl"></i>
+                    </div>
+                </div>
+                <label class="block mb-2 text-sm font-medium text-teal-1001" for="foto">Upload file</label>
+                <input type="file" name="foto" id="foto" accept="image/*"
+                    class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:bg-teal-1001 file:text-white hover:file:bg-teal-1000"/>
+                    <p class="mt-1 text-sm text-teal-1001" id="foto">SVG, PNG, JPG or GIF (Ratio 1:1).</p>
+                @error('foto')
+                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Form Input --}}
+            <div class="w-full space-y-5">
+
+                <div>
+                    <label for="nama" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.name') }}</label>
+                    <input type="text" name="nama" id="nama" value="{{ old('nama', $user->nama) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.name_placeholder') }}" required /> 
+                   @error('nama')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="username" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.username') }}</label>
+                    <input type="text" name="username" id="username" value="{{ old('username', $user->username) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.username_placeholder') }}" required />
+                    @error('username')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="email" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.email') }}</label>
+                    <input type="text" name="email" id="email" value="{{ old('email', $user->email) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.email_placeholder') }}" required /> 
+                   @error('email')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="nomor_telp" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.phone_number') }}</label>
+                    <input type="text" name="nomor_telp" id="nomor_telp" value="{{ old('nomor_telp', $user->nomor_telp) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.phone_placeholder') }}" required />
+                    @error('nomor_telp')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="department" class="block mb-2 text-sm font-medium text-gray-500">{{ __('dashboardUserCreate.department') }}</label>
+                    <input type="text" name="department" id="department" value="{{ old('department', $user->department) }}" class="bg-gray-50 border border-gray-300 text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.department_placeholder') }}" disabled />
+                    @error('department')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-teal-1001 mb-2">{{ __('dashboardUserCreate.gender') }}</label>
+                    <div class="flex items-center gap-6">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="gender" value="L" {{ old('gender', $user->gender) == 'L' ? 'checked' : '' }}
+                                class="w-4 h-4 text-teal-1001 bg-gray-100 border-gray-300 focus:ring-teal-1001 focus:ring-2">
+                            <span class="ml-2 text-sm text-teal-1001">{{ __('dashboardUserCreate.male') }}</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="gender" value="P" {{ old('gender', $user->gender) == 'P' ? 'checked' : '' }}
+                                class="w-4 h-4 text-teal-1001 bg-gray-100 border-gray-300 focus:ring-teal-1001 focus:ring-2">
+                            <span class="ml-2 text-sm text-teal-1001">{{ __('dashboardUserCreate.female') }}</span>
+                        </label>
+                    </div>
+                    @error('gender')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+
+                {{-- Skills --}}
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-teal-1001">Skills</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        @foreach($user->skills as $skill)
+                            <div class="flex items-center">
+                                <span class="px-3 py-1 bg-teal-1001 text-white rounded-full text-sm">
+                                    {{ $skill->name }}
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+
+                <div>
+                    <label for="password" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.password') }}</label>
+                    <div class="relative">
+                        <input type="password" name="password" id="password" value="{{ old('password') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.password_placeholder') }}" />
+                  
+                      <!-- Tombol Show/Hide -->
+                      <button type="button" onclick="togglePassword()" 
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600">
+                        <i data-feather="eye" id="toggleIcon"></i>
+                      </button>    
+                        <p class="text-sm text-red-600 mt-1">* {{ __('dashboardUserEdit.password_hint') }}</p>
+                    </div>
+                
+                    @error('password')
+                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="flex justify-center gap-4 mt-6">
+                    <button type="submit"
+                        class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-6 py-2.5">
+                        Update
+                    </button>
+
+                    <a href="{{ route('user.index') }}"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 focus:outline-none">
+                        {{ __('dashboardUserCreate.back') }}
+                    </a>   
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-full mb-20">
+    <form method="GET" action="/dashboard" class="flex gap-4 items-center mb-6">
+    
+    <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <i data-feather="calendar" class="w-4 y-4 text-accent-1000"></i>
+        </div>
+        <input id="datepicker-start" name="start_date" value="{{ request('start_date') }}" datepicker datepicker-autohide datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text" value="{{ old('date') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5" placeholder="{{ __('dashboardIndex.start_date') }}">
+    </div> 
+
+    <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <i data-feather="calendar" class="w-4 y-4 text-accent-1000"></i>
+        </div>
+        <input id="datepicker-end" name="end_date" value="{{ request('end_date') }}" datepicker datepicker-autohide datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text" value="{{ old('date') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5" placeholder="{{ __('dashboardIndex.end_date') }}">
+    </div> 
+
+    <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center me-2 mb-2"> {{ __('dashboardIndex.filter') }}</button>
+
+    <a href="/dashboard">
+        <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2.5 me-2 mb-2">{{ __('dashboardIndex.reset') }}</button>
+    </a>
+    </form>
+
+
+    <h2 class="text-xl font-semibold my-5 text-center">{{ __('dashboardIndex.daily_stat') }}</h2>
+    <div id="dailyChart" class="w-full h-[420px]"></div>
+
+    <h2 class="text-xl font-semibold mb-4 text-center">{{ __('dashboardIndex.total_point') }}</h2>
+    <div id="pointChart" class="w-full h-[420px]"></div>
+    <h2 class="text-xl font-semibold mb-4 text-center">{{ __('dashboardIndex.total_point') }}</h2>
+
+    {{-- Tambahan: Top 6 per Activity Type --}}
+    @foreach($topUsersPerActivity as $type => $data)
+        <h2 class="text-lg font-semibold mt-8 mb-4 text-center">
+        Top 6 {{ $type }} {{ __('dashboardIndex.points') }}
+        </h2>
+        <div id="chart-{{ \Illuminate\Support\Str::slug($type) }}" class="w-full h-[420px]"></div>
+    @endforeach
+</div>
+@endsection
+
+@section('script')
+    <script>
+        document.getElementById('foto').addEventListener('change', function(event) {
+            const [file] = event.target.files;
+            if (file) {
+                document.getElementById('preview-foto').src = URL.createObjectURL(file);
+            }
+        });
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.setAttribute('data-feather', 'eye-off');
+            } else {
+                passwordInput.type = 'password';
+                icon.setAttribute('data-feather', 'eye');
+            }
+
+            feather.replace(); // refresh icon feather
+        }
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const dailyOptions = {
+        chart: {
+            type: 'area',
+            height: 420,
+            toolbar: { show: false }
+        },
+        colors: ['#0b292b', '#F1D6AB', '#00A896', '#F67280', '#E67E22', '#355C7D'],
+        dataLabels: { enabled: false },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        series: [
+            {
+            name: 'OA',
+            data: {!! json_encode($oaData) !!}
+            },
+            {
+            name: 'OV',
+            data: {!! json_encode($ovData) !!}
+            },
+            {
+            name: 'Stay',
+            data: {!! json_encode($stayData) !!}
+            },
+            {
+            name: 'Vec',
+            data: {!! json_encode($vecData) !!}
+            },
+            {
+            name: 'Premier',
+            data: {!! json_encode($premierData) !!}
+            },
+            {
+            name: 'Total Room',
+            data: {!! json_encode($totalRoomData) !!}
+            }
+        ],
+        xaxis: {
+            categories: {!! json_encode($dates) !!},
+            labels: { style: { colors: '#555' } },
+            axisBorder: { color: '#ccc' },
+            axisTicks: { color: '#ccc' }
+        },
+        yaxis: {
+            labels: { style: { colors: '#555' } },
+            min: 0
+        },
+        legend: {
+            position: 'top',
+            labels: { colors: '#333' }
+        },
+        tooltip: {
+            theme: 'light'
+        },
+        grid: {
+            borderColor: '#eee'
+        }
+        };
+
+        const dailyChart = new ApexCharts(document.querySelector("#dailyChart"), dailyOptions);
+        dailyChart.render();
+    </script>
+
+    <script>
+    const pointOptions = {
+        chart: {
+        type: 'bar',
+        height: 420,
+        toolbar: { show: false }
+        },
+        plotOptions: {
+        bar: {
+            horizontal: false,
+            columnWidth: '55%',
+            endingShape: 'rounded'
+        }
+        },
+        dataLabels: { enabled: false },
+        colors: ['#3498db'],
+        series: [{
+        name: 'Total Poin',
+        data: {!! json_encode($totalPointsPerUser->pluck('total')) !!}
+        }],
+        xaxis: {
+        categories: {!! json_encode($totalPointsPerUser->pluck('nama')) !!},
+        labels: { style: { colors: '#555' } }
+        },
+        yaxis: {
+        labels: { style: { colors: '#555' } },
+        min: 0
+        },
+        grid: {
+        borderColor: '#eee'
+        },
+        tooltip: {
+        theme: 'light'
+        }
+    };
+
+    const pointChart = new ApexCharts(document.querySelector("#pointChart"), pointOptions);
+    pointChart.render();
+    </script>
+
+    <script>
+    const activityCharts = @json($topUsersPerActivity);
+
+    Object.keys(activityCharts).forEach(function(type) {
+        const users = activityCharts[type].map(item => item.nama);
+        const points = activityCharts[type].map(item => parseFloat(item.total));
+
+        const options = {
+            chart: {
+                type: 'bar',
+                height: 420,
+                toolbar: { show: false }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    endingShape: 'rounded'
+                }
+            },
+            dataLabels: { enabled: false },
+            colors: ['#2ecc71'],
+            series: [{
+                name: 'Poin',
+                data: points
+            }],
+            xaxis: {
+                categories: users,
+                labels: { style: { colors: '#555' } }
+            },
+            yaxis: {
+                labels: { style: { colors: '#555' } },
+                min: 0
+            },
+            grid: {
+                borderColor: '#eee'
+            },
+            tooltip: {
+                theme: 'light'
+            }
+        };
+
+        const chartId = "#chart-" + type.toLowerCase().replace(/\s+/g, '-');
+        const chart = new ApexCharts(document.querySelector(chartId), options);
+        chart.render();
+    });
+    </script>
+
+@endsection
