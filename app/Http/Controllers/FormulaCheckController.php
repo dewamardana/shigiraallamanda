@@ -14,7 +14,7 @@ class FormulaCheckController extends Controller
     {
         $title = 'Formula Check | Homepage';
         $formulas = FormulaCheck::all();
-        return view('dashboard.formulacheck.index', compact('formulas','title'));
+        return view('Dashboard.formulacheck.index', compact('formulas','title'));
     }
 
     /**
@@ -23,7 +23,7 @@ class FormulaCheckController extends Controller
     public function create()
     {
         $title = 'Formula Check Create | Homepage';
-        return view('dashboard.formulacheck.create', compact('title'));
+        return view('Dashboard.formulacheck.create', compact('title'));
     }
 
     /**
@@ -84,7 +84,7 @@ class FormulaCheckController extends Controller
 
         FormulaCheck::create($validated);
 
-        return redirect('dashboard/formulaCheck')->with('success', 'Formula berhasil ditambahkan');
+        return redirect()->route('formulaCheck.index')->with('success', 'Formula berhasil ditambahkan');
     }
 
     /**
@@ -93,7 +93,7 @@ class FormulaCheckController extends Controller
     public function show(FormulaCheck $formulaCheck)
     {
         $title = 'Detail Formula Check | Homepage';
-        return view('dashboard.formulacheck.show', compact('formulaCheck', 'title'));
+        return view('Dashboard.formulacheck.show', compact('formulaCheck', 'title'));
     }
 
     /**
@@ -102,7 +102,7 @@ class FormulaCheckController extends Controller
     public function edit(FormulaCheck $formulaCheck)
     {
         $title = 'Formula Check Edit | Homepage';
-        return view('dashboard.formulacheck.edit', compact('formulaCheck','title'));
+        return view('Dashboard.formulacheck.edit', compact('formulaCheck','title'));
     }
 
     /**

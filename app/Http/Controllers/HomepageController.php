@@ -41,7 +41,7 @@ class HomepageController extends Controller
         $user = User::where('status', 'Active')->get();
         $user_id = Auth::user();
         $building = Building::all();
-        return view('homepage.cleaning',[
+        return view('Homepage.cleaning',[
             'title' => $title,
             'users' => $user,
             'building' => $building,

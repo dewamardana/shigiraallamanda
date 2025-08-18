@@ -14,7 +14,7 @@ class TaskGroupController extends Controller
     {
         $title = 'Task Active | Dashboard';
         $taskGroups = TaskGroup::all();
-        return view('dashboard.taskgroup.index', compact('taskGroups', 'title'));
+        return view('Dashboard.taskgroup.index', compact('taskGroups', 'title'));
     }
 
     /**
@@ -23,7 +23,7 @@ class TaskGroupController extends Controller
     public function create()
     {
         $title = 'Task Group Create';
-        return view('dashboard.taskgroup.create', compact('title'));
+        return view('Dashboard.taskgroup.create', compact('title'));
     }
 
     /**
@@ -52,7 +52,7 @@ class TaskGroupController extends Controller
     {
         $title = 'Task Active | Dashboard';
         $tasks = $taskGroup->tasks; // Pastikan relasi tasks sudah dibuat di model
-        return view('dashboard.taskgroup.show', compact('taskGroup', 'tasks', 'title'));
+        return view('Dashboard.taskgroup.show', compact('taskGroup', 'tasks', 'title'));
         
     }
 
@@ -62,7 +62,7 @@ class TaskGroupController extends Controller
     public function edit(TaskGroup $taskGroup)
     {
         $title = 'Task Edit | Dashboard';
-        return view('dashboard.taskgroup.edit', compact('taskGroup', 'title'));
+        return view('Dashboard.taskgroup.edit', compact('taskGroup', 'title'));
     }
 
     /**

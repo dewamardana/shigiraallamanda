@@ -15,7 +15,7 @@ class BuildingController extends Controller
     public function index()
     {
         $building = Building::all();
-        return view('dashboard.building.index',[
+        return view('Dashboard.building.index',[
             'title' => __('buildingControllerMessage.title_index'),
             'building' => $building
         ]);
@@ -26,7 +26,7 @@ class BuildingController extends Controller
      */
     public function create()
     {
-        return view('dashboard.building.create',[
+        return view('Dashboard.building.create',[
             'title' => __('buildingControllerMessage.title_create'),
         ]);
     }
@@ -67,7 +67,7 @@ class BuildingController extends Controller
      */
     public function show(Building $building)
     {
-        return view('dashboard.building.show',[
+        return view('Dashboard.building.show',[
             'building' => $building,
             'title' => __('buildingControllerMessage.title_show')
         ]);
@@ -78,7 +78,7 @@ class BuildingController extends Controller
      */
     public function edit(Building $building)
     {
-        return view('dashboard.building.edit',[
+        return view('Dashboard.building.edit',[
             'building' => $building,
             'title' => __('buildingControllerMessage.title_edit')
         ]);

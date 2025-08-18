@@ -24,7 +24,7 @@ class TaskController extends Controller
         $taskGroupId = $request->get('task_group_id');
         $taskGroup = TaskGroup::findOrFail($taskGroupId);
         $title = "Tambah Task | Dashboard";
-        return view('dashboard.task.create', compact('taskGroup', 'title'));
+        return view('Dashboard.task.create', compact('taskGroup', 'title'));
     }
 
     /**
@@ -58,7 +58,7 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         $title = "Edit Task | Dashboard";
-        return view('dashboard.task.edit', compact('task', 'title'));
+        return view('Dashboard.task.edit', compact('task', 'title'));
     }
 
     /**

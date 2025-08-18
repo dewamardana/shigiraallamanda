@@ -15,7 +15,7 @@ class FormulaController extends Controller
     {
         $title = __('formulaControllerMessage.title_index');
         $formulas = Formula::all();
-        return view('dashboard.formula.index', compact('formulas','title'));
+        return view('Dashboard.formula.index', compact('formulas','title'));
     }
 
     /**
@@ -25,7 +25,7 @@ class FormulaController extends Controller
     {
         $building = Building::all();
         $title = __('formulaControllerMessage.title_create');
-        return view('dashboard.formula.create', compact('building', 'title'));
+        return view('Dashboard.formula.create', compact('building', 'title'));
     }
 
     /**
@@ -62,7 +62,7 @@ class FormulaController extends Controller
     public function show(Formula $formula)
     {
         $title = __('formulaControllerMessage.title_show');
-        return view('dashboard.formula.show', compact('formula','title'));
+        return view('Dashboard.formula.show', compact('formula','title'));
     }
 
     /**
@@ -71,7 +71,7 @@ class FormulaController extends Controller
     public function edit(Formula $formula)
     {
         $title = __('formulaControllerMessage.title_edit');
-        return view('dashboard.formula.edit', compact('formula','title'));
+        return view('Dashboard.formula.edit', compact('formula','title'));
     }
 
     /**

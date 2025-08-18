@@ -24,14 +24,14 @@ class AppServiceProvider extends ServiceProvider
     {
 
         // // Ambil semua role dari database
-        // if (Schema::hasTable('roles')) {
-        //     $roles = Role::all();
+        if (Schema::hasTable('roles')) {
+            $roles = Role::all();
 
-        //     foreach ($roles as $role) {
-        //         Gate::define($role->name, function ($user) use ($role) {
-        //             return $user->roles->contains('name', $role->name);
-        //         });
-        //     }
-        // }
+            foreach ($roles as $role) {
+                Gate::define($role->name, function ($user) use ($role) {
+                    return $user->roles->contains('name', $role->name);
+                });
+            }
+        }
     }
 }

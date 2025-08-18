@@ -17,7 +17,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return view('dashboard.user.index',[
+        return view('Dashboard.user.index',[
             'users' => $users,
             'title' => __('userControllerMessage.title_index')
         ]);
@@ -28,7 +28,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('dashboard.user.create',[
+        return view('Dashboard.user.create',[
             'title' => __('userControllerMessage.title_create')
         ]);
     }
@@ -104,7 +104,7 @@ class UserController extends Controller
         $roles = Role::all();
         $skill = Skill::all();
 
-        return view('dashboard.user.edit',[
+        return view('Dashboard.user.edit',[
             'user' => $user,
             'roles' => $roles,
             'skills' => $skill,
