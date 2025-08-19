@@ -4,138 +4,63 @@
 <div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-full">
     <h2 class="font-bold text-4xl text-center text-black-500 mb-8">Profile</h2>
     
-    <form action="{{ route('userprofileUpdate', $user->slug) }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <div class="flex flex-col md:flex-row gap-8 justify-center p-6">
-
-            {{-- Foto --}}
-            <div class="w-full md:max-w-xs">
-                <h6 class="mb-2 text-lg font-semibold text-center">{{ __('dashboardUserEdit.profile_photo') }}</h6>
-                <p class="text-xs text-slate-500 mb-6 text-center">{{ __('dashboardUserEdit.photo_hint') }}</p>
-                <div class="relative w-40 h-40 rounded-full overflow-hidden mb-6 border-2 border-indigo-600 group cursor-pointer block mx-auto">
-                    <img id="preview-foto" src="{{ $user->foto ? asset('storage/'.$user->foto) : 'https://via.placeholder.com/150' }}" alt="" class="object-cover w-full h-full">
-                    <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                        <i class="fas fa-edit text-white text-2xl"></i>
-                    </div>
-                </div>
-                <label class="block mb-2 text-sm font-medium text-teal-1001" for="foto">Upload file</label>
-                <input type="file" name="foto" id="foto" accept="image/*"
-                    class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:bg-teal-1001 file:text-white hover:file:bg-teal-1000"/>
-                    <p class="mt-1 text-sm text-teal-1001" id="foto">SVG, PNG, JPG or GIF (Ratio 1:1).</p>
-                @error('foto')
-                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Form Input --}}
-            <div class="w-full space-y-5">
-
-                <div>
-                    <label for="nama" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.name') }}</label>
-                    <input type="text" name="nama" id="nama" value="{{ old('nama', $user->nama) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.name_placeholder') }}" required /> 
-                   @error('nama')
-                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="username" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.username') }}</label>
-                    <input type="text" name="username" id="username" value="{{ old('username', $user->username) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.username_placeholder') }}" required />
-                    @error('username')
-                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="email" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.email') }}</label>
-                    <input type="text" name="email" id="email" value="{{ old('email', $user->email) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.email_placeholder') }}" required /> 
-                   @error('email')
-                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="nomor_telp" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.phone_number') }}</label>
-                    <input type="text" name="nomor_telp" id="nomor_telp" value="{{ old('nomor_telp', $user->nomor_telp) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.phone_placeholder') }}" required />
-                    @error('nomor_telp')
-                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="department" class="block mb-2 text-sm font-medium text-gray-500">{{ __('dashboardUserCreate.department') }}</label>
-                    <input type="text" name="department" id="department" value="{{ old('department', $user->department) }}" class="bg-gray-50 border border-gray-300 text-gray-500 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.department_placeholder') }}" disabled />
-                    @error('department')
-                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-teal-1001 mb-2">{{ __('dashboardUserCreate.gender') }}</label>
-                    <div class="flex items-center gap-6">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="gender" value="L" {{ old('gender', $user->gender) == 'L' ? 'checked' : '' }}
-                                class="w-4 h-4 text-teal-1001 bg-gray-100 border-gray-300 focus:ring-teal-1001 focus:ring-2">
-                            <span class="ml-2 text-sm text-teal-1001">{{ __('dashboardUserCreate.male') }}</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="gender" value="P" {{ old('gender', $user->gender) == 'P' ? 'checked' : '' }}
-                                class="w-4 h-4 text-teal-1001 bg-gray-100 border-gray-300 focus:ring-teal-1001 focus:ring-2">
-                            <span class="ml-2 text-sm text-teal-1001">{{ __('dashboardUserCreate.female') }}</span>
-                        </label>
-                    </div>
-                    @error('gender')
-                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-
-                {{-- Skills --}}
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-teal-1001">Skills</label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        @foreach($user->skills as $skill)
-                            <div class="flex items-center">
-                                <span class="px-3 py-1 bg-teal-1001 text-white rounded-full text-sm">
-                                    {{ $skill->name }}
-                                </span>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-
-
-                <div>
-                    <label for="password" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardUserCreate.password') }}</label>
-                    <div class="relative">
-                        <input type="password" name="password" id="password" value="{{ old('password') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{ __('dashboardUserCreate.password_placeholder') }}" />
-                  
-                      <!-- Tombol Show/Hide -->
-                      <button type="button" onclick="togglePassword()" 
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600">
-                        <i data-feather="eye" id="toggleIcon"></i>
-                      </button>    
-                        <p class="text-sm text-red-600 mt-1">* {{ __('dashboardUserEdit.password_hint') }}</p>
-                    </div>
-                
-                    @error('password')
-                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div class="flex justify-center gap-4 mt-6">
-                    <button type="submit"
-                        class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-6 py-2.5">
-                        Update
-                    </button>
-
-                    <a href="{{ route('user.index') }}"
-                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 focus:outline-none">
-                        {{ __('dashboardUserCreate.back') }}
-                    </a>   
-                </div>
-            </div>
+    {{-- Foto dan Nama --}}
+    <div class="flex flex-col items-center mb-8">
+        <div class="relative w-44 h-44 rounded-full overflow-hidden border-4 border-indigo-600 mb-4">
+            <img src="{{ $user->foto ? asset('storage/'.$user->foto) : 'https://via.placeholder.com/150' }}" 
+                 alt="Foto" class="object-cover w-full h-full">
         </div>
-    </form>
+        <h1 class="text-3xl font-bold text-gray-800">{{ $user->nama }}</h1>
+        <p class="text-indigo-500 font-semibold mt-1">{{ $user->department }}</p>
+    </div>
+
+    {{-- Detail User --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-700">
+        <div class="bg-slate-100 p-4 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 mb-1">{{ __('dashboardUserShow.email') }}</p>
+            <p class="text-base font-medium">{{ $user->email }}</p>
+        </div>
+        <div class="bg-slate-100 p-4 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 mb-1">{{ __('dashboardUserShow.username') }}</p>
+            <p class="text-base font-medium">{{ $user->username }}</p>
+        </div>
+        <div class="bg-slate-100 p-4 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 mb-1">{{ __('dashboardUserShow.phone_number') }}</p>
+            <p class="text-base font-medium">{{ $user->nomor_telp }}</p>
+        </div>
+        <div class="bg-slate-100 p-4 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 mb-1">{{ __('dashboardUserShow.status') }}</p>
+            <p class="text-base font-medium">{{ $user->status }}</p>
+        </div>
+        <div class="bg-slate-100 p-4 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 mb-1">{{ __('dashboardUserCreate.gender') }}</p>
+            <p class="text-base font-medium">
+                {{ $user->gender == 'L' ? __('dashboardUserCreate.male') : __('dashboardUserCreate.female') }}
+            </p>
+        </div>
+    </div>
+
+    {{-- Skills --}}
+    <div class="mt-6">
+        <p class="text-xs font-semibold text-slate-500 mb-2">Skills</p>
+        <div class="flex flex-wrap gap-2">
+            @forelse($user->skills as $skill)
+                <span class="px-3 py-1 bg-teal-600 text-white rounded-full text-sm">
+                    {{ $skill->name }}
+                </span>
+            @empty
+                <span class="text-slate-400 text-sm">-</span>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- Tombol Back --}}
+    <div class="flex justify-end mt-8">
+        <a href="{{ route('homepage') }}" 
+           class="text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center me-2 mb-2">
+            {{ __('button.back') }}
+        </a>
+    </div>
 </div>
 
 <div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-full mb-20">
@@ -155,10 +80,10 @@
         <input id="datepicker-end" name="end_date" value="{{ request('end_date') }}" datepicker datepicker-autohide datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text" value="{{ old('date') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5" placeholder="{{ __('dashboardIndex.end_date') }}">
     </div> 
 
-    <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center me-2 mb-2"> {{ __('dashboardIndex.filter') }}</button>
+    <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center me-2 mb-2"> {{ __('button.filter') }}</button>
 
     <a href="/dashboard">
-        <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2.5 me-2 mb-2">{{ __('dashboardIndex.reset') }}</button>
+        <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2.5 me-2 mb-2">{{ __('button.reset') }}</button>
     </a>
     </form>
 

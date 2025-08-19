@@ -3,10 +3,10 @@
 <nav class="bg-teal-1001">
   <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
     @auth
-      <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="{{ asset('images/logo.png') }}" class="h-10 mx-auto my-auto block" alt="Shigira Logo" />
-          <span class="self-center text-2xl font-semibold whitespace-nowrap text-gold">{{ __('HomepageLayout.brand_name') }}</span>
-      </a>
+        <a href="{{ route('homepage') }}" class="flex ms-2 md:me-24">
+            <img src="{{ asset('images/Logo.png') }}" class="h-8 me-3" alt="FlowBite Logo" />
+            <span class="self-center text-xl text-gold font-semibold sm:text-2xl whitespace-nowrap">{{ __('general.brand_name') }}</span>
+        </a>
     @endauth
   <div class="flex items-center md:order-2 space-x-1 md:space-x-0 rtl:space-x-reverse">
     <!-- Tombol Utama di Navbar -->
@@ -93,9 +93,9 @@
       </ul>
   </div>
   @else
-    <a href="https://flowbite.com/" class="flex items-center space-x-3 rtl:space-x-reverse">
-      <img src="{{ asset('images/logo.png') }}" class="h-10 mx-auto my-auto block" alt="Shigira Logo" />
-      <span class="self-center text-2xl font-semibold whitespace-nowrap text-gold">{{ __('HomepageLayout.brand_name') }}</span>
+    <a href="{{ route('homepage') }}" class="flex ms-2 md:me-24">
+        <img src="{{ asset('images/Logo.png') }}" class="h-8 me-3" alt="FlowBite Logo" />
+        <span class="self-center text-xl text-gold font-semibold sm:text-2xl whitespace-nowrap">{{ __('general.brand_name') }}</span>
     </a>
   @endauth
   </div>
