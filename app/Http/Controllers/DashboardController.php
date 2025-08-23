@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    
+
     public function index(Request $request)
     {
         $title = __('dashboardIndex.title_dashboard');
@@ -30,9 +30,9 @@ class DashboardController extends Controller
             ->selectRaw('SUM(vec) as total_vec')
             ->selectRaw('SUM(premier) as total_premier')
             ->selectRaw('SUM(total_room) as total_room')
-            ->when($request->building_id, fn ($q) => $q->where('building_id', $request->building_id))
-            ->when($startDate, fn ($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate,   fn ($q) => $q->whereDate('date', '<=', $endDate))
+            ->when($request->building_id, fn($q) => $q->where('building_id', $request->building_id))
+            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+            ->when($endDate,   fn($q) => $q->whereDate('date', '<=', $endDate))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
@@ -80,29 +80,29 @@ class DashboardController extends Controller
                 $q->whereDate('cleanings.date', '<=', $endDate);
             }
         }])
-        ->get()
-        ->map(function ($user) use ($dates) {
-            $dailyTotals = array_fill_keys($dates, 0);
+            ->get()
+            ->map(function ($user) use ($dates) {
+                $dailyTotals = array_fill_keys($dates, 0);
 
-            foreach ($user->cleanings as $cleaning) {
-                $date = $cleaning->date;
-                if (isset($dailyTotals[$date])) {
-                    $memberCount = $cleaning->members->count();
-                    $dailyTotals[$date] += $memberCount ? ($cleaning->total_room / $memberCount) : 0;
+                foreach ($user->cleanings as $cleaning) {
+                    $date = $cleaning->date;
+                    if (isset($dailyTotals[$date])) {
+                        $memberCount = $cleaning->members->count();
+                        $dailyTotals[$date] += $memberCount ? ($cleaning->total_room / $memberCount) : 0;
+                    }
                 }
-            }
 
-            return [
-                'nama'  => $user->nama,
-                'total' => array_sum($dailyTotals),
-                'data'  => array_values($dailyTotals)
-            ];
-        })->sortByDesc('total')->values();
+                return [
+                    'nama'  => $user->nama,
+                    'total' => array_sum($dailyTotals),
+                    'data'  => array_values($dailyTotals)
+                ];
+            })->sortByDesc('total')->values();
 
         // Total Poin Per User dari tabel daily_cleaning_points
         $totalPointsPerUser = DailyCleaningPoint::select('user_id', DB::raw('SUM(point) as total_point'))
-            ->when($startDate, fn ($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate, fn ($q) => $q->whereDate('date', '<=', $endDate))
+            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->groupBy('user_id')
             ->orderByDesc('total_point')
             ->with('user')
@@ -118,8 +118,8 @@ class DashboardController extends Controller
 
         // Ambil daftar aktivitas (activity_type & activity_detail)
         $activityLogs = DailyCleaningPoint::with('user')
-            ->when($startDate, fn ($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate, fn ($q) => $q->whereDate('date', '<=', $endDate))
+            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->orderBy('date', 'desc')
             ->get();
 
@@ -137,7 +137,7 @@ class DashboardController extends Controller
                 ->get();
         }
 
-	return view('Dashboard.index', compact(
+        return view('Dashboard.index', compact(
             'title',
             'totalUsers',
             'activeUsers',
