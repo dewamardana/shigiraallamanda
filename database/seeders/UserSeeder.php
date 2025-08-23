@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
 
         if ($roles->count() > 0) {
             // Pilih role random (1 atau 2 role)
-            $randomRoles = $roles->random(min(2, $roles->count()))->pluck('id')->toArray();
+            $randomRoles = 2;
             $user->roles()->attach($randomRoles);
         }
     }
