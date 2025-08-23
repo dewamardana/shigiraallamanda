@@ -18,21 +18,6 @@ class UserSeeder extends Seeder
     {
         $users = [
             // [
-            //     'nama' => 'Dewi Anggraini',
-            //     'slug' => Str::slug('Dewi Anggraini'),
-            //     'username' => 'dewi',
-            //     'password' => bcrypt('password'), // default password
-            //     'email' => 'dewi@gmail.com',
-            //     'department' => 'Public Area Section',
-            //     'nomor_telp' => '081234567890',
-            //     'gender' => 'P',
-            //     'foto' => null,
-            //     'remember_token' => Str::random(10),
-            //     'status' => 'Active',
-            //     'created_at' => now(),
-            //     'updated_at' => now()
-            // ],
-            // [
             //     'nama' => 'Rizky Pratama',
             //     'slug' => Str::slug('Rizky Pratama'),
             //     'username' => 'risky',
