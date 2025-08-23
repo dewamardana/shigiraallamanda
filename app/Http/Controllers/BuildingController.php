@@ -15,8 +15,8 @@ class BuildingController extends Controller
     public function index()
     {
         $building = Building::all();
-        return view('Dashboard.building.index',[
-            'title' => __('buildingControllerMessage.title_index'),
+        return view('Dashboard.building.index', [
+            'title' => __('dashboardBuilding.controller.index.title'),
             'building' => $building
         ]);
     }
@@ -26,8 +26,8 @@ class BuildingController extends Controller
      */
     public function create()
     {
-        return view('Dashboard.building.create',[
-            'title' => __('buildingControllerMessage.title_create'),
+        return view('Dashboard.building.create', [
+            'title' => __('dashboardBuilding.controller.create.title'),
         ]);
     }
 
@@ -41,25 +41,25 @@ class BuildingController extends Controller
             'description'   => 'required|string',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
-            'building_name.required' => __('buildingControllerMessage.validation.building_name_required'),
-            'slug.required'          => __('buildingControllerMessage.validation.slug_required'),
-            'slug.unique'            => __('buildingControllerMessage.validation.slug_unique'),
-            'description.required'   => __('buildingControllerMessage.validation.description_required'),
-            'foto.image'             => __('buildingControllerMessage.validation.photo_image'),
-            'foto.mimes'             => __('buildingControllerMessage.validation.photo_mimes'),
-            'foto.max'               => __('buildingControllerMessage.validation.photo_max')
+            'building_name.required' => __('dashboardBuilding.controller.validation.building_name_required'),
+            'slug.required'          => __('dashboardBuilding.controller.validation.slug_required'),
+            'slug.unique'            => __('dashboardBuilding.controller.validation.slug_unique'),
+            'description.required'   => __('dashboardBuilding.controller.validation.description_required'),
+            'foto.image'             => __('dashboardBuilding.controller.validation.photo_image'),
+            'foto.mimes'             => __('dashboardBuilding.controller.validation.photo_mimes'),
+            'foto.max'               => __('dashboardBuilding.controller.validation.photo_max')
         ]);
         $validatedData['slug'] = Str::slug($request->building_name, '-');
-    
+
         // handle upload foto (jika ada)
         if ($request->hasFile('foto')) {
             $fotoPath = $request->file('foto')->store('building-images', 'public');
             $validatedData['foto'] = $fotoPath;
         }
-    
+
         Building::create($validatedData);
-    
-        return redirect()->route('building.index')->with('success', __('buildingControllerMessage.success_add'));
+
+        return redirect()->route('building.index')->with('success', __('dashboardBuilding.controller.create.success_add'));
     }
 
     /**
@@ -67,9 +67,9 @@ class BuildingController extends Controller
      */
     public function show(Building $building)
     {
-        return view('Dashboard.building.show',[
+        return view('Dashboard.building.show', [
             'building' => $building,
-            'title' => __('buildingControllerMessage.title_show')
+            'title' => __('dashboardBuilding.controller.show.title')
         ]);
     }
 
@@ -78,9 +78,9 @@ class BuildingController extends Controller
      */
     public function edit(Building $building)
     {
-        return view('Dashboard.building.edit',[
+        return view('Dashboard.building.edit', [
             'building' => $building,
-            'title' => __('buildingControllerMessage.title_edit')
+            'title' => __('dashboardBuilding.controller.edit.title')
         ]);
     }
 
@@ -95,12 +95,12 @@ class BuildingController extends Controller
             'building_name' => 'required|string|max:255',
             'description'   => 'required|string',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ],[
-            'building_name.required' => __('buildingControllerMessage.validation.building_name_required'),
-            'description.required'   => __('buildingControllerMessage.validation.description_required'),
-            'foto.image'             => __('buildingControllerMessage.validation.photo_image'),
-            'foto.mimes'             => __('buildingControllerMessage.validation.photo_mimes'),
-            'foto.max'               => __('buildingControllerMessage.validation.photo_max')
+        ], [
+            'building_name.required' => __('dashboardBuilding.controller.validation.building_name_required'),
+            'description.required'   => __('dashboardBuilding.controller.validation.description_required'),
+            'foto.image'             => __('dashboardBuilding.controller.validation.photo_image'),
+            'foto.mimes'             => __('dashboardBuilding.controller.validation.photo_mimes'),
+            'foto.max'               => __('dashboardBuilding.controller.validation.photo_max')
         ]);
 
         // handle foto baru
@@ -117,7 +117,7 @@ class BuildingController extends Controller
 
         $building->update($validatedData);
 
-        return redirect()->route('building.index')->with('success', __('buildingControllerMessage.success_update'));
+        return redirect()->route('building.index')->with('success', __('dashboardBuilding.controller.edit.success_update'));
     }
 
     /**
@@ -126,12 +126,12 @@ class BuildingController extends Controller
     public function destroy(Building $building)
     {
         // Hapus foto jika ada
-        if ($building->foto && Storage::exists('public/'.$building->foto)) {
-            Storage::delete('public/'.$building->foto);
+        if ($building->foto && Storage::exists('public/' . $building->foto)) {
+            Storage::delete('public/' . $building->foto);
         }
 
         $building->delete();
 
-        return redirect()->route('building.index')->with('success', __('buildingControllerMessage.success_delete'));
+        return redirect()->route('building.index')->with('success', __('dashboardBuilding.controller.delete.success_delete'));
     }
 }

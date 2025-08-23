@@ -17,7 +17,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return view('Dashboard.user.index',[
+        return view('Dashboard.user.index', [
             'users' => $users,
             'title' => __('userControllerMessage.title_index')
         ]);
@@ -28,7 +28,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('Dashboard.user.create',[
+        return view('Dashboard.user.create', [
             'title' => __('userControllerMessage.title_create')
         ]);
     }
@@ -49,19 +49,19 @@ class UserController extends Controller
             'status'      => 'required|in:Active,Inactive',
             'foto'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
         ], [
-            'nama.required'        => __('userControllerMessage.store.name_required'),
-            'username.required'    => __('userControllerMessage.store.username_required'),
-            'username.unique'      => __('userControllerMessage.store.username_unique'),
-            'email.required'       => __('userControllerMessage.store.email_required'),
-            'email.unique'         => __('userControllerMessage.store.email_unique'),
-            'password.required'    => __('userControllerMessage.store.password_required'),
-            'password.min'         => __('userControllerMessage.store.password_min'),
-            'nomor_telp.required'  => __('userControllerMessage.store.phone_required'),
-            'gender.in'            => __('userControllerMessage.store.gender_in'),
-            'foto.image'           => __('userControllerMessage.store.photo_error'),
-            'foto.mimes'           => __('userControllerMessage.store.photo_mimes'),
-            'foto.max'             => __('userControllerMessage.store.photo_max'),
-            
+            'nama.required'        => __('dashboardUser.controller.store.name_required'),
+            'username.required'    => __('dashboardUser.controller.store.username_required'),
+            'username.unique'      => __('dashboardUser.controller.store.username_unique'),
+            'email.required'       => __('dashboardUser.controller.store.email_required'),
+            'email.unique'         => __('dashboardUser.controller.store.email_unique'),
+            'password.required'    => __('dashboardUser.controller.store.password_required'),
+            'password.min'         => __('dashboardUser.controller.store.password_min'),
+            'nomor_telp.required'  => __('dashboardUser.controller.store.phone_required'),
+            'gender.in'            => __('dashboardUser.controller.store.gender_in'),
+            'foto.image'           => __('dashboardUser.controller.store.photo_error'),
+            'foto.mimes'           => __('dashboardUser.controller.store.photo_mimes'),
+            'foto.max'             => __('dashboardUser.controller.store.photo_max'),
+
         ]);
 
         // handle upload foto (jika ada)
@@ -82,7 +82,7 @@ class UserController extends Controller
         // simpan ke database
         User::create($validatedData);
 
-        return redirect()->route('user.index')->with('success', __('userControllerMessage.success_add'));
+        return redirect()->route('user.index')->with('success', __('dashboardUser.controller.store.success_add'));
     }
 
     /**
@@ -90,9 +90,9 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return view('Dashboard.user.show',[
+        return view('Dashboard.user.show', [
             'user' => $user,
-            'title' => __('userControllerMessage.title_show')
+            'title' => __('dashboardUser.controller.show.title')
         ]);
     }
 
@@ -104,11 +104,11 @@ class UserController extends Controller
         $roles = Role::all();
         $skill = Skill::all();
 
-        return view('Dashboard.user.edit',[
+        return view('Dashboard.user.edit', [
             'user' => $user,
             'roles' => $roles,
             'skills' => $skill,
-            'title' => __('userControllerMessage.title_edit')
+            'title' => __('dashboardUser.controller.edit.title')
         ]);
     }
 
@@ -131,21 +131,21 @@ class UserController extends Controller
             'skills'     => 'nullable|array',
             'skills.*'   => 'exists:skills,id',
             'foto'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ],[
-            'nama.required'        => __('userControllerMessage.upload.name_required'),
-            'username.required'    => __('userControllerMessage.upload.username_required'),
-            'username.unique'      => __('userControllerMessage.upload.username_unique'),
-            'email.required'       => __('userControllerMessage.upload.email_required'),
-            'email.unique'         => __('userControllerMessage.upload.email_unique'),
-            'password.required'    => __('userControllerMessage.upload.password_required'),
-            'password.min'         => __('userControllerMessage.upload.password_min'),
-            'nomor_telp.required'  => __('userControllerMessage.upload.phone_required'),
-            'gender.in'            => __('userControllerMessage.upload.gender_in'),
-            'foto.image'           => __('userControllerMessage.upload.photo_error'),
-            'foto.mimes'           => __('userControllerMessage.upload.photo_mimes'),
-            'foto.max'             => __('userControllerMessage.upload.photo_max'),
-            'role.required'        => __('userControllerMessage.upload.role_required'),
-            'role.in'              => __('userControllerMessage.upload.role_in'),
+        ], [
+            'nama.required'        => __('dashboardUser.controller.upload.name_required'),
+            'username.required'    => __('dashboardUser.controller.upload.username_required'),
+            'username.unique'      => __('dashboardUser.controller.upload.username_unique'),
+            'email.required'       => __('dashboardUser.controller.upload.email_required'),
+            'email.unique'         => __('dashboardUser.controller.upload.email_unique'),
+            'password.required'    => __('dashboardUser.controller.upload.password_required'),
+            'password.min'         => __('dashboardUser.controller.upload.password_min'),
+            'nomor_telp.required'  => __('dashboardUser.controller.upload.phone_required'),
+            'gender.in'            => __('dashboardUser.controller.upload.gender_in'),
+            'foto.image'           => __('dashboardUser.controller.upload.photo_error'),
+            'foto.mimes'           => __('dashboardUser.controller.upload.photo_mimes'),
+            'foto.max'             => __('dashboardUser.controller.upload.photo_max'),
+            'role.required'        => __('dashboardUser.controller.upload.role_required'),
+            'role.in'              => __('dashboardUser.controller.upload.role_in'),
         ]);
 
         // Update basic fields
@@ -166,8 +166,8 @@ class UserController extends Controller
 
         // jika ada foto baru
         if ($request->hasFile('foto')) {
-            if ($user->foto && Storage::exists('public/'.$user->foto)) {
-                Storage::delete('public/'.$user->foto);
+            if ($user->foto && Storage::exists('public/' . $user->foto)) {
+                Storage::delete('public/' . $user->foto);
             }
             $fotoPath = $request->file('foto')->store('foto', 'public');
             $user->foto = $fotoPath;
@@ -182,7 +182,7 @@ class UserController extends Controller
         $user->skills()->sync($request->skills ?? []);
 
 
-        return redirect()->route('user.index')->with('success', __('userControllerMessage.success_edit'));
+        return redirect()->route('user.index')->with('success', __('dashboardUser.controller.upload.success_edit'));
     }
 
     /**
@@ -191,12 +191,12 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         // Hapus foto jika ada
-        if ($user->foto && Storage::exists('public/'.$user->foto)) {
-            Storage::delete('public/'.$user->foto);
+        if ($user->foto && Storage::exists('public/' . $user->foto)) {
+            Storage::delete('public/' . $user->foto);
         }
 
         $user->delete();
 
-        return redirect()->route('user.index')->with('success', __('userControllerMessage.success_deleted'));
+        return redirect()->route('user.index')->with('success', __('dashboardUser.controller.delete.success_deleted'));
     }
 }

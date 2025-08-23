@@ -710,61 +710,61 @@ class HomepageController extends Controller
         ));
     }
 
-    public function userprofileUpdate(Request $request, $slug)
-    {
-        $user = User::where('slug', $slug)->firstOrFail();
+    // public function userprofileUpdate(Request $request, $slug)
+    // {
+    //     $user = User::where('slug', $slug)->firstOrFail();
 
-        $validated = $request->validate([
-            'nama'        => 'required|string|max:255',
-            'username'    => 'required|string|max:255|unique:users,username,' . $user->id,
-            'email'       => 'required|email|max:255|unique:users,email,' . $user->id,
-            'password'    => 'nullable|string|min:6',
-            'nomor_telp'  => 'required|string|max:20',
-            'gender'      => 'required|in:L,P',
-            'foto'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ], [
-            'nama.required'        => __('userControllerMessage.upload.name_required'),
-            'username.required'    => __('userControllerMessage.upload.username_required'),
-            'username.unique'      => __('userControllerMessage.upload.username_unique'),
-            'email.required'       => __('userControllerMessage.upload.email_required'),
-            'email.unique'         => __('userControllerMessage.upload.email_unique'),
-            'password.min'         => __('userControllerMessage.upload.password_min'),
-            'nomor_telp.required'  => __('userControllerMessage.upload.phone_required'),
-            'gender.in'            => __('userControllerMessage.upload.gender_in'),
-            'foto.image'           => __('userControllerMessage.upload.photo_error'),
-            'foto.mimes'           => __('userControllerMessage.upload.photo_mimes'),
-            'foto.max'             => __('userControllerMessage.upload.photo_max'),
-        ]);
+    //     $validated = $request->validate([
+    //         'nama'        => 'required|string|max:255',
+    //         'username'    => 'required|string|max:255|unique:users,username,' . $user->id,
+    //         'email'       => 'required|email|max:255|unique:users,email,' . $user->id,
+    //         'password'    => 'nullable|string|min:6',
+    //         'nomor_telp'  => 'required|string|max:20',
+    //         'gender'      => 'required|in:L,P',
+    //         'foto'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    //     ], [
+    //         'nama.required'        => __('userControllerMessage.upload.name_required'),
+    //         'username.required'    => __('userControllerMessage.upload.username_required'),
+    //         'username.unique'      => __('userControllerMessage.upload.username_unique'),
+    //         'email.required'       => __('userControllerMessage.upload.email_required'),
+    //         'email.unique'         => __('userControllerMessage.upload.email_unique'),
+    //         'password.min'         => __('userControllerMessage.upload.password_min'),
+    //         'nomor_telp.required'  => __('userControllerMessage.upload.phone_required'),
+    //         'gender.in'            => __('userControllerMessage.upload.gender_in'),
+    //         'foto.image'           => __('userControllerMessage.upload.photo_error'),
+    //         'foto.mimes'           => __('userControllerMessage.upload.photo_mimes'),
+    //         'foto.max'             => __('userControllerMessage.upload.photo_max'),
+    //     ]);
 
-        // Update basic fields
-        $user->nama       = $validated['nama'];
-        $user->username   = $validated['username'];
-        $user->email      = $validated['email'];
-        $user->nomor_telp = $validated['nomor_telp'];
-        $user->gender     = $validated['gender'];
+    //     // Update basic fields
+    //     $user->nama       = $validated['nama'];
+    //     $user->username   = $validated['username'];
+    //     $user->email      = $validated['email'];
+    //     $user->nomor_telp = $validated['nomor_telp'];
+    //     $user->gender     = $validated['gender'];
 
-        // Jika password diisi
-        if (!empty($validated['password'])) {
-            $user->password = bcrypt($validated['password']);
-        }
+    //     // Jika password diisi
+    //     if (!empty($validated['password'])) {
+    //         $user->password = bcrypt($validated['password']);
+    //     }
 
-        // Jika ada foto baru
-        if ($request->hasFile('foto')) {
-            // Hapus foto lama
-            if ($user->foto && Storage::exists('public/' . $user->foto)) {
-                Storage::delete('public/' . $user->foto);
-            }
-            // Simpan foto baru
-            $fotoPath = $request->file('foto')->store('foto', 'public');
-            $user->foto = $fotoPath;
-        }
+    //     // Jika ada foto baru
+    //     if ($request->hasFile('foto')) {
+    //         // Hapus foto lama
+    //         if ($user->foto && Storage::exists('public/' . $user->foto)) {
+    //             Storage::delete('public/' . $user->foto);
+    //         }
+    //         // Simpan foto baru
+    //         $fotoPath = $request->file('foto')->store('foto', 'public');
+    //         $user->foto = $fotoPath;
+    //     }
 
-        $user->save();
+    //     $user->save();
 
-        return redirect()
-            ->route('homepage')
-            ->with('success', 'Profile Berhasil di Perbarui');
-    }
+    //     return redirect()
+    //         ->route('homepage')
+    //         ->with('success', 'Profile Berhasil di Perbarui');
+    // }
 
 
     private function addDailyPoint($userId, $date, $point, $activityType, array $detailArray = []){

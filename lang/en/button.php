@@ -8,6 +8,7 @@ return [
     'filter' => 'Filter',
     'reset' => 'Reset',
     'export' => 'Export',
+    'add'   => 'Add',
     'edit' => 'Edit',
     'show' => 'Show',
     'delete' => 'Delete',
