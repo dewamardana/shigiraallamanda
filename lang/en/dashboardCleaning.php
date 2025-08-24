@@ -1,10 +1,11 @@
 <?php
 
 return [
-    'cleaningdata' =>[
+    'cleaningdata' => [
         'title'            => 'Cleaning Data Dashboard',
         'filter_building'  => 'Building:',
         'filter_all'       => 'All Building',
+        'filter_user'      => 'Filter by User',
         'members' => 'Member(s)',
         'table' => [
             'date'      => 'Date',
@@ -16,12 +17,12 @@ return [
             'premier'   => 'Premier',
             'total'     => 'Total',
             'point'     => 'Point',
-            'total_info'=> 'Total',
-            'member'=> 'member',
+            'total_info' => 'Total',
+            'member' => 'member',
         ],
     ],
 
-    'checkdata' =>[
+    'checkdata' => [
         'title' => 'Checker Data',
         'user' => 'User',
         'all'  => 'All',
@@ -34,7 +35,7 @@ return [
         ],
     ],
 
-    'userpoint' =>[
+    'userpoint' => [
         'title'         => 'Monthly Points Recap',
         'filter_year'   => 'Year',
         'filter_month'  => 'Month',
@@ -46,7 +47,7 @@ return [
         ],
     ],
 
-    'cleaningHistory' =>[
+    'cleaningHistory' => [
         'title' => 'Cleaning Data',
         'cleaning_title' => '📊 Displaying All Cleaning Input Data.',
         'checker_title' => '📊 Displaying All Checking And Office Data.',
@@ -80,9 +81,9 @@ return [
             'no_data' => 'No data available',
         ],
     ],
-    'controller' =>[
+    'controller' => [
         'indextitle' => 'Cleaning Data Dashboard',
-            // Header exportCleaningData
+        // Header exportCleaningData
         'header_name_member'  => 'Member Name',
         'header_oa'           => 'OA',
         'header_ov'           => 'OV',
@@ -114,7 +115,7 @@ return [
             'room_count' => 'Room Count',
             'total_points' => 'Total Points',
         ],
-        'userPoint' =>[
+        'userPoint' => [
             'title' => 'Member Points Summary | Dashboard',
         ],
         'CleaningHistoryData' => [

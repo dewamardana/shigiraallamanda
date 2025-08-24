@@ -20,12 +20,13 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class DataController extends Controller
 {
-    
-    public function cleaningData() {
+
+    public function cleaningData()
+    {
         $title = __('dashboardCleaning.controller.indextitle');
 
         $query = Cleaning::with(['building', 'members', 'poinRecord'])->orderBy('date');
-        
+
 
         $startDate = null;
         $endDate = null;
@@ -57,6 +58,13 @@ class DataController extends Controller
         if (request('building')) {
             $query->whereHas('building', function ($q) {
                 $q->where('slug', request('building'));
+            });
+        }
+
+        // filter user
+        if (request('user')) {
+            $query->whereHas('members', function ($q) {
+                $q->where('user_id', request('user'));
             });
         }
 
@@ -114,11 +122,13 @@ class DataController extends Controller
         }
 
         $buildings = Building::orderBy('building_name')->get();
+        $users = User::orderBy('nama')->get();
 
-        return view('Dashboard.cleaning.cleaningdata', compact('title', 'grouped', 'buildings'));
+        return view('Dashboard.cleaning.cleaningdata', compact('title', 'grouped', 'buildings', 'users'));
     }
 
-    public function exportCleaningData(Request $request) {
+    public function exportCleaningData(Request $request)
+    {
         $startDate    = $request->get('start_date');
         $endDate      = $request->get('end_date');
         $buildingSlug = $request->get('building');
@@ -140,9 +150,9 @@ class DataController extends Controller
         ];
 
         $colLetters = [
-            '2'     => ['A','B','C','D','E','F','G','H'],
-            '3'     => ['J','K','L','M','N','O','P','Q'],
-            'royal' => ['S','T','U','V','W','X','Y','Z','AA'],
+            '2'     => ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+            '3'     => ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'],
+            'royal' => ['S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'],
         ];
 
         $currentRows = [
@@ -198,7 +208,7 @@ class DataController extends Controller
                 }
                 $row++;
 
-                $colors = ['D9E1F2', 'FCE4D6', 'E2EFDA', 'FFF2CC']; 
+                $colors = ['D9E1F2', 'FCE4D6', 'E2EFDA', 'FFF2CC'];
                 $currentColorIdx = 0;
 
                 foreach ($groupData as $cleaning) {
@@ -262,7 +272,8 @@ class DataController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
-    public function checkerData() {
+    public function checkerData()
+    {
         $user = Auth::user();
         $title = __('dashboardCleaning.controller.checkerDataTitle');
 
@@ -306,14 +317,14 @@ class DataController extends Controller
             $poin = $check->poinRecord;
 
             $total = $check->jumlah_kamar * ($poin->jumlah_kamar ?? 0)
-                    + ($check->mengajar ? ($poin->mengajar ?? 0) : 0)
-                    + ($check->pembersihan_khusus ? ($poin->pembersihan_khusus ?? 0) : 0)
-                    + ($check->mengangkat_barang ? ($poin->mengangkat_barang ?? 0) : 0)
-                    + ($check->membersihkan_gudang ? ($poin->membersihkan_gudang ?? 0) : 0)
-                    + ($check->obat_pool ? ($poin->obat_pool ?? 0) : 0)
-                    + ($check->membersihkan_pool ? ($poin->membersihkan_pool ?? 0) : 0)
-                    + ($check->sampah ? ($poin->sampah ?? 0) : 0)
-                    + ($check->office ? ($poin->office ?? 0) : 0);
+                + ($check->mengajar ? ($poin->mengajar ?? 0) : 0)
+                + ($check->pembersihan_khusus ? ($poin->pembersihan_khusus ?? 0) : 0)
+                + ($check->mengangkat_barang ? ($poin->mengangkat_barang ?? 0) : 0)
+                + ($check->membersihkan_gudang ? ($poin->membersihkan_gudang ?? 0) : 0)
+                + ($check->obat_pool ? ($poin->obat_pool ?? 0) : 0)
+                + ($check->membersihkan_pool ? ($poin->membersihkan_pool ?? 0) : 0)
+                + ($check->sampah ? ($poin->sampah ?? 0) : 0)
+                + ($check->office ? ($poin->office ?? 0) : 0);
 
             return [
                 'id' => $check->id,
@@ -339,7 +350,8 @@ class DataController extends Controller
         return view('Dashboard.cleaning.checkerdata', compact('checkerData', 'title', 'users'));
     }
 
-    public function exportCheckerData(Request $request) {
+    public function exportCheckerData(Request $request)
+    {
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
         $userId = $request->get('user_id');
@@ -361,8 +373,13 @@ class DataController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $fields = [
-            __('checker.teaching'), __('checker.special_cleaning'), __('checker.lifting'),
-            __('checker.warehouse_cleaning'), __('checker.pool_chemicals'), __('checker.pool_cleaning'), __('checker.waste_disposal')
+            __('checker.teaching'),
+            __('checker.special_cleaning'),
+            __('checker.lifting'),
+            __('checker.warehouse_cleaning'),
+            __('checker.pool_chemicals'),
+            __('checker.pool_cleaning'),
+            __('checker.waste_disposal')
         ];
 
         $headers = array_merge([__('dashboardCleaning.controller.headers.no'), __('dashboardCleaning.controller.headers.date'), __('dashboardCleaning.controller.headers.name'), __('dashboardCleaning.controller.headers.room_count')], array_map(fn($f) => ucfirst(str_replace('_', ' ', $f)), $fields), [__('dashboardCleaning.controller.headers.total_points')]);
@@ -423,7 +440,8 @@ class DataController extends Controller
         return response()->download($tempPath, $filename)->deleteFileAfterSend(true);
     }
 
-    public function userPoint(Request $request) {
+    public function userPoint(Request $request)
+    {
         $title = __('dashboardCleaning.controller.userPoint.title');
 
         $filterDate = $request->get('filter_date');
@@ -485,22 +503,23 @@ class DataController extends Controller
             'title'       => $title
         ]);
     }
-    
-    public function userPointExport(Request $request) {
+
+    public function userPointExport(Request $request)
+    {
         $year  = $request->get('year', now()->year);
         $month = $request->get('month', now()->month);
         $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
-    
+
         $users = User::orderBy('nama')->get();
-    
+
         $points = DailyCleaningPoint::whereYear('date', $year)
             ->whereMonth('date', $month)
             ->get()
             ->groupBy('user_id');
-    
+
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-    
+
         // Styling
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
@@ -511,77 +530,82 @@ class DataController extends Controller
             'alignment' => ['horizontal' => 'center'],
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
         ];
-    
+
         $borderStyle = [
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
         ];
-    
+
         // Header
         $col = 'A';
-        $sheet->setCellValue("{$col}1", __('dashboardCleaning.controller.headers.no')); $col++;
-        $sheet->setCellValue("{$col}1", __('dashboardCleaning.controller.headers.name')); $col++;
-    
+        $sheet->setCellValue("{$col}1", __('dashboardCleaning.controller.headers.no'));
+        $col++;
+        $sheet->setCellValue("{$col}1", __('dashboardCleaning.controller.headers.name'));
+        $col++;
+
         for ($i = 1; $i <= $daysInMonth; $i++) {
             $sheet->setCellValue("{$col}1", __('dashboardCleaning.controller.header_day') . " {$i}");
             $col++;
         }
-    
+
         $sheet->setCellValue("{$col}1", __('dashboardCleaning.controller.header_total_poin'));
-    
+
         // Apply header style
         $lastCol = $col;
         $sheet->getStyle("A1:{$lastCol}1")->applyFromArray($headerStyle);
-    
+
         // Data
         $rowIndex = 2;
         $no = 1;
         foreach ($users as $user) {
             $col = 'A';
-            $sheet->setCellValue("{$col}{$rowIndex}", $no++); $col++;
-            $sheet->setCellValue("{$col}{$rowIndex}", $user->nama); $col++;
-    
+            $sheet->setCellValue("{$col}{$rowIndex}", $no++);
+            $col++;
+            $sheet->setCellValue("{$col}{$rowIndex}", $user->nama);
+            $col++;
+
             $total = 0;
             for ($day = 1; $day <= $daysInMonth; $day++) {
                 $dateStr = Carbon::createFromDate($year, $month, $day)->format('Y-m-d');
                 $point = $points->has($user->id)
                     ? $points[$user->id]->firstWhere('date', $dateStr)
                     : null;
-    
+
                 $poinHarian = $point ? round($point->total_point, 1) : 0.0;
                 $sheet->setCellValue("{$col}{$rowIndex}", $poinHarian);
                 $total += $poinHarian;
                 $col++;
             }
-    
+
             $sheet->setCellValue("{$col}{$rowIndex}", round($total, 1));
-    
+
             // Warna latar bergantian tiap baris
             $fillColor = ($rowIndex % 2 == 0) ? 'FFFFFF' : 'D9E1F2';
             $sheet->getStyle("A{$rowIndex}:{$lastCol}{$rowIndex}")->getFill()->setFillType('solid')->getStartColor()->setRGB($fillColor);
-    
+
             // Border tiap baris
             $sheet->getStyle("A{$rowIndex}:{$lastCol}{$rowIndex}")->applyFromArray($borderStyle);
-    
+
             $rowIndex++;
         }
-    
+
         // Auto size kolom
         $columnIterator = $sheet->getColumnIterator();
         foreach ($columnIterator as $column) {
             $sheet->getColumnDimension($column->getColumnIndex())->setAutoSize(true);
         }
-    
+
         $filename = __('dashboardCleaning.controller.filename_rekap') . "_{$month}_{$year}.xlsx";
         $writer = new Xlsx($spreadsheet);
         $temp_file = tempnam(sys_get_temp_dir(), $filename);
         $writer->save($temp_file);
-    
+
         return response()->download($temp_file, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
 
-    public function CleaningHistoryData(Request $request) {
+    public function CleaningHistoryData(Request $request)
+    {
         $user = Auth::user();
         $title = __('dashboardCleaning.controller.CleaningHistoryData.title');
 
@@ -589,13 +613,13 @@ class DataController extends Controller
             ->when($user->role !== 'admin', function ($query) use ($user) {
                 $query->where(function ($q) use ($user) {
                     $q->where('user_id', $user->id)
-                    ->orWhereHas('members', fn ($q) => $q->where('user_id', $user->id));
+                        ->orWhereHas('members', fn($q) => $q->where('user_id', $user->id));
                 });
             })
             ->orderBy('date', 'desc') // ✅ urutkan berdasarkan kolom date
             ->get();
 
-            $cleaningData = $cleanings->map(function ($cleaning) {
+        $cleaningData = $cleanings->map(function ($cleaning) {
             $poin = $cleaning->poinRecord;
 
             $total_oa = $cleaning->oa * ($poin->oa ?? 0);
@@ -623,7 +647,8 @@ class DataController extends Controller
         ]);
     }
 
-    public function CheckOfficeHistoryData(){
+    public function CheckOfficeHistoryData()
+    {
         $title = __('dashboardCleaning.controller.CheckOfficeHistoryData.title');
         $checkandoffice = [];
 
