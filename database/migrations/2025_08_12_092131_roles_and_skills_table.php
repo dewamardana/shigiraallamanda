@@ -34,15 +34,15 @@ return new class extends Migration
 
         // Pivot: role_user
         Schema::create('role_user', function (Blueprint $table) {
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('role_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
+            $table->foreignId('role_id')->constrained()->restrictOnDelete();
             $table->primary(['user_id', 'role_id']);
         });
 
         // Pivot: skill_user
         Schema::create('skill_user', function (Blueprint $table) {
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('skill_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
+            $table->foreignId('skill_id')->constrained()->restrictOnDelete();
             $table->primary(['user_id', 'skill_id']);
         });
     }

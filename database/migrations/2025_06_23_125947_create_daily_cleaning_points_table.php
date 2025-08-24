@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('daily_cleaning_points', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
             $table->date('date');
             $table->string('activity_type'); // Cleaning, Checker, Office
             $table->text('activity_detail'); // OA: 5, OV: 3... / Kamar: 4...

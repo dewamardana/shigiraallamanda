@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('task_group_id')->constrained()->onDelete('cascade');
+            $table->foreignId('task_group_id')->constrained()->restrictOnDelete();
             $table->string('name');
             $table->integer('point')->default(0);
             $table->timestamps();

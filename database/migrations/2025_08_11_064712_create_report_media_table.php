@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('report_media', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
+            $table->foreignId('report_id')->constrained('reports')->restrictOnDelete();
             $table->enum('type', ['photo', 'video']);
             $table->string('path');
             $table->timestamps();

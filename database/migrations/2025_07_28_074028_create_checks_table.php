@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('checks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->date('date');
             $table->unsignedInteger('jumlah_kamar')->default(0);
             $table->boolean('mengajar')->default(false);

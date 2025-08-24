@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('office_task_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('office_record_id')->constrained()->onDelete('cascade');
-            $table->foreignId('task_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('office_record_id')->constrained()->restrictOnDelete();
+            $table->foreignId('task_id')->constrained()->restrictOnDelete();
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->integer('point')->default(0);
             $table->timestamps();
         });

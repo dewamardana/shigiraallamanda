@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('cleanings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('building_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
+            $table->foreignId('building_id')->constrained()->restrictOnDelete();
             $table->integer('oa');
             $table->integer('ov');
             $table->integer('stay');

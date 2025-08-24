@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('cleaning_records', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cleaning_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('cleaning_id')->constrained()->restrictOnDelete();
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->string('member_count'); // angka (1, 2, 3) atau 'random'
             $table->float('oa');
             $table->float('ov');

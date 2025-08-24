@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('cleaning_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cleaning_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            
+            $table->foreignId('cleaning_id')->constrained()->restrictOnDelete();
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
+
             $table->timestamps();
         });
     }
