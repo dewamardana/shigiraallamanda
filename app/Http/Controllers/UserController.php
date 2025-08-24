@@ -70,8 +70,12 @@ class UserController extends Controller
             $validatedData['foto'] = $fotoPath;
         }
 
-        // generate slug dari nama
-        $validatedData['slug'] = Str::slug($request->nama, '-');
+        // // generate slug dari nama
+        // $validatedData['slug'] = Str::slug($request->nama, '-');
+
+        // pakai function generateSlug di bawah
+        $validatedData['slug'] = $this->generateSlug($request->nama);
+
 
         // set default role
         $validatedData['role'] = 'user';
@@ -198,5 +202,32 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('user.index')->with('success', __('dashboardUser.controller.delete.success_deleted'));
+    }
+
+
+    private function generateSlug(string $text, string $separator = '-'): string
+    {
+        $text = trim($text);
+
+        // 1. Transliterate (ubah non-latin ke latin, kalau extension intl aktif)
+        if (function_exists('transliterator_transliterate')) {
+            $text = transliterator_transliterate('Any-Latin; Latin-ASCII;', $text);
+        }
+
+        // 2. Slug standar untuk huruf latin
+        $slug = Str::slug($text, $separator);
+
+        // 3. Kalau slug kosong, pakai aksara asli tapi tetap aman
+        if (empty($slug)) {
+            $slug = preg_replace('/\s+/u', $separator, $text);
+            $slug = preg_replace('/[^A-Za-z0-9\p{L}\-]+/u', '', $slug);
+        }
+
+        // 4. Fallback kalau tetap kosong
+        if (empty($slug)) {
+            $slug = Str::random(8);
+        }
+
+        return mb_strtolower($slug, 'UTF-8');
     }
 }
