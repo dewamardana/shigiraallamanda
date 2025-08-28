@@ -8,21 +8,22 @@ use App\Models\DailyCleaningPoint;
 
 class ReportController extends Controller
 {
-    public function reportData() {  
-        $title = 'Report Data | Dashboard';
+    public function reportData()
+    {
+        $title = __('dashboardReportData.controller.index.title');
         $reports = Report::with(['user', 'media', 'members'])
             ->latest()
             ->get();
 
 
-        return view('Dashboard.report.index',[
+        return view('Dashboard.report.index', [
             'title' => $title,
             'reports' => $reports,
         ]);
-        
     }
 
-    public function reply(Request $request) {
+    public function reply(Request $request)
+    {
         $request->validate([
             'report_id' => 'required|exists:reports,id',
             'reply'     => 'required|string',
@@ -51,7 +52,7 @@ class ReportController extends Controller
                         ]
                     );
                 }
-            } 
+            }
             // Jika tidak punya member, berikan poin ke pelapor
             else {
                 $this->addDailyPoint(
@@ -67,22 +68,23 @@ class ReportController extends Controller
             }
         }
 
-        return redirect()->route('reportData')->with('success', 'Balasan dan poin berhasil diberikan.');
+        return redirect()->route('reportData')->with('success', __('dashboardReportData.controller.reply.success_reply'));
     }
 
 
-    private function addDailyPoint($userId, $date, $point, $activityType, array $detailArray = []){
+    private function addDailyPoint($userId, $date, $point, $activityType, array $detailArray = [])
+    {
         // Gabungkan detail array jadi string, contoh: "OA: 5, OV: 3"
         $detailString = collect($detailArray)
             ->map(fn($val, $key) => "$key: $val")
             ->implode(', ');
 
-            DailyCleaningPoint::create([
-                'user_id'         => $userId,
-                'date'            => $date,
-                'activity_type'   => $activityType,
-                'activity_detail' => $detailString,
-                'point'           => $point
-            ]);
+        DailyCleaningPoint::create([
+            'user_id'         => $userId,
+            'date'            => $date,
+            'activity_type'   => $activityType,
+            'activity_detail' => $detailString,
+            'point'           => $point
+        ]);
     }
 }

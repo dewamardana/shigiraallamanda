@@ -1,7 +1,7 @@
 <?php
 return [
     'login' => 'Login',
-    'add_member' => '+ Add Member',
+    'add_member' => 'Add Member',
     'remove' => 'Remove',
     'submit' => 'Submit',
     'back' => 'Back',
@@ -12,5 +12,6 @@ return [
     'edit' => 'Edit',
     'show' => 'Show',
     'delete' => 'Delete',
+    'reply' => 'Reply',
     'delete_confirm' => 'Are you sure?'
 ];

@@ -3,23 +3,23 @@
 return [
 
     'header' => [
-            'menu' => [
-                'homepage' => 'Homepage',
-                'cleaning' => 'Cleaning',
-                'checker' => 'Checker',
-                'office' => 'Office',
-                'dashboard' => 'Dashboard',
-            ],
+        'menu' => [
+            'homepage' => 'Homepage',
+            'cleaning' => 'Cleaning',
+            'checker' => 'Checker',
+            'office' => 'Office',
+            'dashboard' => 'Dashboard',
         ],
+    ],
 
     'brand_name' => 'SHIGIRA',
     'footer' => [
-        'copyright' => '© 2025 :brand. Semua Hak Dilindungi.',
-        'about' => 'Tentang',
-        'privacy_policy' => 'Kebijakan Privasi',
-        'licensing' => 'Lisensi',
-        'contact' => 'Kontak',
+        'copyright' => '© 2025 :brand. All Rights Reserved.',
+        'about' => 'About',
+        'privacy_policy' => 'Privacy Policy',
+        'licensing' => 'Licensing',
+        'contact' => 'Contact',
     ],
 
-        'open_main_menu' => 'Open main menu',
+    'open_main_menu' => 'Open main menu',
 ];

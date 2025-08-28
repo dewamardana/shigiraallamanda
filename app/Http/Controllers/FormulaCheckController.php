@@ -12,9 +12,9 @@ class FormulaCheckController extends Controller
      */
     public function index()
     {
-        $title = 'Formula Check | Homepage';
+        $title = __('dashboardFormulaCheck.controller.index.title');
         $formulas = FormulaCheck::all();
-        return view('Dashboard.formulacheck.index', compact('formulas','title'));
+        return view('Dashboard.formulacheck.index', compact('formulas', 'title'));
     }
 
     /**
@@ -22,14 +22,15 @@ class FormulaCheckController extends Controller
      */
     public function create()
     {
-        $title = 'Formula Check Create | Homepage';
+        $title = __('dashboardFormulaCheck.controller.create.title');
         return view('Dashboard.formulacheck.create', compact('title'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -41,37 +42,37 @@ class FormulaCheckController extends Controller
             'obat_pool' => 'required|numeric',
             'membersihkan_pool' => 'required|numeric',
             'sampah' => 'required|numeric',
-        ],[
-            'name.required' => 'The name field is required.',
-            'name.string' => 'The name must be a string.',
-            'name.max' => 'The name may not be greater than 255 characters.',
+        ], [
+            'name.required' => __('dashboardFormulaCheck.controller.validation.name.required'),
+            'name.string' => __('dashboardFormulaCheck.controller.validation.name.string'),
+            'name.max' => __('dashboardFormulaCheck.controller.validation.name.max'),
 
-            'description.required' => 'The description field is required.',
-            'description.string' => 'The description must be a string.',
+            'description.required' => __('dashboardFormulaCheck.controller.validation.description.required'),
+            'description.string' => __('dashboardFormulaCheck.controller.validation.description.string'),
 
-            'jumlah_kamar.required' => 'The number of rooms is required.',
-            'jumlah_kamar.numeric' => 'The number of rooms must be a number.',
+            'jumlah_kamar.required' => __('dashboardFormulaCheck.controller.validation.jumlah_kamar.required'),
+            'jumlah_kamar.numeric' => __('dashboardFormulaCheck.controller.validation.jumlah_kamar.numeric'),
 
-            'mengajar.required' => 'The teaching value is required.',
-            'mengajar.numeric' => 'The teaching value must be a number.',
+            'mengajar.required' => __('dashboardFormulaCheck.controller.validation.mengajar.required'),
+            'mengajar.numeric' => __('dashboardFormulaCheck.controller.validation.mengajar.numeric'),
 
-            'pembersihan_khusus.required' => 'The special cleaning value is required.',
-            'pembersihan_khusus.numeric' => 'The special cleaning value must be a number.',
+            'pembersihan_khusus.required' => __('dashboardFormulaCheck.controller.validation.pembersihan_khusus.required'),
+            'pembersihan_khusus.numeric' => __('dashboardFormulaCheck.controller.validation.pembersihan_khusus.numeric'),
 
-            'mengangkat_barang.required' => 'The lifting items value is required.',
-            'mengangkat_barang.numeric' => 'The lifting items value must be a number.',
+            'mengangkat_barang.required' => __('dashboardFormulaCheck.controller.validation.mengangkat_barang.required'),
+            'mengangkat_barang.numeric' => __('dashboardFormulaCheck.controller.validation.mengangkat_barang.numeric'),
 
-            'membersihkan_gudang.required' => 'The warehouse cleaning value is required.',
-            'membersihkan_gudang.numeric' => 'The warehouse cleaning value must be a number.',
+            'membersihkan_gudang.required' => __('dashboardFormulaCheck.controller.validation.membersihkan_gudang.required'),
+            'membersihkan_gudang.numeric' => __('dashboardFormulaCheck.controller.validation.membersihkan_gudang.numeric'),
 
-            'obat_pool.required' => 'The pool treatment value is required.',
-            'obat_pool.numeric' => 'The pool treatment value must be a number.',
+            'obat_pool.required' => __('dashboardFormulaCheck.controller.validation.obat_pool.required'),
+            'obat_pool.numeric' => __('dashboardFormulaCheck.controller.validation.obat_pool.numeric'),
 
-            'membersihkan_pool.required' => 'The pool cleaning value is required.',
-            'membersihkan_pool.numeric' => 'The pool cleaning value must be a number.',
+            'membersihkan_pool.required' => __('dashboardFormulaCheck.controller.validation.membersihkan_pool.required'),
+            'membersihkan_pool.numeric' => __('dashboardFormulaCheck.controller.validation.membersihkan_pool.numeric'),
 
-            'sampah.required' => 'The trash value is required.',
-            'sampah.numeric' => 'The trash value must be a number.',
+            'sampah.required' => __('dashboardFormulaCheck.controller.validation.sampah.required'),
+            'sampah.numeric' => __('dashboardFormulaCheck.controller.validation.sampah.numeric'),
         ]);
 
         // Tambahkan 'active' ke data yang akan disimpan
@@ -84,7 +85,7 @@ class FormulaCheckController extends Controller
 
         FormulaCheck::create($validated);
 
-        return redirect()->route('formulaCheck.index')->with('success', 'Formula berhasil ditambahkan');
+        return redirect()->route('formulaCheck.index')->with('success', __('dashboardFormulaCheck.controller.create.success_create'));
     }
 
     /**
@@ -92,7 +93,7 @@ class FormulaCheckController extends Controller
      */
     public function show(FormulaCheck $formulaCheck)
     {
-        $title = 'Detail Formula Check | Homepage';
+        $title = __('dashboardFormulaCheck.controller.show.title');
         return view('Dashboard.formulacheck.show', compact('formulaCheck', 'title'));
     }
 
@@ -101,8 +102,8 @@ class FormulaCheckController extends Controller
      */
     public function edit(FormulaCheck $formulaCheck)
     {
-        $title = 'Formula Check Edit | Homepage';
-        return view('Dashboard.formulacheck.edit', compact('formulaCheck','title'));
+        $title = __('dashboardFormulaCheck.controller.edit.title');
+        return view('Dashboard.formulacheck.edit', compact('formulaCheck', 'title'));
     }
 
     /**
@@ -121,47 +122,47 @@ class FormulaCheckController extends Controller
             'obat_pool' => 'required|numeric',
             'membersihkan_pool' => 'required|numeric',
             'sampah' => 'required|numeric',
-        ],[
-            'name.required' => 'The name field is required.',
-            'name.string' => 'The name must be a string.',
-            'name.max' => 'The name may not be greater than 255 characters.',
+        ], [
+            'name.required' => __('dashboardFormulaCheck.controller.validation.name.required'),
+            'name.string' => __('dashboardFormulaCheck.controller.validation.name.string'),
+            'name.max' => __('dashboardFormulaCheck.controller.validation.name.max'),
 
-            'description.required' => 'The description field is required.',
-            'description.string' => 'The description must be a string.',
+            'description.required' => __('dashboardFormulaCheck.controller.validation.description.required'),
+            'description.string' => __('dashboardFormulaCheck.controller.validation.description.string'),
 
-            'jumlah_kamar.required' => 'The number of rooms is required.',
-            'jumlah_kamar.numeric' => 'The number of rooms must be a number.',
+            'jumlah_kamar.required' => __('dashboardFormulaCheck.controller.validation.jumlah_kamar.required'),
+            'jumlah_kamar.numeric' => __('dashboardFormulaCheck.controller.validation.jumlah_kamar.numeric'),
 
-            'mengajar.required' => 'The teaching value is required.',
-            'mengajar.numeric' => 'The teaching value must be a number.',
+            'mengajar.required' => __('dashboardFormulaCheck.controller.validation.mengajar.required'),
+            'mengajar.numeric' => __('dashboardFormulaCheck.controller.validation.mengajar.numeric'),
 
-            'pembersihan_khusus.required' => 'The special cleaning value is required.',
-            'pembersihan_khusus.numeric' => 'The special cleaning value must be a number.',
+            'pembersihan_khusus.required' => __('dashboardFormulaCheck.controller.validation.pembersihan_khusus.required'),
+            'pembersihan_khusus.numeric' => __('dashboardFormulaCheck.controller.validation.pembersihan_khusus.numeric'),
 
-            'mengangkat_barang.required' => 'The lifting items value is required.',
-            'mengangkat_barang.numeric' => 'The lifting items value must be a number.',
+            'mengangkat_barang.required' => __('dashboardFormulaCheck.controller.validation.mengangkat_barang.required'),
+            'mengangkat_barang.numeric' => __('dashboardFormulaCheck.controller.validation.mengangkat_barang.numeric'),
 
-            'membersihkan_gudang.required' => 'The warehouse cleaning value is required.',
-            'membersihkan_gudang.numeric' => 'The warehouse cleaning value must be a number.',
+            'membersihkan_gudang.required' => __('dashboardFormulaCheck.controller.validation.membersihkan_gudang.required'),
+            'membersihkan_gudang.numeric' => __('dashboardFormulaCheck.controller.validation.membersihkan_gudang.numeric'),
 
-            'obat_pool.required' => 'The pool treatment value is required.',
-            'obat_pool.numeric' => 'The pool treatment value must be a number.',
+            'obat_pool.required' => __('dashboardFormulaCheck.controller.validation.obat_pool.required'),
+            'obat_pool.numeric' => __('dashboardFormulaCheck.controller.validation.obat_pool.numeric'),
 
-            'membersihkan_pool.required' => 'The pool cleaning value is required.',
-            'membersihkan_pool.numeric' => 'The pool cleaning value must be a number.',
+            'membersihkan_pool.required' => __('dashboardFormulaCheck.controller.validation.membersihkan_pool.required'),
+            'membersihkan_pool.numeric' => __('dashboardFormulaCheck.controller.validation.membersihkan_pool.numeric'),
 
-            'sampah.required' => 'The trash value is required.',
-            'sampah.numeric' => 'The trash value must be a number.',
+            'sampah.required' => __('dashboardFormulaCheck.controller.validation.sampah.required'),
+            'sampah.numeric' => __('dashboardFormulaCheck.controller.validation.sampah.numeric'),
         ]);
 
         // Atur status 'active' berdasarkan input checkbox
         $validated['active'] = $request->has('active');
-        
+
         // Cegah jika satu-satunya formula yang aktif ingin dinonaktifkan
         if (!$validated['active'] && $formulaCheck->active) {
             $activeCount = FormulaCheck::where('active', true)->count();
             if ($activeCount === 1) {
-                return redirect()->route('formulaCheck.index')->with('error', 'Setidaknya satu formula harus tetap aktif.');
+                return redirect()->route('formulaCheck.index')->with('error', __('dashboardFormulaCheck.controller.edit.error_edit'));
             }
         }
 
@@ -173,7 +174,7 @@ class FormulaCheckController extends Controller
         // Update data
         $formulaCheck->update($validated);
 
-        return redirect()->route('formulaCheck.index')->with('success', 'Formula berhasil diperbarui');
+        return redirect()->route('formulaCheck.index')->with('success', __('dashboardFormulaCheck.controller.edit.success_edit'));
     }
 
     /**
@@ -182,11 +183,11 @@ class FormulaCheckController extends Controller
     public function destroy(FormulaCheck $formulaCheck)
     {
         if ($formulaCheck->active) {
-            return redirect()->route('formulaCheck.index')->with('error', 'Formula yang masih aktif tidak bisa dihapus.');
+            return redirect()->route('formulaCheck.index')->with('error', __('dashboardFormulaCheck.controller.delete.error_delete'));
         }
 
         $formulaCheck->delete();
 
-        return redirect()->route('formulaCheck.index')->with('success', 'Data formula berhasil dihapus.');
+        return redirect()->route('formulaCheck.index')->with('success', __('dashboardFormulaCheck.controller.delete.success_delete'));
     }
 }

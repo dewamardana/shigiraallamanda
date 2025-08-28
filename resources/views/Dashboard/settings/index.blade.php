@@ -1,102 +1,109 @@
 @extends('Dashboard.Layout.main')
 
 @section('content')
-<div class="w-full max-w-screen-xl mx-auto h-[calc(100vh-80px)] overflow-y-auto px-4 py-6" x-data="{ tab: 'roles' }">
+  <div class="w-full max-w-screen-xl mx-auto h-[calc(100vh-80px)] overflow-y-auto px-4 py-6" x-data="{ tab: 'roles' }">
 
-    <h2 class="text-2xl font-bold mb-6 text-gray-800">Settings</h2>
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">{{ __('dashboardSettingValue.title') }}</h2>
 
     {{-- Tabs --}}
     <div class="flex space-x-4 border-b border-gray-300 mb-6">
-        <button @click="tab = 'roles'" 
-            :class="tab === 'roles' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'" 
-            class="pb-2 font-semibold focus:outline-none">
-            Roles
-        </button>
-        <button @click="tab = 'skills'" 
-            :class="tab === 'skills' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'" 
-            class="pb-2 font-semibold focus:outline-none">
-            Skills
-        </button>
-        <button @click="tab = 'reportTypes'" 
-            :class="tab === 'reportTypes' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'" 
-            class="pb-2 font-semibold focus:outline-none">
-            Report Types
-        </button>
+      <button @click="tab = 'roles'"
+        :class="tab === 'roles' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
+        class="pb-2 font-semibold focus:outline-none">
+        {{ __('dashboardSettingValue.tabs.roles') }}
+      </button>
+      <button @click="tab = 'skills'"
+        :class="tab === 'skills' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
+        class="pb-2 font-semibold focus:outline-none">
+        {{ __('dashboardSettingValue.tabs.skills') }}
+      </button>
+      <button @click="tab = 'reportTypes'"
+        :class="tab === 'reportTypes' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
+        class="pb-2 font-semibold focus:outline-none">
+        {{ __('dashboardSettingValue.tabs.report_types') }}
+      </button>
     </div>
 
     {{-- Roles Tab --}}
     <div x-show="tab === 'roles'" class="space-y-4">
-        <form action="{{ route('settings.role.store') }}" method="POST" class="flex gap-2">
-            @csrf
-            <input type="text" name="name" placeholder="Role name" required 
-                class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button type="submit" 
-                class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">Add</button>
-        </form>
-        <div class="bg-white rounded-lg shadow p-4">
-            <ul class="divide-y divide-gray-200">
-                @foreach($roles as $role)
-                    <li class="flex justify-between items-center py-2">
-                        <span>{{ $role->name }}</span>
-                        <form action="{{ route('settings.role.delete', $role->id) }}" method="POST" onsubmit="return confirm('Delete this role?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">Delete</button>
-                        </form>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
+      <form action="{{ route('settings.role.store') }}" method="POST" class="flex gap-2">
+        @csrf
+        <input type="text" name="name" placeholder="{{ __('dashboardSettingValue.placeholders.role_name') }}"
+          required class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button type="submit"
+          class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.add') }}</button>
+      </form>
+      <div class="bg-white rounded-lg shadow p-4">
+        <ul class="divide-y divide-gray-200">
+          @foreach ($roles as $role)
+            <li class="flex justify-between items-center py-2">
+              <span>{{ $role->name }}</span>
+              <form action="{{ route('settings.role.delete', $role->id) }}" method="POST"
+                onsubmit="return confirm('{{ __('dashboardSettingValue.confirm.delete_role') }}')">
+                @csrf @method('DELETE')
+                <button type="submit"
+                  class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.delete') }}</button>
+              </form>
+            </li>
+          @endforeach
+        </ul>
+      </div>
     </div>
 
     {{-- Skills Tab --}}
     <div x-show="tab === 'skills'" class="space-y-4" x-cloak>
-        <form action="{{ route('settings.skill.store') }}" method="POST" class="flex gap-2">
-            @csrf
-            <input type="text" name="name" placeholder="Skill name" required 
-                class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-            <button type="submit" 
-                class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">Add</button>
-        </form>
-        <div class="bg-white rounded-lg shadow p-4">
-            <ul class="divide-y divide-gray-200">
-                @foreach($skills as $skill)
-                    <li class="flex justify-between items-center py-2">
-                        <span>{{ $skill->name }}</span>
-                        <form action="{{ route('settings.skill.delete', $skill->id) }}" method="POST" onsubmit="return confirm('Delete this skill?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">Delete</button>
-                        </form>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
+      <form action="{{ route('settings.skill.store') }}" method="POST" class="flex gap-2">
+        @csrf
+        <input type="text" name="name" placeholder="{{ __('dashboardSettingValue.placeholders.skill_name') }}"
+          required class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+        <button type="submit"
+          class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.add') }}</button>
+      </form>
+      <div class="bg-white rounded-lg shadow p-4">
+        <ul class="divide-y divide-gray-200">
+          @foreach ($skills as $skill)
+            <li class="flex justify-between items-center py-2">
+              <span>{{ $skill->name }}</span>
+              <form action="{{ route('settings.skill.delete', $skill->id) }}" method="POST"
+                onsubmit="return confirm('{{ __('dashboardSettingValue.confirm.delete_skill') }}')">
+                @csrf @method('DELETE')
+                <button type="submit"
+                  class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.delete') }}</button>
+              </form>
+            </li>
+          @endforeach
+        </ul>
+      </div>
     </div>
 
     {{-- Report Types Tab --}}
     <div x-show="tab === 'reportTypes'" class="space-y-4" x-cloak>
-        <form action="{{ route('settings.reporttype.store') }}" method="POST" class="flex gap-2">
-            @csrf
-            <input type="text" name="name" placeholder="Report type name" required 
-                class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-            <button type="submit" 
-                class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">Add</button>
-        </form>
-        <div class="bg-white rounded-lg shadow p-4">
-            <ul class="divide-y divide-gray-200">
-                @foreach($reportTypes as $type)
-                    <li class="flex justify-between items-center py-2">
-                        <span>{{ $type->name }}</span>
-                        <form action="{{ route('settings.reporttype.delete', $type->id) }}" method="POST" onsubmit="return confirm('Delete this report type?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">Delete</button>
-                        </form>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
+      <form action="{{ route('settings.reporttype.store') }}" method="POST" class="flex gap-2">
+        @csrf
+        <input type="text" name="name"
+          placeholder="{{ __('dashboardSettingValue.placeholders.report_type_name') }}" required
+          class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <button type="submit"
+          class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.add') }}</button>
+      </form>
+      <div class="bg-white rounded-lg shadow p-4">
+        <ul class="divide-y divide-gray-200">
+          @foreach ($reportTypes as $type)
+            <li class="flex justify-between items-center py-2">
+              <span>{{ $type->name }}</span>
+              <form action="{{ route('settings.reporttype.delete', $type->id) }}" method="POST"
+                onsubmit="return confirm('{{ __('dashboardSettingValue.confirm.delete_report_type') }}')">
+                @csrf @method('DELETE')
+                <button type="submit"
+                  class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.delete') }}</button>
+              </form>
+            </li>
+          @endforeach
+        </ul>
+      </div>
     </div>
-</div>
+  </div>
 
-{{-- Alpine.js for tabs --}}
-<script src="//unpkg.com/alpinejs" defer></script>
+  {{-- Alpine.js for tabs --}}
+  <script src="//unpkg.com/alpinejs" defer></script>
 @endsection

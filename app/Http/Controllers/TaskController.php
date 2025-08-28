@@ -23,7 +23,7 @@ class TaskController extends Controller
     {
         $taskGroupId = $request->get('task_group_id');
         $taskGroup = TaskGroup::findOrFail($taskGroupId);
-        $title = "Tambah Task | Dashboard";
+        $title = __('dashboardTask.controller.create.title');
         return view('Dashboard.task.create', compact('taskGroup', 'title'));
     }
 
@@ -41,7 +41,7 @@ class TaskController extends Controller
         Task::create($validated);
 
         return redirect()->route('task-groups.show', $validated['task_group_id'])
-            ->with('success', 'Task berhasil ditambahkan.');
+            ->with('success', __('dashboardTask.controller.create.success_add'));
     }
 
     /**
@@ -57,7 +57,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        $title = "Edit Task | Dashboard";
+        $title = __('dashboardTask.controller.edit.title');
         return view('Dashboard.task.edit', compact('task', 'title'));
     }
 
@@ -73,7 +73,7 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        return redirect()->route('task-groups.show', $task->task_group_id)->with('success', 'Task berhasil diperbarui.');
+        return redirect()->route('task-groups.show', $task->task_group_id)->with('success', __('dashboardTask.controller.edit.success_update'));
     }
 
     /**
@@ -85,6 +85,6 @@ class TaskController extends Controller
         $task->delete();
 
         return redirect()->route('task-groups.show', $groupId)
-            ->with('success', 'Task berhasil dihapus.');
+            ->with('success', __('dashboardTask.controller.delete.success_delete'));
     }
 }

@@ -12,7 +12,7 @@ class TaskGroupController extends Controller
      */
     public function index()
     {
-        $title = 'Task Active | Dashboard';
+        $title = __('dashboardTaskGroup.controller.index.title');
         $taskGroups = TaskGroup::all();
         return view('Dashboard.taskgroup.index', compact('taskGroups', 'title'));
     }
@@ -22,7 +22,7 @@ class TaskGroupController extends Controller
      */
     public function create()
     {
-        $title = 'Task Group Create';
+        $title = __('dashboardTaskGroup.controller.create.title');
         return view('Dashboard.taskgroup.create', compact('title'));
     }
 
@@ -42,7 +42,7 @@ class TaskGroupController extends Controller
             'active' => $request->has('active'),
         ]);
 
-        return redirect()->route('task-groups.index')->with('success', 'Task group created successfully.');
+        return redirect()->route('task-groups.index')->with('success', __('dashboardTaskGroup.controller.create.success_add'));
     }
 
     /**
@@ -50,10 +50,9 @@ class TaskGroupController extends Controller
      */
     public function show(TaskGroup $taskGroup)
     {
-        $title = 'Task Active | Dashboard';
+        $title = __('dashboardTaskGroup.controller.show.title');
         $tasks = $taskGroup->tasks; // Pastikan relasi tasks sudah dibuat di model
         return view('Dashboard.taskgroup.show', compact('taskGroup', 'tasks', 'title'));
-        
     }
 
     /**
@@ -61,7 +60,7 @@ class TaskGroupController extends Controller
      */
     public function edit(TaskGroup $taskGroup)
     {
-        $title = 'Task Edit | Dashboard';
+        $title = __('dashboardTaskGroup.controller.edit.title');
         return view('Dashboard.taskgroup.edit', compact('taskGroup', 'title'));
     }
 
@@ -83,7 +82,7 @@ class TaskGroupController extends Controller
             if ($otherActiveCount === 0) {
                 return redirect()
                     ->back()
-                    ->withErrors(['active' => 'Tidak bisa menonaktifkan semua task. Harus ada minimal satu task aktif.'])
+                    ->withErrors(['active' => __('dashboardTaskGroup.controller.edit.error_edit')])
                     ->withInput();
             }
         }
@@ -101,10 +100,7 @@ class TaskGroupController extends Controller
             'active' => $request->has('active'),
         ]);
 
-        return redirect()->route('task-groups.index')->with('success', 'Task group updated successfully.');
-
-        
-        
+        return redirect()->route('task-groups.index')->with('success', __('dashboardTaskGroup.controller.edit.success_edit'));
     }
 
     /**
@@ -113,11 +109,11 @@ class TaskGroupController extends Controller
     public function destroy(TaskGroup $taskGroup)
     {
         if ($taskGroup->active) {
-            return redirect()->route('task-groups.index')->with('error', 'Task Grup yang masih aktif tidak bisa dihapus.');
+            return redirect()->route('task-groups.index')->with('error', __('dashboardTaskGroup.controller.delete.error_delete'));
         }
 
         $taskGroup->delete();
 
-        return redirect()->route('task-groups.index')->with('success', 'Data Task Grup berhasil dihapus.');
+        return redirect()->route('task-groups.index')->with('success', __('dashboardTaskGroup.controller.delete.success_delete'));
     }
 }

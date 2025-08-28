@@ -122,7 +122,8 @@
             @enderror
           </div>
           <div>
-            <label for="sampah" class="block mb-2 text-sm font-medium text-teal-1001">Sampah</label>
+            <label for="sampah"
+              class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardFormulaCheck.form.sampah') }}</label>
             <input type="number" name="sampah" id="sampah" value="{{ old('sampah') }}" min="0"
               aria-describedby="helper-text-explanation"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
@@ -136,12 +137,12 @@
       <div class="flex justify-center gap-4 mt-6">
         <button type="submit"
           class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-2.5">
-          Simpan
+          {{ __('button.add') }}
         </button>
 
         <a href="{{ route('formulaCheck.index') }}"
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-          Kembali
+          {{ __('button.back') }}
         </a>
       </div>
     </form>

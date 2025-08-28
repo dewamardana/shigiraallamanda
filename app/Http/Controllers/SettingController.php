@@ -12,7 +12,7 @@ class SettingController extends Controller
     public function index()
     {
 
-        $title = 'Add Value | Dashboard';
+        $title = __('dashboardSettingValue.controller.index.title');
         return view('Dashboard.settings.index', [
             'title' => $title,
             'roles' => Role::all(),
@@ -25,38 +25,38 @@ class SettingController extends Controller
     {
         $request->validate(['name' => 'required|unique:roles']);
         Role::create(['name' => $request->name]);
-        return back()->with('success', 'Role added successfully');
+        return back()->with('success', __('dashboardSettingValue.controller.create.success_add_role'));
     }
 
     public function deleteRole($id)
     {
         Role::destroy($id);
-        return back()->with('success', 'Role deleted successfully');
+        return back()->with('success', __('dashboardSettingValue.controller.delete.success_delete_role'));
     }
 
     public function storeSkill(Request $request)
     {
         $request->validate(['name' => 'required|unique:skills']);
         Skill::create(['name' => $request->name]);
-        return back()->with('success', 'Skill added successfully');
+        return back()->with('success', __('dashboardSettingValue.controller.create.success_add_skill'));
     }
 
     public function deleteSkill($id)
     {
         Skill::destroy($id);
-        return back()->with('success', 'Skill deleted successfully');
+        return back()->with('success', __('dashboardSettingValue.controller.delete.success_delete_skills'));
     }
 
     public function storeReportType(Request $request)
     {
         $request->validate(['name' => 'required|unique:report_types']);
         ReportType::create(['name' => $request->name]);
-        return back()->with('success', 'Report type added successfully');
+        return back()->with('success', __('dashboardSettingValue.controller.create.success_add_report'));
     }
 
     public function deleteReportType($id)
     {
         ReportType::destroy($id);
-        return back()->with('success', 'Report type deleted successfully');
+        return back()->with('success', __('dashboardSettingValue.controller.delete.success_delete_report'));
     }
 }
