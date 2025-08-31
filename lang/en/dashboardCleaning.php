@@ -34,6 +34,18 @@ return [
             'no_data'    => 'No data found.',
         ],
     ],
+    'officedata' => [
+        'title'        => 'Office Data',
+        'table' => [
+            'no'         => 'No',
+            'date'       => 'Date',
+            'user'       => 'User',
+            'task_group' => 'Task Group',
+            'task_point' => 'Task & Point',
+            'total'      => 'Total Points',
+            'empty'      => 'No office records found.',
+        ],
+    ],
 
     'userpoint' => [
         'title'         => 'Monthly Points Recap',
@@ -94,6 +106,15 @@ return [
         'header_name_member2' => 'Member Name',
         'header_poin'         => 'Poin',
 
+        //Header Office Data Export
+        'header_date'        => 'Date',
+        'header_user'        => 'User',
+        'header_task_group'  => 'Task Group',
+        'header_task'        => 'Task',
+        'header_point'       => 'Point',
+        'header_total_point' => 'Total Point',
+
+
         // Header exportRekapBulanan
         'header_no'           => 'No',
         'header_nama'         => 'Name',
@@ -114,6 +135,9 @@ return [
             'name' => 'Name',
             'room_count' => 'Room Count',
             'total_points' => 'Total Points',
+        ],
+        'officedata' => [
+            'title' => 'Office Data | Dashboard',
         ],
         'userPoint' => [
             'title' => 'Member Points Summary | Dashboard',

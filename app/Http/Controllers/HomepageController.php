@@ -27,21 +27,23 @@ use Illuminate\Support\Facades\Storage;
 
 class HomepageController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         $title = __('homepageControllerMessage.index.title');
         $user = Auth::user();
-        return view('Homepage.index',[
+        return view('Homepage.index', [
             'title' => $title,
             'user'  => $user,
         ]);
     }
 
-    public function cleaning(){
+    public function cleaning()
+    {
         $title = __('homepageControllerMessage.cleaning.title');
         $user = User::where('status', 'Active')->get();
         $user_id = Auth::user();
         $building = Building::all();
-        return view('Homepage.cleaning',[
+        return view('Homepage.cleaning', [
             'title' => $title,
             'users' => $user,
             'building' => $building,
@@ -49,8 +51,9 @@ class HomepageController extends Controller
         ]);
     }
 
-    public function cleaningstore(Request $request){
-        
+    public function cleaningstore(Request $request)
+    {
+
         $validated = $request->validate([
             'building_id' => 'required|exists:buildings,id',
             'user_id'    => 'required|integer',
@@ -63,7 +66,7 @@ class HomepageController extends Controller
             'total_room' => 'required|integer|min:0',
             'members'    => 'required|array',
             'members.*'  => 'exists:users,id'
-        ],[
+        ], [
             'building_id.required' => __('homepageControllerMessage.cleaning.validation.building_required'),
             'building_id.exists'   => __('homepageControllerMessage.cleaning.validation.building_id_exists'),
 
@@ -84,7 +87,7 @@ class HomepageController extends Controller
             'vec.min'              => __('homepageControllerMessage.cleaning.validation.vec_min'),
 
             'date.required'        => __('homepageControllerMessage.cleaning.validation.date_required'),
-            'date.date'            => __('homepageControllerMessage.cleaning.validation.date_date'), 
+            'date.date'            => __('homepageControllerMessage.cleaning.validation.date_date'),
 
             'total_room.required'  => __('homepageControllerMessage.cleaning.validation.total_room_required'),
             'total_room.integer'   => __('homepageControllerMessage.cleaning.validation.total_room_integer'),
@@ -94,44 +97,44 @@ class HomepageController extends Controller
             'members.array'        => __('homepageControllerMessage.cleaning.validation.members_array'),
             'members.*.exists'     => __('homepageControllerMessage.cleaning.validation.members_exists')
         ]);
-    
+
         $validated['premier'] = $validated['premier'] ?? 0;
-    
+
         // Simpan cleaning record
         $cleaning = Cleaning::create($validated);
         $cleaning->members()->attach($validated['members']);
-    
+
         // Ambil slug building
         $building = Building::findOrFail($validated['building_id']);
         $buildingSlug = $building->slug;
-    
+
         $memberCount = count($validated['members']);
         $formulaKey = $memberCount;
-    
+
         // Ambil formula sesuai building & member count
         $formula = Formula::where('building_slug', $buildingSlug)
-                    ->where('member_count', $formulaKey)
-                    ->first();
-    
+            ->where('member_count', $formulaKey)
+            ->first();
+
         if (!$formula) {
             return redirect()->back()->with('warning', __('homepageControllerMessage.cleaning.warning_formula'));
         }
-            
+
         // Hitung total poin dari hasil perkalian masing-masing kategori dengan formula
         $oaPoint   = $validated['oa'] * $formula->oa;
         $ovPoint   = $validated['ov'] * $formula->ov;
         $stayPoint = $validated['stay'] * $formula->stay;
         $vecPoint  = $validated['vec'] * $formula->vec;
-    
+
         $total = $oaPoint + $ovPoint + $stayPoint + $vecPoint;
-    
+
         if ($buildingSlug === 'royal') {
             $total += $validated['premier'] * $formula->premier;
         }
-    
+
         // Hitung poin per member
         $poinPerMember = $memberCount > 0 ? $total / $memberCount : 0;
-    
+
 
         // Simpan ke tabel poin_records
         CleaningRecords::create([
@@ -171,16 +174,18 @@ class HomepageController extends Controller
         return redirect()->route('homepage')->with('success', __('homepageControllerMessage.cleaning.success_store'));
     }
 
-    public function checker() {
+    public function checker()
+    {
         $title = __('homepageControllerMessage.checker.title');
         $user = Auth::user();
-        return view('Homepage.checker',[
+        return view('Homepage.checker', [
             'title' => $title,
             'user'  => $user,
         ]);
     }
 
-    public function checkerStore(Request $request) {
+    public function checkerStore(Request $request)
+    {
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'date' => 'required|date',
@@ -203,7 +208,7 @@ class HomepageController extends Controller
         }
 
         // Hitung total poin berdasarkan formula aktif dan input user
-        $total = 
+        $total =
             ($request->jumlah_kamar * $formulaCheck->jumlah_kamar) +
             ($request->has('mengajar') ? $formulaCheck->mengajar : 0) +
             ($request->has('pembersihan_khusus') ? $formulaCheck->pembersihan_khusus : 0) +
@@ -299,8 +304,8 @@ class HomepageController extends Controller
         $date = now()->format('Y-m-d');
 
         $tasksActive = TaskGroup::where('active', true)
-            ->with(['tasks.details' => function($q) use ($date) {
-                $q->whereHas('record', function($qr) use ($date) {
+            ->with(['tasks.details' => function ($q) use ($date) {
+                $q->whereHas('record', function ($qr) use ($date) {
                     $qr->where('date', $date);
                 })->with('user');
             }])
@@ -310,14 +315,15 @@ class HomepageController extends Controller
     }
 
 
-    public function officeStore(Request $request) {
-        
-         $request->validate([
+    public function officeStore(Request $request)
+    {
+
+        $request->validate([
             'user_id' => 'required|exists:users,id',
             'date' => 'required|date',
             'tasks' => 'required|array',
             'task_group_id' => 'required|exists:task_groups,id',
-        ],[
+        ], [
             'user_id.required'       => __('homepageControllerMessage.validation.user_id_required'),
             'user_id.exists'         => __('homepageControllerMessage.validation.user_id_exists'),
             'date.required'          => __('homepageControllerMessage.validation.date_required'),
@@ -326,24 +332,13 @@ class HomepageController extends Controller
             'tasks.array'            => __('homepageControllerMessage.validation.tasks_array'),
             'task_group_id.required' => __('homepageControllerMessage.validation.task_group_id_required'),
             'task_group_id.exists'   => __('homepageControllerMessage.validation.task_group_id_exists'),
-            ]);
+        ]);
 
         // Simpan OfficeRecord
         $record = OfficeRecord::create([
             'task_group_id' => $request->task_group_id,
             'date' => $request->date,
         ]);
-
-        // Loop setiap task untuk simpan ke OfficeTaskDetail
-        foreach ($request->tasks as $taskId) {
-            $task = Task::findOrFail($taskId); // Ambil model Task
-            OfficeTaskDetail::create([
-                'office_record_id' => $record->id, // Pasti isi dari record baru
-                'task_id' => $task->id,
-                'user_id' => $request->user_id,
-                'point' => $task->point ?? 0, // Ambil point dari tabel tasks
-            ]);
-        }
 
         $totalPoint = 0;
         $taskNames  = [];
@@ -428,7 +423,7 @@ class HomepageController extends Controller
         } else {
             // Default: bulan ini
             $monthlySummaryQuery->whereMonth('date', now()->month)
-                                ->whereYear('date', now()->year);
+                ->whereYear('date', now()->year);
         }
 
         $monthlySummary = $monthlySummaryQuery
@@ -441,18 +436,20 @@ class HomepageController extends Controller
     }
 
 
-    public function report() {
-            $title = __('homepageControllerMessage.report.title');
-            $authUser = Auth::user();
-            $reportType = ReportType::all();
+    public function report()
+    {
+        $title = __('homepageControllerMessage.report.title');
+        $authUser = Auth::user();
+        $reportType = ReportType::all();
 
-            // Ambil semua user kecuali yang sedang login
-            $users = User::all();
+        // Ambil semua user kecuali yang sedang login
+        $users = User::all();
 
-            return view('Homepage.report', compact('title','authUser','users', 'reportType'));
+        return view('Homepage.report', compact('title', 'authUser', 'users', 'reportType'));
     }
 
-    public function reportStore(Request $request) {
+    public function reportStore(Request $request)
+    {
         $validated = $request->validate([
             'user_id'      => 'required|exists:users,id',
             'report_type'  => 'required|string|max:255',
@@ -462,7 +459,7 @@ class HomepageController extends Controller
             'members'      => 'nullable|array',
             'members.*'    => 'nullable|exists:users,id',
             'date'         => 'required|date',
-        ],[
+        ], [
             'user_id.required'     => __('homepageControllerMessage.report.validation.user_id_required'),
             'user_id.exists'       => __('homepageControllerMessage.report.validation.user_id_exists'),
             'report_type.required' => __('homepageControllerMessage.report.validation.report_type_required'),
@@ -536,7 +533,8 @@ class HomepageController extends Controller
         }
     }
 
-    public function reportHistory(Request $request) {
+    public function reportHistory(Request $request)
+    {
         $title = __('homepageControllerMessage.reportHistory.title');
         $user = Auth::user();
 
@@ -564,13 +562,14 @@ class HomepageController extends Controller
 
         $reports = $reportsQuery->latest()->get();
 
-            return view('Homepage.reportHistory', [
-                'title' => $title,
-                'reports' => $reports,
-            ]);
+        return view('Homepage.reportHistory', [
+            'title' => $title,
+            'reports' => $reports,
+        ]);
     }
 
-    public function profile(Request $request) {
+    public function profile(Request $request)
+    {
         $user = Auth::user();
         $title = $user->nama . ' Profile ';
 
@@ -586,9 +585,9 @@ class HomepageController extends Controller
             ->selectRaw('SUM(vec) as total_vec')
             ->selectRaw('SUM(premier) as total_premier')
             ->selectRaw('SUM(total_room) as total_room')
-            ->when($request->building_id, fn ($q) => $q->where('building_id', $request->building_id))
-            ->when($startDate, fn ($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate,   fn ($q) => $q->whereDate('date', '<=', $endDate))
+            ->when($request->building_id, fn($q) => $q->where('building_id', $request->building_id))
+            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+            ->when($endDate,   fn($q) => $q->whereDate('date', '<=', $endDate))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
@@ -636,29 +635,29 @@ class HomepageController extends Controller
                 $q->whereDate('cleanings.date', '<=', $endDate);
             }
         }])
-        ->get()
-        ->map(function ($user) use ($dates) {
-            $dailyTotals = array_fill_keys($dates, 0);
+            ->get()
+            ->map(function ($user) use ($dates) {
+                $dailyTotals = array_fill_keys($dates, 0);
 
-            foreach ($user->cleanings as $cleaning) {
-                $date = $cleaning->date;
-                if (isset($dailyTotals[$date])) {
-                    $memberCount = $cleaning->members->count();
-                    $dailyTotals[$date] += $memberCount ? ($cleaning->total_room / $memberCount) : 0;
+                foreach ($user->cleanings as $cleaning) {
+                    $date = $cleaning->date;
+                    if (isset($dailyTotals[$date])) {
+                        $memberCount = $cleaning->members->count();
+                        $dailyTotals[$date] += $memberCount ? ($cleaning->total_room / $memberCount) : 0;
+                    }
                 }
-            }
 
-            return [
-                'nama'  => $user->nama,
-                'total' => array_sum($dailyTotals),
-                'data'  => array_values($dailyTotals)
-            ];
-        })->sortByDesc('total')->values();
+                return [
+                    'nama'  => $user->nama,
+                    'total' => array_sum($dailyTotals),
+                    'data'  => array_values($dailyTotals)
+                ];
+            })->sortByDesc('total')->values();
 
         // Total Poin Per User dari tabel daily_cleaning_points
         $totalPointsPerUser = DailyCleaningPoint::select('user_id', DB::raw('SUM(point) as total_point'))
-            ->when($startDate, fn ($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate, fn ($q) => $q->whereDate('date', '<=', $endDate))
+            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->groupBy('user_id')
             ->orderByDesc('total_point')
             ->with('user')
@@ -672,8 +671,8 @@ class HomepageController extends Controller
 
         // Ambil daftar aktivitas (activity_type & activity_detail)
         $activityLogs = DailyCleaningPoint::with('user')
-            ->when($startDate, fn ($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate, fn ($q) => $q->whereDate('date', '<=', $endDate))
+            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->orderBy('date', 'desc')
             ->get();
 
@@ -767,18 +766,19 @@ class HomepageController extends Controller
     // }
 
 
-    private function addDailyPoint($userId, $date, $point, $activityType, array $detailArray = []){
+    private function addDailyPoint($userId, $date, $point, $activityType, array $detailArray = [])
+    {
         // Gabungkan detail array jadi string, contoh: "OA: 5, OV: 3"
         $detailString = collect($detailArray)
             ->map(fn($val, $key) => "$key: $val")
             ->implode(', ');
 
-            DailyCleaningPoint::create([
-                'user_id'         => $userId,
-                'date'            => $date,
-                'activity_type'   => $activityType,
-                'activity_detail' => $detailString,
-                'point'           => $point
-            ]);
+        DailyCleaningPoint::create([
+            'user_id'         => $userId,
+            'date'            => $date,
+            'activity_type'   => $activityType,
+            'activity_detail' => $detailString,
+            'point'           => $point
+        ]);
     }
 }

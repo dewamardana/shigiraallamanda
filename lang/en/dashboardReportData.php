@@ -2,6 +2,8 @@
 
 return [
     'title' => 'Report Dashboard',
+    'report_label' => 'Report Type',
+    'report_select' => 'Select Type',
 
     'table' => [
         'reporter_name' => 'Reporter Name',

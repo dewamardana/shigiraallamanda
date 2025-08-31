@@ -42,6 +42,8 @@ Route::middleware('admin')->group(function () {
     Route::get('/dashboard/cleaningexport', [DataController::class, 'exportCleaningData'])->name('cleaningexport');
     Route::get('/dashboard/checker', [DataController::class, 'checkerData'])->name('checkerdata');
     Route::get('/dashboard/checkerexport', [DataController::class, 'exportCheckerData'])->name('checkerexport');
+    Route::get('/dashboard/office', [DataController::class, 'officeData'])->name('officedata');
+    Route::get('/dashboard/officeexport', [DataController::class, 'officeexport'])->name('officeexport');
     Route::get('/dashboard/userpoint', [DataController::class, 'userPoint'])->name('userpoint');
     Route::get('/dashboard/userpointexport', [DataController::class, 'userPointExport'])->name('userPointExport');
     Route::get('/dashboard/cleaninghistorydata', [DataController::class, 'CleaningHistoryData'])->name('Cleaninghistorydata');
@@ -55,7 +57,7 @@ Route::middleware('admin')->group(function () {
     Route::resource('dashboard/task-groups/tasks', TaskController::class);
     Route::get('/dashboard/reportData', [ReportController::class, 'reportData'])->name('reportData');
     Route::post('/dashboard/reportData', [ReportController::class, 'reply'])->name('reply');
-    
+
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/role', [SettingController::class, 'storeRole'])->name('settings.role.store');
     Route::delete('/settings/role/{id}', [SettingController::class, 'deleteRole'])->name('settings.role.delete');
@@ -67,7 +69,7 @@ Route::middleware('admin')->group(function () {
 
 
 Route::get('/lang/{locale}', function ($locale) {
-    if (!in_array($locale, ['en', 'id', 'ja','km'])) {
+    if (!in_array($locale, ['en', 'id', 'ja', 'km', 'my', 'vi'])) {
         abort(400);
     }
     session(['locale' => $locale]);

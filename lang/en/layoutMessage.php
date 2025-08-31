@@ -20,6 +20,10 @@ return [
     'sidebar_cleaning_history'     => 'Cleaning History Data',
     'sidebar_checker_history'     => 'Cheker & Office History Data',
     'sidebar_datacheck' => 'Check Data',
-    'sidebar_dashboard' => '2025 My Dashboard'
+    'sidebar_dashboard' => '2025 My Dashboard',
+    'sidebar_dataoffice' => 'Office Data',
+    'sidebar_officetask' => 'Office Task',
+    'sidebar_reportdata' => 'Report Data',
+    'sidebar_settingsvalue' => 'Settings Value',
 
 ];

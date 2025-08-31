@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class OfficeRecord extends Model
 {
@@ -16,5 +17,10 @@ class OfficeRecord extends Model
     public function group()
     {
         return $this->belongsTo(TaskGroup::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -16,6 +16,8 @@ return [
         'id' => 'Bahasa Indonesia',
         'ja' => 'Bahasa Jepang',
         'km' => 'Bahasa Khmer',
+        'my' => 'Bahasa Myanmar',
+        'vi' => 'Bahasa Vietnam',
     ],
 
     'alerts' => [

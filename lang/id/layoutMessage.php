@@ -20,6 +20,10 @@ return [
     'sidebar_cleaning_history' => 'Riwayat Data Kebersihan',
     'sidebar_checker_history' => 'Riwayat Pemeriksaan & Office',
     'sidebar_datacheck' => 'Data Pemeriksaan',
-    'sidebar_dashboard' => '2025 Dashboard Saya'
+    'sidebar_dashboard' => '2025 Dashboard Saya',
+    'sidebar_dataoffice' => 'Data Office',
+    'sidebar_officetask' => 'Tugas Office',
+    'sidebar_reportdata' => 'Laporan Data',
+    'sidebar_settingsvalue' => 'Pengaturan Nilai',
 
 ];

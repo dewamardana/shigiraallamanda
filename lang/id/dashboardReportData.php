@@ -2,6 +2,8 @@
 
 return [
     'title' => 'Dashboard Laporan',
+    'report_label' => 'Tipe Laporan',
+    'report_select' => 'Pilih Tipe',
 
     'table' => [
         'reporter_name' => 'Nama Pelapor',

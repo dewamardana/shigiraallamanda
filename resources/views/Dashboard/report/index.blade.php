@@ -65,125 +65,196 @@
   </div>
   @endif
   {{-- Alert Component --}}
+  <h2 class="text-2xl font-bold mb-6">{{ __('dashboardReportData.title') }}</h2>
+  {{-- Filter --}}
+  <div class="mb-6">
+    <form action="{{ route('reportData') }}" method="GET" class="grid sm:flex sm:flex-wrap sm:items-end gap-4">
 
-  <div class="p-6 bg-white rounded-xl shadow-lg">
-    <h2 class="text-2xl font-bold mb-6">{{ __('dashboardReportData.title') }}</h2>
-    {{-- Tabel --}}
-    <div class="relative overflow-x-auto shadow-2xl sm:rounded-lg">
-      <table class="w-full text-sm text-left text-gray-700">
-        <thead class="text-xs text-white uppercase bg-teal-600">
-          <tr>
-            <th class="px-6 py-3">{{ __('dashboardReportData.table.reporter_name') }}</th>
-            <th class="px-6 py-3">{{ __('dashboardReportData.table.report_type') }}</th>
-            <th class="px-6 py-3">{{ __('dashboardReportData.table.date') }}</th>
-            <th class="px-6 py-3">{{ __('dashboardReportData.table.description') }}</th>
-            <th class="px-6 py-3">{{ __('dashboardReportData.table.media') }}</th>
-            <th class="px-6 py-3">{{ __('dashboardReportData.table.member_name') }}</th>
-            <th class="px-6 py-3">{{ __('dashboardReportData.table.point') }}</th>
-            <th class="px-6 py-3">{{ __('dashboardReportData.table.action') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @forelse($reports as $report)
-            <tr class="bg-white hover:bg-teal-50 transition duration-200">
-              {{-- Nama Pelapor --}}
-              <td class="px-6 py-4 font-semibold text-teal-800">
-                {{ $report->user->nama }}
-              </td>
+      {{-- Start Date --}}
+      <div class="relative w-full sm:w-auto">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <i data-feather="calendar" class="w-4 h-4 text-accent-1000"></i>
+        </div>
+        <input id="datepicker-start" name="start_date" value="{{ request('start_date') }}" datepicker datepicker-autohide
+          datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-[200px] ps-10 p-2.5"
+          placeholder="{{ __('general.filter.start_date') }}">
+      </div>
 
-              {{-- Tipe Laporan --}}
-              <td class="px-6 py-4">
-                <span class="px-2 py-2 font-medium text-white bg-teal-500 rounded-sm">
-                  {{ $report->report_type }}
-                </span>
-              </td>
+      {{-- End Date --}}
+      <div class="relative w-full sm:w-auto">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <i data-feather="calendar" class="w-4 h-4 text-accent-1000"></i>
+        </div>
+        <input id="datepicker-end" name="end_date" value="{{ request('end_date') }}" datepicker datepicker-autohide
+          datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-[200px] ps-10 p-2.5"
+          placeholder="{{ __('general.filter.end_date') }}">
+      </div>
 
-              {{-- Tanggal --}}
-              <td class="px-6 py-4 text-gray-600">
-                {{ \Carbon\Carbon::parse($report->date)->format('d M Y') }}
-              </td>
+      {{-- User --}}
+      <div class="w-full sm:w-auto">
+        <label for="user_id" class="block mb-1 text-sm font-medium text-gray-900">
+          {{ __('dashboardCleaning.checkdata.user') }}
+        </label>
+        <select id="user_id" name="user_id"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full sm:w-[200px] p-2.5">
+          <option value="">{{ __('dashboardCleaning.checkdata.all') }}</option>
+          @foreach ($users as $u)
+            <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>
+              {{ $u->nama }}
+            </option>
+          @endforeach
+        </select>
+      </div>
 
-              {{-- Deskripsi dengan tooltip --}}
-              <td class="px-6 py-4 max-w-[200px] truncate" title="{{ $report->description }}">
-                {{ $report->description }}
-              </td>
+      {{-- Report type --}}
+      <div class="w-full sm:w-auto">
+        <label for="report_types_name" class="block mb-1 text-sm font-medium text-gray-900">
+          {{ __('dashboardReportData.report_label') }}
+        </label>
+        <select id="report_types_name" name="report_types_name"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full sm:w-[200px] p-2.5">
+          <option value="">{{ __('dashboardReportData.report_select') }}</option>
+          @foreach ($type as $t)
+            <option value="{{ $t->name }}" {{ request('report_types_name') == $t->name ? 'selected' : '' }}>
+              {{ $t->name }}
+            </option>
+          @endforeach
+        </select>
+      </div>
 
-              {{-- Media --}}
-              <td class="px-6 py-4 flex flex-wrap gap-2">
-                @foreach ($report->media as $media)
-                  @if ($media->type === 'photo')
-                    <img src="{{ asset('storage/' . $media->path) }}" alt="foto"
-                      class="w-16 h-16 object-cover rounded shadow cursor-pointer"
-                      onclick="openMediaModal('{{ asset('storage/' . $media->path) }}', 'image')">
-                  @elseif($media->type === 'video')
-                    <video src="{{ asset('storage/' . $media->path) }}" class="w-24 h-16 rounded shadow cursor-pointer"
-                      onclick="openMediaModal('{{ asset('storage/' . $media->path) }}', 'video')"></video>
-                  @endif
-                @endforeach
-              </td>
 
-              {{-- Nama Member --}}
-              <td class="px-6 py-4 text-gray-700">
-                @foreach ($report->members as $member)
-                  <span class="block">{{ $member->nama }}</span>
-                @endforeach
-              </td>
+      {{-- Filter Button --}}
+      <button type="submit"
+        class="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center">
+        {{ __('button.filter') }}
+      </button>
 
-              {{-- Poin --}}
-              <td class="px-6 py-4 font-semibold text-center {{ $report->point ? 'text-green-600' : 'text-gray-400' }}">
-                {{ $report->point ?? '-' }}
-              </td>
+      {{-- Reset Button --}}
+      <a href="{{ route('reportData') }}">
+        <button type="button"
+          class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2.5">
+          {{ __('button.reset') }}
+        </button>
+      </a>
+    </form>
+  </div>
 
-              {{-- Aksi --}}
-              <td class="px-6 py-4">
-                @if (!is_null($report->point))
-                  {{ $report->reply }}
-                @else
-                  <form action="{{ route('reply', $report) }}" method="POST" class="space-y-2">
-                    @csrf
-                    <input type="hidden" name="report_id" value="{{ $report->id }}">
-                    <textarea name="reply" rows="3" placeholder="{{ __('dashboardReportData.form.reply_placeholder') }}"
-                      class="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-teal-500 focus:border-teal-500 resize-none"></textarea>
-                    @error('reply')
-                      <p class="text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+  {{-- Tabel --}}
+  <div class="relative overflow-x-auto shadow-2xl sm:rounded-lg">
+    <table class="w-full text-sm text-left text-gray-700">
+      <thead class="text-xs text-white uppercase bg-teal-600">
+        <tr>
+          <th class="px-6 py-3">{{ __('dashboardReportData.table.reporter_name') }}</th>
+          <th class="px-6 py-3">{{ __('dashboardReportData.table.report_type') }}</th>
+          <th class="px-6 py-3">{{ __('dashboardReportData.table.date') }}</th>
+          <th class="px-6 py-3">{{ __('dashboardReportData.table.description') }}</th>
+          <th class="px-6 py-3">{{ __('dashboardReportData.table.media') }}</th>
+          <th class="px-6 py-3">{{ __('dashboardReportData.table.member_name') }}</th>
+          <th class="px-6 py-3">{{ __('dashboardReportData.table.point') }}</th>
+          <th class="px-6 py-3">{{ __('dashboardReportData.table.action') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @forelse($reports as $report)
+          <tr class="bg-white hover:bg-teal-50 transition duration-200">
+            {{-- Nama Pelapor --}}
+            <td class="px-6 py-4 font-semibold text-teal-800">
+              {{ $report->user->nama }}
+            </td>
 
-                    <input type="number" name="point" min="0"
-                      placeholder="{{ __('dashboardReportData.form.point_placeholder') }}"
-                      class="block w-full p-2.5 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                      required />
+            {{-- Tipe Laporan --}}
+            <td class="px-6 py-4">
+              <span class="px-2 py-2 font-medium text-white bg-teal-500 rounded-sm">
+                {{ $report->report_type }}
+              </span>
+            </td>
 
-                    <button type="submit"
-                      class="w-full text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 transition">
-                      {{ __('button.reply') }}
-                    </button>
-                  </form>
+            {{-- Tanggal --}}
+            <td class="px-6 py-4 text-gray-600">
+              {{ \Carbon\Carbon::parse($report->date)->format('d M Y') }}
+            </td>
+
+            {{-- Deskripsi dengan tooltip --}}
+            <td class="px-6 py-4 max-w-[200px] truncate" title="{{ $report->description }}">
+              {{ $report->description }}
+            </td>
+
+            {{-- Media --}}
+            <td class="px-6 py-4 flex flex-wrap gap-2">
+              @foreach ($report->media as $media)
+                @if ($media->type === 'photo')
+                  <img src="{{ asset('storage/' . $media->path) }}" alt="foto"
+                    class="w-16 h-16 object-cover rounded shadow cursor-pointer"
+                    onclick="openMediaModal('{{ asset('storage/' . $media->path) }}', 'image')">
+                @elseif($media->type === 'video')
+                  <video src="{{ asset('storage/' . $media->path) }}" class="w-24 h-16 rounded shadow cursor-pointer"
+                    onclick="openMediaModal('{{ asset('storage/' . $media->path) }}', 'video')"></video>
                 @endif
-              </td>
-            </tr>
-          @empty
-            <tr>
-              <td colspan="8" class="px-6 py-4 text-center text-gray-500">
-                {{ __('dashboardReportData.table.no_data') }}
-              </td>
-            </tr>
-          @endforelse
-        </tbody>
-      </table>
-      {{-- Modal Preview Media --}}
-      <div id="mediaModal" class="fixed inset-0 backdrop-blur-sm bg-opacity-70 hidden items-center justify-center z-50"
-        onclick="backgroundClick(event)">
-        <div class="bg-white rounded-lg p-4 max-w-3xl w-full relative" onclick="event.stopPropagation()">
-          <button onclick="closeMediaModal()" class="absolute top-2 right-2 text-gray-700 hover:text-red-500">
-            ✖
-          </button>
-          <div id="mediaContent" class="flex justify-center items-center">
-            {{-- Konten media akan dimasukkan via JS --}}
-          </div>
+              @endforeach
+            </td>
+
+            {{-- Nama Member --}}
+            <td class="px-6 py-4 text-gray-700">
+              @foreach ($report->members as $member)
+                <span class="block">{{ $member->nama }}</span>
+              @endforeach
+            </td>
+
+            {{-- Poin --}}
+            <td class="px-6 py-4 font-semibold text-center {{ $report->point ? 'text-green-600' : 'text-gray-400' }}">
+              {{ $report->point ?? '-' }}
+            </td>
+
+            {{-- Aksi --}}
+            <td class="px-6 py-4">
+              @if (!is_null($report->point))
+                {{ $report->reply }}
+              @else
+                <form action="{{ route('reply', $report) }}" method="POST" class="space-y-2">
+                  @csrf
+                  <input type="hidden" name="report_id" value="{{ $report->id }}">
+                  <textarea name="reply" rows="3" placeholder="{{ __('dashboardReportData.form.reply_placeholder') }}"
+                    class="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-teal-500 focus:border-teal-500 resize-none"></textarea>
+                  @error('reply')
+                    <p class="text-sm text-red-600">{{ $message }}</p>
+                  @enderror
+
+                  <input type="number" name="point" min="0"
+                    placeholder="{{ __('dashboardReportData.form.point_placeholder') }}"
+                    class="block w-full p-2.5 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
+                    required />
+
+                  <button type="submit"
+                    class="w-full text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 transition">
+                    {{ __('button.reply') }}
+                  </button>
+                </form>
+              @endif
+            </td>
+          </tr>
+        @empty
+          <tr>
+            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+              {{ __('dashboardReportData.table.no_data') }}
+            </td>
+          </tr>
+        @endforelse
+      </tbody>
+    </table>
+    {{-- Modal Preview Media --}}
+    <div id="mediaModal" class="fixed inset-0 backdrop-blur-sm bg-opacity-70 hidden items-center justify-center z-50"
+      onclick="backgroundClick(event)">
+      <div class="bg-white rounded-lg p-4 max-w-3xl w-full relative" onclick="event.stopPropagation()">
+        <button onclick="closeMediaModal()" class="absolute top-2 right-2 text-gray-700 hover:text-red-500">
+          ✖
+        </button>
+        <div id="mediaContent" class="flex justify-center items-center">
+          {{-- Konten media akan dimasukkan via JS --}}
         </div>
       </div>
     </div>
-
   </div>
 @endsection
 

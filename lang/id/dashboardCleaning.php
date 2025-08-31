@@ -34,6 +34,19 @@ return [
             'no_data'    => 'Data tidak ditemukan.',
         ],
     ],
+    'officedata' => [
+        'title'        => '📋 Data Office',
+        'table' => [
+            'no'         => 'No',
+            'date'       => 'Tanggal',
+            'user'       => 'Pengguna',
+            'task_group' => 'Grup Tugas',
+            'task_point' => 'Tugas & Poin',
+            'total'      => 'Total Poin',
+            'empty'      => 'Tidak ada data office records.',
+        ],
+
+    ],
 
     'userpoint' => [
         'title'         => 'Rekap Poin Bulanan',
@@ -94,6 +107,16 @@ return [
         'header_name_member2' => 'Nama Anggota',
         'header_poin'         => 'Poin',
 
+        //Header Office Data Export
+
+        'header_date'        => 'Tanggal',
+        'header_user'        => 'User',
+        'header_task_group'  => 'Grup Tugas',
+        'header_task'        => 'Tugas',
+        'header_point'       => 'Poin',
+        'header_total_point' => 'Total Poin',
+
+
         // Header exportRekapBulanan
         'header_no'           => 'No',
         'header_nama'         => 'Nama',
@@ -114,6 +137,9 @@ return [
             'name' => 'Nama',
             'room_count' => 'Jumlah Kamar',
             'total_points' => 'Total Poin',
+        ],
+        'officedata' => [
+            'title' => 'Data Office | Dashboard',
         ],
         'userPoint' => [
             'title' => 'Ringkasan Poin Anggota | Dashboard',

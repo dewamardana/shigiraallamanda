@@ -10,6 +10,7 @@ use App\Models\Cleaning;
 use App\Models\OfficeRecord;
 use Illuminate\Http\Request;
 use App\Models\DailyCleaningPoint;
+use App\Models\OfficeTaskDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -439,6 +440,131 @@ class DataController extends Controller
 
         return response()->download($tempPath, $filename)->deleteFileAfterSend(true);
     }
+
+    public function officeData(Request $request)
+    {
+        $title = __('dashboardCleaning.controller.officedata.title');
+
+        $users = User::all();
+
+        $records = OfficeRecord::with(['details.task.group', 'details.user'])
+            ->when($request->start_date, function ($query) use ($request) {
+                // format input dari datepicker (dd/mm/yyyy) → convert ke Y-m-d
+                $startDate = Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d');
+                $query->whereDate('date', '>=', $startDate);
+            })
+            ->when($request->end_date, function ($query) use ($request) {
+                $endDate = Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d');
+                $query->whereDate('date', '<=', $endDate);
+            })
+            ->when($request->user_id, function ($query) use ($request) {
+                $query->whereHas('details', function ($q) use ($request) {
+                    $q->where('user_id', $request->user_id);
+                });
+            })
+            ->orderBy('date', 'desc')
+            ->get();
+
+
+        return view('Dashboard.cleaning.officedata', compact('records', 'title', 'users'));
+    }
+
+    public function officeexport(Request $request)
+    {
+        $startDate = $request->get('start_date');
+        $endDate   = $request->get('end_date');
+        $userId    = $request->get('user_id');
+
+        $query = OfficeRecord::with(['details.task.group', 'details.user']);
+
+        if ($startDate) {
+            $query->whereDate('date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('date', '<=', $endDate);
+        }
+        if ($userId) {
+            $query->whereHas('details', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            });
+        }
+
+        $records = $query->orderBy('date', 'desc')->get();
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header
+        $headers = [__('dashboardCleaning.controller.header_date'), __('dashboardCleaning.controller.header_user'), __('dashboardCleaning.controller.header_task_group'), __('dashboardCleaning.controller.header_task'), __('dashboardCleaning.controller.header_point'), __('dashboardCleaning.controller.header_total_point')];
+        foreach ($headers as $i => $header) {
+            $cell = chr(65 + $i) . '1';
+            $sheet->setCellValue($cell, $header);
+            $sheet->getStyle($cell)->getFont()->setBold(true);
+            $sheet->getStyle($cell)->getBorders()->getAllBorders()
+                ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        }
+
+        $row = 2;
+        $colorToggle = false;
+
+        foreach ($records as $record) {
+            $details = $record->details;
+            if ($details->isEmpty()) continue;
+
+            $totalPoint = $details->sum(fn($detail) => $detail->task->point);
+            $rowStart = $row;
+            $rowEnd   = $row + $details->count() - 1;
+
+            // isi kolom task detail
+            foreach ($details as $detail) {
+                $sheet->setCellValue("C{$row}", $detail->task->group->name ?? '-');
+                $sheet->setCellValue("D{$row}", $detail->task->name);
+                $sheet->setCellValue("E{$row}", $detail->task->point);
+
+                // border untuk semua kolom
+                foreach (range('A', 'F') as $col) {
+                    $sheet->getStyle("{$col}{$row}")->getBorders()->getAllBorders()
+                        ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                }
+
+                $row++;
+            }
+
+            // merge cell utk kolom yang sama
+            $sheet->mergeCells("A{$rowStart}:A{$rowEnd}")
+                ->setCellValue("A{$rowStart}", $record->date);
+
+            $sheet->mergeCells("B{$rowStart}:B{$rowEnd}")
+                ->setCellValue("B{$rowStart}", $details->first()->user->nama ?? '-');
+
+            $sheet->mergeCells("F{$rowStart}:F{$rowEnd}")
+                ->setCellValue("F{$rowStart}", $totalPoint);
+
+            // background selang-seling
+            $fillColor = $colorToggle ? 'FFEFEFEF' : 'FFFFFFFF'; // abu-abu muda / putih
+            $sheet->getStyle("A{$rowStart}:F{$rowEnd}")
+                ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setARGB($fillColor);
+
+            $colorToggle = !$colorToggle;
+        }
+
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $filename = 'office_records_' . now()->format('Ymd_His') . '.xlsx';
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $temp_file = tempnam(sys_get_temp_dir(), $filename);
+        $writer->save($temp_file);
+
+        return response()->download($temp_file, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+
+
 
     public function userPoint(Request $request)
     {

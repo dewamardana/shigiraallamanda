@@ -12,10 +12,12 @@ return [
 
     // Language names
     'language' => [
-        'en' => 'English Language',
-        'id' => 'Indonesia Language',
-        'ja' => 'Japan Language',
-        'km' => 'Khamer Language',
+        'en' => 'English',
+        'id' => 'Indonesian',
+        'ja' => 'Japanese',
+        'km' => 'Khmer',
+        'my' => 'Myanmar',
+        'vi' => 'Vietnamese',
     ],
 
 

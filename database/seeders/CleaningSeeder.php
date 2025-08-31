@@ -19,8 +19,13 @@ class CleaningSeeder extends Seeder
     public function run(): void
     {
         $buildings = Building::all();
-        $users = User::pluck('id');
+        $users = User::all('id'); // Ambil collection penuh
         $startDate = Carbon::now()->subDays(6); // 7 hari ke belakang
+
+        if ($users->isEmpty()) {
+            $this->command->warn('Tidak ada user ditemukan, seeder dihentikan.');
+            return;
+        }
 
         // Formula poin per building & member count
         $formulas = [
@@ -41,6 +46,7 @@ class CleaningSeeder extends Seeder
 
                 // Tentukan jumlah member
                 $memberCount = ($buildingSlug == 'royal') ? rand(1, 5) : rand(2, 3);
+                $memberCount = min($memberCount, $users->count()); // jaga-jaga kalau user sedikit
 
                 // Generate angka random
                 $oa      = rand(0, 5);
@@ -50,7 +56,7 @@ class CleaningSeeder extends Seeder
                 $premier = ($buildingSlug == 'royal') ? rand(0, 3) : 0;
 
                 // Tentukan user inputter
-                $inputter = $users->random();
+                $inputter = $users->random()->id;
 
                 // Tentukan tanggal cleaning
                 $date = $startDate->copy()->toDateString();
@@ -72,7 +78,11 @@ class CleaningSeeder extends Seeder
                 ]);
 
                 // Assign random member
-                $assignedUsers = $users->random($memberCount);
+                if ($memberCount > 1) {
+                    $assignedUsers = $users->random($memberCount)->pluck('id');
+                } else {
+                    $assignedUsers = collect([$users->random()->id]);
+                }
                 $cleaning->members()->attach($assignedUsers);
 
                 // Hitung poin
@@ -89,47 +99,46 @@ class CleaningSeeder extends Seeder
 
                 $poinPerUser = $memberCount > 0 ? $totalPoin / $memberCount : 0;
 
-                // Simpan ke tabel poin_records
+                // Simpan ke tabel cleaning_records
                 CleaningRecords::create([
-                    'cleaning_id'   => $cleaning->id,
-                    'user_id' => $inputter,
-                    'member_count'  => $memberCount,
-                    'oa'          => $oa,
-                    'ov'          => $ov,
-                    'stay'        => $stay,
-                    'vec'         => $vec,
-                    'premier'     => $premier,
+                    'cleaning_id'  => $cleaning->id,
+                    'user_id'      => $inputter,
+                    'member_count' => $memberCount,
+                    'oa'           => $oa,
+                    'ov'           => $ov,
+                    'stay'         => $stay,
+                    'vec'          => $vec,
+                    'premier'      => $premier,
                 ]);
 
-                // Simpan ke daily_cleaning_points menggunakan format baru
-                    foreach ($assignedUsers as $userId) {
-                        $detailArray = [
-                            'OA'      => $oa,
-                            'OV'      => $ov,
-                            'Stay'    => $stay,
-                            'Vec'     => $vec,
-                        ];
+                // Simpan ke daily_cleaning_points
+                foreach ($assignedUsers as $userId) {
+                    $detailArray = [
+                        'OA'   => $oa,
+                        'OV'   => $ov,
+                        'Stay' => $stay,
+                        'Vec'  => $vec,
+                    ];
 
-                        if ($buildingSlug == 'royal') {
-                            $detailArray['Premier'] = $premier;
-                        }
-
-                        DailyCleaningPoint::create([
-                            'user_id'         => $userId,
-                            'date'            => $date,
-                            'activity_type'   => 'Cleaning',
-                            'activity_detail' => collect($detailArray)
-                                                    ->map(fn($val, $key) => "$key: $val")
-                                                    ->implode(', '),
-                            'point'           => $poinPerUser,
-                            'created_at'      => $createdAt,
-                            'updated_at'      => $createdAt,
-                        ]);
+                    if ($buildingSlug == 'royal') {
+                        $detailArray['Premier'] = $premier;
                     }
+
+                    DailyCleaningPoint::create([
+                        'user_id'         => $userId,
+                        'date'            => $date,
+                        'activity_type'   => 'Cleaning',
+                        'activity_detail' => collect($detailArray)
+                            ->map(fn($val, $key) => "$key: $val")
+                            ->implode(', '),
+                        'point'           => $poinPerUser,
+                        'created_at'      => $createdAt,
+                        'updated_at'      => $createdAt,
+                    ]);
+                }
             }
 
             $startDate->addDay();
         }
     }
-
 }
