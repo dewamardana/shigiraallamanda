@@ -1,74 +1,74 @@
 <?php
 
 return [
-    'index' => [
-        'title'  => '📊 Data Formula',
+   'index' => [
+        'title'  => '📊 データ計算式',
 
         'table' => [
-            'building'     => 'Gedung',
-            'member'       => 'Anggota',
+            'building'     => '建物',
+            'member'       => 'メンバー',
             'oa'           => 'OA',
             'ov'           => 'OV',
-            'stay'         => 'Stay',
+            'stay'         => '滞在',
             'vec'          => 'Vec',
-            'premier'      => 'Premier',
-            'action'       => 'Aksi',
+            'premier'      => 'プレミア',
+            'action'       => 'アクション',
         ],
     ],
     'create' => [
-        'title'                 => 'Tambah Formula',
+        'title'                 => '計算式を追加',
     ],
 
     'form' => [
-        'building_label'        => 'Nama Gedung',
-        'building_placeholder'  => 'Pilih Gedung',
-        'member_label'          => "Jumlah Anggota (angka atau 'random')",
+        'building_label'        => '建物名',
+        'building_placeholder'  => '建物を選択',
+        'member_label'          => "メンバー数（数字または「ランダム」）",
         'oa_label'              => 'OA',
         'ov_label'              => 'OV',
-        'stay_label'            => 'Stay',
+        'stay_label'            => '滞在',
         'vec_label'             => 'Vec',
-        'premier_label'         => 'Premier',
+        'premier_label'         => 'プレミア',
     ],
     'edit' => [
-        'title'                 => 'Edit Formula',
+        'title'                 => '計算式を編集',
     ],
     'show' => [
-        'title'          => 'Detail Formula',
-        'building_name'  => 'Nama Gedung',
-        'member_count'   => 'Jumlah Anggota',
+        'title'          => '計算式の詳細',
+        'building_name'  => '建物名',
+        'member_count'   => 'メンバー数',
         'oa'             => 'OA',
         'ov'             => 'OV',
-        'stay'           => 'Stay',
+        'stay'           => '滞在',
         'vec'            => 'Vec',
-        'premier'        => 'Premier',
+        'premier'        => 'プレミア',
     ],
     'controller' => [
         'index' => [
-            'title' => 'Data Formula | Dashboard',
+            'title' => 'データ計算式 | ダッシュボード',
         ],
         'create' => [
-            'title' => 'Tambah Formula | Dashboard',
-            'success_add'      => 'Formula berhasil ditambahkan!',
+            'title' => '計算式を追加 | ダッシュボード',
+            'success_add'      => '計算式が正常に追加されました！',
         ],
         'edit' => [
-            'title' => 'Edit Formula | Dashboard',
-            'success_update'   => 'Formula berhasil diperbarui!',
+            'title' => '計算式を編集 | ダッシュボード',
+            'success_update'   => '計算式が正常に更新されました！',
         ],
         'show' => [
-            'title' => 'Detail Formula | Dashboard',
+            'title' => '計算式の詳細 | ダッシュボード',
         ],
         'delete' => [
             'title' => '',
-            'success_delete'   => 'Formula berhasil dihapus!',
+            'success_delete'   => '計算式が正常に削除されました！',
         ],
         'validation' => [
-            'building_slug_required' => 'Slug gedung wajib diisi.',
-            'member_count_required'  => 'Jumlah anggota wajib diisi.',
-            'oa_required'            => 'Nilai OA wajib diisi.',
-            'ov_required'            => 'Nilai OV wajib diisi.',
-            'stay_required'          => 'Nilai Stay wajib diisi.',
-            'vec_required'           => 'Nilai Vec wajib diisi.',
-            'premier_numeric'        => 'Nilai Premier harus berupa angka.',
+            'building_slug_required' => '建物スラッグは必須です。',
+            'member_count_required'  => 'メンバー数は必須です。',
+            'oa_required'            => 'OA値は必須です。',
+            'ov_required'            => 'OV値は必須です。',
+            'stay_required'          => '滞在値は必須です。',
+            'vec_required'           => 'Vec値は必須です。',
+            'premier_numeric'        => 'プレミア値は数値である必要があります。',
         ],
     ],
 ];

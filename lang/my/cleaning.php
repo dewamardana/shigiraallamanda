@@ -1,18 +1,18 @@
 <?php
 
 return [
-    'team_members'             => 'Anggota Tim',
-    'select_member_placeholder' => '-- Pilih Anggota --',
+    'team_members'             => 'အဖွဲ့ဝင်များ',
+    'select_member_placeholder'=> '-- အဖွဲ့ဝင်ကို ရွေးပါ --',
 
-    'building'                 => 'Gedung',
-    'select_building'          => 'Pilih Gedung',
+    'building'                 => 'အဆောက်အဦး',
+    'select_building'          => 'အဆောက်အဦးကို ရွေးပါ',
 
-    'room_status'              => 'Status Kamar',
+    'room_status'              => 'အခန်းအခြေအနေ',
     'oa'                       => 'OA/O*',
     'ov'                       => 'OV',
-    'stay'                     => 'Menginap',
+    'stay'                     => 'အိမ်သာတည်း',
     'vec'                      => 'V/eco',
     'premier'                  => 'Premier',
 
-    'total_rooms'              => 'Jumlah Kamar',
+    'total_rooms'              => 'အခန်းစုစုပေါင်း',
 ];

@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'checker_data_input' => 'Input Data Checker',
+    'checker_data_input' => 'បញ្ចូលទិន្នន័យអ្នកត្រួតពិនិត្យ',
 
-    'name'               => 'Nama Checker',
-    'total_rooms'        => 'Jumlah Kamar',
+    'name'               => 'ឈ្មោះអ្នកត្រួតពិនិត្យ',
+    'total_rooms'        => 'ចំនួនបន្ទប់សរុប',
 
-    'teaching'           => 'Mengajar',
-    'special_cleaning'   => 'Pembersihan Khusus',
-    'lifting'            => 'Mengangkat Barang',
-    'warehouse_cleaning' => 'Membersihkan Gudang',
-    'pool_chemicals'     => 'Obat Kolam',
-    'pool_cleaning'      => 'Membersihkan Kolam',
-    'waste_disposal'     => 'Membuang Sampah',
+    'teaching'           => 'បង្រៀន',
+    'special_cleaning'   => 'សម្អាតពិសេស',
+    'lifting'            => 'ដឹកវត្ថុ',
+    'warehouse_cleaning' => 'សម្អាតឃ្លាំង',
+    'pool_chemicals'     => 'ថ្នាំអាងហែលទឹក',
+    'pool_cleaning'      => 'សម្អាតអាងហែលទឹក',
+    'waste_disposal'     => 'បោះចោលសំរាម',
 ];

@@ -2,10 +2,10 @@
 
 return [
     'cleaningdata' => [
-        'title'            => 'ダッシュボード：データクリーニング',
-        'filter_building'  => '建物：',
+        'title'            => '清掃データダッシュボード',
+        'filter_building'  => '建物:',
         'filter_all'       => 'すべての建物',
-        'filter_user'      => 'ユーザーでフィルター',
+        'filter_user'      => 'ユーザーで絞り込む',
         'members' => 'メンバー',
         'table' => [
             'date'      => '日付',
@@ -13,7 +13,7 @@ return [
             'oa'        => 'OA',
             'ov'        => 'OV',
             'stay'      => '滞在',
-            'vec'       => 'V/eco',
+            'vec'       => 'Vec',
             'premier'   => 'プレミア',
             'total'     => '合計',
             'point'     => 'ポイント',
@@ -23,7 +23,7 @@ return [
     ],
 
     'checkdata' => [
-        'title' => 'データチェック',
+        'title' => 'インスペクタデータ',
         'user' => 'ユーザー',
         'all'  => 'すべて',
         'table' => [
@@ -34,9 +34,21 @@ return [
             'no_data'    => 'データが見つかりません。',
         ],
     ],
+    'officedata' => [
+        'title'        => 'オーダーデータ',
+        'table' => [
+            'no'         => '番号',
+            'date'       => '日付',
+            'user'       => 'ユーザー',
+            'task_group' => 'タスクグループ',
+            'task_point' => 'タスクとポイント',
+            'total'      => '合計ポイント',
+            'empty'      => 'オフィス記録が見つかりません。',
+        ],
+    ],
 
-     'userpoint' => [
-        'title'         => '月次ポイント集計',
+    'userpoint' => [
+        'title'         => '月間ポイント集計',
         'filter_year'   => '年',
         'filter_month'  => '月',
         'table' => [
@@ -48,9 +60,9 @@ return [
     ],
 
     'cleaningHistory' => [
-        'title' => 'クリーニングデータ',
-        'cleaning_title' => '📊 すべてのクリーニング入力データを表示中。',
-        'checker_title' => '📊 すべてのチェックおよびオフィスデータを表示中。',
+        'title' => '清掃データ',
+        'cleaning_title' => '📊 全ての清掃入力データを表示しています。',
+        'checker_title' => '📊 全てのインスペクタとオーダーデータを表示しています。',
         'table' => [
             'no' => '番号',
             'date' => '日付',
@@ -59,31 +71,30 @@ return [
             'oa' => 'OA',
             'ov' => 'OV',
             'stay' => '滞在',
-            'vec' => '<V/eco',
+            'vec' => 'Vec',
             'premier' => 'プレミア',
-            'total_room' => '部屋数合計',
-            'total_point' => 'ポイント合計',
-            'point_per_member' => '1人あたりポイント',
+            'total_room' => '総部屋数',
+            'total_point' => '総ポイント',
+            'point_per_member' => 'メンバーポイント',
             'members' => 'メンバー',
-            'no_data' => 'データがありません。',
+            'no_data' => '利用可能なデータはありません。',
         ],
     ],
 
     'checkRecords' => [
-        'title' => 'チェックおよびオフィスデータ',
+        'title' => 'インスペクタとオーダー記録データ',
         'table' => [
             'no' => '番号',
             'date' => '日付',
             'type' => 'タイプ',
             'input_by' => '入力者',
-            'total_point' => 'ポイント合計',
-            'point_per_member' => 'ポイント / メンバー',
-            'no_data' => 'データがありません',
+            'total_point' => '総ポイント',
+            'point_per_member' => 'ポイント/メンバー',
+            'no_data' => '利用可能なデータはありません',
         ],
     ],
     'controller' => [
-        'indextitle' => 'ダッシュボード：データクリーニング',
-        // Header exportCleaningData
+        'indextitle' => '清掃データダッシュボード',
         'header_name_member'  => 'メンバー名',
         'header_oa'           => 'OA',
         'header_ov'           => 'OV',
@@ -94,37 +105,44 @@ return [
         'header_name_member2' => 'メンバー名',
         'header_poin'         => 'ポイント',
 
-        // Header exportRekapBulanan
+        'header_date'        => '日付',
+        'header_user'        => 'ユーザー',
+        'header_task_group'  => 'タスクグループ',
+        'header_task'        => 'タスク',
+        'header_point'       => 'ポイント',
+        'header_total_point' => '総ポイント',
+
         'header_no'           => '番号',
         'header_nama'         => '名前',
         'header_day'          => '日',
-        'header_total_poin'   => 'ポイント合計',
+        'header_total_poin'   => '総ポイント',
 
-        // Filename
-        'filename_cleaning'   => 'クリーニング報告書',
-        'filename_rekap'      => '月次報告書',
-        'checkerDataTitle' => 'チェックポイントデータ | ダッシュボード',
+        'filename_cleaning'   => '清掃レポート',
+        'filename_rekap'      => '月次レポート',
+        'checkerDataTitle' => 'チェッカーポイントデータ | ダッシュボード',
 
-        'no_active_formula' => '有効な計算式が見つかりません。',
-        'filename' => 'Checker_報告書.xlsx',
+        'no_active_formula' => '有効な数式が見つかりません。',
+        'filename' => 'Checker_Report.xlsx',
 
         'headers' => [
             'no' => '番号',
             'date' => '日付',
             'name' => '名前',
             'room_count' => '部屋数',
-            'total_points' => 'ポイント合計',
+            'total_points' => '総ポイント',
+        ],
+        'officedata' => [
+            'title' => 'オーダーデータ | ダッシュボード',
         ],
         'userPoint' => [
             'title' => 'メンバーポイント概要 | ダッシュボード',
         ],
         'CleaningHistoryData' => [
-            'title' => 'クリーニング入力履歴',
+            'title' => '清掃入力履歴',
         ],
         'CheckOfficeHistoryData' => [
-            'title' => 'チェックおよびオフィス履歴 | ダッシュボード',
+            'title' => 'インスペクタとオーダー履歴 | ダッシュボード',
         ],
     ],
-
 
 ];

@@ -2,9 +2,9 @@
 
 return [
     'cleaningdata' => [
-        'title'            => 'Bảng điều khiển Dọn dẹp dữ liệu',
+        'title'            => 'Bảng điều khiển Dữ liệu Vệ sinh',
         'filter_building'  => 'Tòa nhà:',
-        'filter_all'       => 'Tất cả các tòa nhà',
+        'filter_all'       => 'Tất cả Tòa nhà',
         'filter_user'      => 'Lọc theo Người dùng',
         'members' => 'Thành viên',
         'table' => [
@@ -12,44 +12,56 @@ return [
             'name'      => 'Tên',
             'oa'        => 'OA',
             'ov'        => 'OV',
-            'stay'      => 'Ở lại',
+            'stay'      => 'Lưu trú',
             'vec'       => 'Vec',
             'premier'   => 'Premier',
-            'total'     => 'Tổng cộng',
+            'total'     => 'Tổng',
             'point'     => 'Điểm',
-            'total_info' => 'Tổng cộng',
+            'total_info' => 'Tổng',
             'member' => 'thành viên',
         ],
     ],
 
     'checkdata' => [
-        'title' => 'Kiểm tra dữ liệu',
+        'title' => 'Dữ liệu Kiểm tra',
         'user' => 'Người dùng',
         'all'  => 'Tất cả',
         'table' => [
             'date'       => 'Ngày',
             'name'       => 'Tên',
             'room'       => 'Phòng',
-            'total'      => 'Tổng cộng',
+            'total'      => 'Tổng',
             'no_data'    => 'Không tìm thấy dữ liệu.',
+        ],
+    ],
+    'officedata' => [
+        'title'        => 'Dữ liệu Văn phòng',
+        'table' => [
+            'no'         => 'Số',
+            'date'       => 'Ngày',
+            'user'       => 'Người dùng',
+            'task_group' => 'Nhóm Nhiệm vụ',
+            'task_point' => 'Nhiệm vụ & Điểm',
+            'total'      => 'Tổng điểm',
+            'empty'      => 'Không tìm thấy dữ liệu văn phòng.',
         ],
     ],
 
     'userpoint' => [
-        'title'         => 'Tổng hợp điểm hàng tháng',
+        'title'         => 'Tổng hợp Điểm Tháng',
         'filter_year'   => 'Năm',
         'filter_month'  => 'Tháng',
         'table' => [
             'no'      => 'Số',
             'name'    => 'Tên',
             'day'     => 'Ngày',
-            'total'   => 'Tổng cộng',
+            'total'   => 'Tổng',
         ],
     ],
 
     'cleaningHistory' => [
-        'title' => 'Dữ liệu dọn dẹp',
-        'cleaning_title' => '📊 Hiển thị tất cả dữ liệu nhập dọn dẹp.',
+        'title' => 'Dữ liệu Vệ sinh',
+        'cleaning_title' => '📊 Hiển thị tất cả dữ liệu nhập vệ sinh.',
         'checker_title' => '📊 Hiển thị tất cả dữ liệu kiểm tra và văn phòng.',
         'table' => [
             'no' => 'Số',
@@ -58,19 +70,19 @@ return [
             'building' => 'Tòa nhà',
             'oa' => 'OA',
             'ov' => 'OV',
-            'stay' => 'Ở lại',
+            'stay' => 'Lưu trú',
             'vec' => 'Vec',
             'premier' => 'Premier',
-            'total_room' => 'Tổng số phòng',
+            'total_room' => 'Tổng số Phòng',
             'total_point' => 'Tổng điểm',
-            'point_per_member' => 'Điểm mỗi thành viên',
+            'point_per_member' => 'Điểm Thành viên',
             'members' => 'Thành viên',
             'no_data' => 'Không có dữ liệu.',
         ],
     ],
 
     'checkRecords' => [
-        'title' => 'Dữ liệu kiểm tra và văn phòng',
+        'title' => 'Dữ liệu Hồ sơ Kiểm tra & Văn phòng',
         'table' => [
             'no' => 'Số',
             'date' => 'Ngày',
@@ -82,49 +94,55 @@ return [
         ],
     ],
     'controller' => [
-        'indextitle' => 'Bảng điều khiển Dọn dẹp dữ liệu',
-        // Header exportCleaningData
-        'header_name_member'  => 'Tên thành viên',
+        'indextitle' => 'Bảng điều khiển Dữ liệu Vệ sinh',
+        'header_name_member'  => 'Tên Thành viên',
         'header_oa'           => 'OA',
         'header_ov'           => 'OV',
-        'header_stay'         => 'Ở lại',
+        'header_stay'         => 'Lưu trú',
         'header_vec'          => 'Vec',
         'header_premier'      => 'Premier',
-        'header_total'        => 'Tổng cộng',
-        'header_name_member2' => 'Tên thành viên',
+        'header_total'        => 'Tổng',
+        'header_name_member2' => 'Tên Thành viên',
         'header_poin'         => 'Điểm',
 
-        // Header exportRekapBulanan
+        'header_date'        => 'Ngày',
+        'header_user'        => 'Người dùng',
+        'header_task_group'  => 'Nhóm Nhiệm vụ',
+        'header_task'        => 'Nhiệm vụ',
+        'header_point'       => 'Điểm',
+        'header_total_point' => 'Tổng điểm',
+
         'header_no'           => 'Số',
         'header_nama'         => 'Tên',
         'header_day'          => 'Ngày',
         'header_total_poin'   => 'Tổng điểm',
 
-        // Filename
-        'filename_cleaning'   => 'Báo cáo dọn dẹp',
-        'filename_rekap'      => 'Báo cáo hàng tháng',
-        'checkerDataTitle' => 'Dữ liệu điểm kiểm tra | Bảng điều khiển',
+        'filename_cleaning'   => 'Báo cáo Vệ sinh',
+        'filename_rekap'      => 'Báo cáo Tháng',
+        'checkerDataTitle' => 'Dữ liệu Điểm Kiểm tra | Bảng điều khiển',
 
         'no_active_formula' => 'Không tìm thấy công thức hoạt động.',
-        'filename' => 'Báo cáo_Kiểm tra.xlsx',
+        'filename' => 'Checker_Report.xlsx',
 
         'headers' => [
             'no' => 'Số',
             'date' => 'Ngày',
             'name' => 'Tên',
-            'room_count' => 'Số lượng phòng',
+            'room_count' => 'Số lượng Phòng',
             'total_points' => 'Tổng điểm',
         ],
+        'officedata' => [
+            'title' => 'Dữ liệu Văn phòng | Bảng điều khiển',
+        ],
         'userPoint' => [
-            'title' => 'Tóm tắt điểm thành viên | Bảng điều khiển',
+            'title' => 'Tổng hợp Điểm Thành viên | Bảng điều khiển',
         ],
         'CleaningHistoryData' => [
-            'title' => 'Lịch sử nhập dọn dẹp',
+            'title' => 'Lịch sử Nhập Vệ sinh',
         ],
         'CheckOfficeHistoryData' => [
-            'title' => 'Lịch sử kiểm tra và văn phòng | Bảng điều khiển',
+            'title' => 'Lịch sử Kiểm tra & Văn phòng | Bảng điều khiển',
         ],
     ],
-
-
+    
 ];

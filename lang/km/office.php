@@ -1,8 +1,8 @@
 <?php
 return [
-    'username' => 'Nama Pengguna',
-    'password' => 'Kata Sandi',
-    'error'    => 'Email atau kata sandi salah.',
-    'date_placeholder' => 'Pilih Tanggal',
-    'date_input' =>  'Tanggal',
+    'username' => 'ឈ្មោះអ្នកប្រើ',
+    'password' => 'ពាក្យសម្ងាត់',
+    'error'    => 'អ៊ីមែល ឬ ពាក្យសម្ងាត់ មិនត្រឹមត្រូវ។',
+    'date_placeholder' => 'ជ្រើសរើសកាលបរិច្ឆេទ',
+    'date_input' =>  'កាលបរិច្ឆេទ',
 ];

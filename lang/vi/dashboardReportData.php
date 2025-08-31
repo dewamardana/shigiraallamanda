@@ -2,14 +2,16 @@
 
 return [
     'title' => 'Bảng điều khiển Báo cáo',
+    'report_label' => 'Loại Báo cáo',
+    'report_select' => 'Chọn loại',
 
     'table' => [
-        'reporter_name' => 'Tên người báo cáo',
-        'report_type'   => 'Loại báo cáo',
+        'reporter_name' => 'Tên Người báo cáo',
+        'report_type'   => 'Loại Báo cáo',
         'date'          => 'Ngày',
         'description'   => 'Mô tả',
         'media'         => 'Phương tiện',
-        'member_name'   => 'Tên thành viên',
+        'member_name'   => 'Tên Thành viên',
         'point'         => 'Điểm',
         'action'        => 'Hành động',
         'no_data'       => 'Không có báo cáo nào.',
@@ -26,7 +28,7 @@ return [
         ],
 
         'reply' => [
-            'success_reply' => 'Phản hồi và điểm đã được gửi thành công.',
+            'success_reply' => 'Phản hồi và điểm đã được ghi nhận thành công.',
         ]
     ]
 ];

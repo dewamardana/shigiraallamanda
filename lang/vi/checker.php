@@ -1,16 +1,16 @@
 <?php
 
 return [
-    'checker_data_input' => 'Input Data Checker',
+    'checker_data_input' => 'Nhập dữ liệu kiểm tra',
 
-    'name'               => 'Nama Checker',
-    'total_rooms'        => 'Jumlah Kamar',
+    'name'               => 'Tên người kiểm tra',
+    'total_rooms'        => 'Tổng số phòng',
 
-    'teaching'           => 'Mengajar',
-    'special_cleaning'   => 'Pembersihan Khusus',
-    'lifting'            => 'Mengangkat Barang',
-    'warehouse_cleaning' => 'Membersihkan Gudang',
-    'pool_chemicals'     => 'Obat Kolam',
-    'pool_cleaning'      => 'Membersihkan Kolam',
-    'waste_disposal'     => 'Membuang Sampah',
+    'teaching'           => 'Giảng dạy',
+    'special_cleaning'   => 'Vệ sinh đặc biệt',
+    'lifting'            => 'Khuân vác',
+    'warehouse_cleaning' => 'Vệ sinh kho',
+    'pool_chemicals'     => 'Hóa chất hồ bơi',
+    'pool_cleaning'      => 'Vệ sinh hồ bơi',
+    'waste_disposal'     => 'Xử lý rác thải',
 ];

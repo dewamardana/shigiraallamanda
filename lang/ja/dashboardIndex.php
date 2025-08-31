@@ -1,14 +1,14 @@
 <?php
 
 return [
-    'title' => 'Dasbor',
-    'total_users' => 'Total Pengguna',
-    'active_users' => 'Pengguna Aktif',
-    'most_active_user' => 'Pengguna Paling Aktif',
-    'points' => 'Poin',
-    'start_date' => 'Tanggal Mulai',
-    'end_date' => 'Tanggal Selesai',
-    'daily_stat' => 'Statistik Pembersihan Harian (Per Gedung)',
-    'total_point' => 'Total Poin Per Pengguna',
-    'title_dashboard' => 'Dasbor',
+    'title' => 'ダッシュボード',
+    'total_users' => 'ユーザー総数',
+    'active_users' => 'アクティブユーザー',
+    'most_active_user' => '最もアクティブなユーザー',
+    'points' => 'ポイント',
+    'start_date' => '開始日',
+    'end_date' => '終了日',
+    'daily_stat' => '日次清掃統計（建物別）',
+    'total_point' => 'ユーザー別ポイント合計',
+    'title_dashboard' => 'ダッシュボード',
 ];

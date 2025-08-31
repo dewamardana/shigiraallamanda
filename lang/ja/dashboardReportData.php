@@ -1,18 +1,20 @@
 <?php
 
 return [
-    'title' => 'レポートダッシュボード',
+    'title' => 'レポート ダッシュボード',
+    'report_label' => 'レポート種類',
+    'report_select' => '種類を選択',
 
     'table' => [
         'reporter_name' => '報告者名',
-        'report_type'   => 'レポート種別',
+        'report_type'   => 'レポート種類',
         'date'          => '日付',
         'description'   => '説明',
         'media'         => 'メディア',
         'member_name'   => 'メンバー名',
         'point'         => 'ポイント',
-        'action'        => 'アクション',
-        'no_data'       => '利用可能なレポートがありません。',
+        'action'        => '操作',
+        'no_data'       => '利用可能なレポートはありません。',
     ],
 
     'form' => [
@@ -22,7 +24,7 @@ return [
 
     'controller' => [
         'index' => [
-            'title' => 'レポートデータ | ダッシュボード',
+            'title' => 'レポート データ | ダッシュボード',
         ],
 
         'reply' => [

@@ -1,18 +1,18 @@
 <?php
 
 return [
-    'team_members'             => 'Anggota Tim',
-    'select_member_placeholder' => '-- Pilih Anggota --',
+    'team_members'             => 'Thành viên nhóm',
+    'select_member_placeholder'=> '-- Chọn thành viên --',
 
-    'building'                 => 'Gedung',
-    'select_building'          => 'Pilih Gedung',
+    'building'                 => 'Tòa nhà',
+    'select_building'          => 'Chọn tòa nhà',
 
-    'room_status'              => 'Status Kamar',
+    'room_status'              => 'Tình trạng phòng',
     'oa'                       => 'OA/O*',
     'ov'                       => 'OV',
-    'stay'                     => 'Menginap',
+    'stay'                     => 'Lưu trú',
     'vec'                      => 'V/eco',
     'premier'                  => 'Premier',
 
-    'total_rooms'              => 'Jumlah Kamar',
+    'total_rooms'              => 'Tổng số phòng',
 ];

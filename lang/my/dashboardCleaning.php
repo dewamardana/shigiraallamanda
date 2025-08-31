@@ -1,130 +1,34 @@
 <?php
 
 return [
-    'cleaningdata' => [
-        'title'            => 'Dashboard Data Cleaning',
-        'filter_building'  => 'Gedung:',
-        'filter_all'       => 'Semua Gedung',
-        'filter_user'      => 'Filter berdasarkan User',
-        'members' => 'Anggota',
-        'table' => [
-            'date'      => 'Tanggal',
-            'name'      => 'Nama',
-            'oa'        => 'OA',
-            'ov'        => 'OV',
-            'stay'      => 'Stay',
-            'vec'       => 'Vec',
-            'premier'   => 'Premier',
-            'total'     => 'Total',
-            'point'     => 'Poin',
-            'total_info' => 'Total',
-            'member' => 'anggota',
-        ],
+    'title' => 'အစီရင်ခံစာ ဒက်ရှ်ဘုတ်',
+    'report_label' => 'အစီရင်ခံစာ အမျိုးအစား',
+    'report_select' => 'အမျိုးအစား ရွေးချယ်ရန်',
+
+    'table' => [
+        'reporter_name' => 'အစီရင်ခံသူ အမည်',
+        'report_type'   => 'အစီရင်ခံစာ အမျိုးအစား',
+        'date'          => 'နေ့စွဲ',
+        'description'   => 'ဖော်ပြချက်',
+        'media'         => 'မီဒီယာ',
+        'member_name'   => 'အဖွဲ့ဝင် အမည်',
+        'point'         => 'အမှတ်',
+        'action'        => 'လုပ်ဆောင်ချက်',
+        'no_data'       => 'အစီရင်ခံစာ မရှိပါ။',
     ],
 
-    'checkdata' => [
-        'title' => 'Data Checker',
-        'user' => 'Pengguna',
-        'all'  => 'Semua',
-        'table' => [
-            'date'       => 'Tanggal',
-            'name'       => 'Nama',
-            'room'       => 'Kamar',
-            'total'      => 'Total',
-            'no_data'    => 'Data tidak ditemukan.',
-        ],
+    'form' => [
+        'reply_placeholder' => 'အကြောင်းပြန်ရေးရန်...',
+        'point_placeholder' => 'အမှတ်',
     ],
 
-    'userpoint' => [
-        'title'         => 'Rekap Poin Bulanan',
-        'filter_year'   => 'Tahun',
-        'filter_month'  => 'Bulan',
-        'table' => [
-            'no'      => 'No',
-            'name'    => 'Nama',
-            'day'     => 'Hari',
-            'total'   => 'Total',
-        ],
-    ],
-
-    'cleaningHistory' => [
-        'title' => 'Data Cleaning',
-        'cleaning_title' => '📊 Menampilkan Semua Data Input Cleaning.',
-        'checker_title' => '📊 Menampilkan Semua Data Checking dan Office.',
-        'table' => [
-            'no' => 'No',
-            'date' => 'Tanggal',
-            'input_by' => 'Diinput Oleh',
-            'building' => 'Gedung',
-            'oa' => 'OA',
-            'ov' => 'OV',
-            'stay' => 'Stay',
-            'vec' => 'Vec',
-            'premier' => 'Premier',
-            'total_room' => 'Total Kamar',
-            'total_point' => 'Total Poin',
-            'point_per_member' => 'Poin per Anggota',
-            'members' => 'Anggota',
-            'no_data' => 'Tidak ada data.',
-        ],
-    ],
-
-    'checkRecords' => [
-        'title' => 'Data Checker dan Office',
-        'table' => [
-            'no' => 'No',
-            'date' => 'Tanggal',
-            'type' => 'Tipe',
-            'input_by' => 'Diinput Oleh',
-            'total_point' => 'Total Poin',
-            'point_per_member' => 'Poin / Anggota',
-            'no_data' => 'Tidak ada data',
-        ],
-    ],
     'controller' => [
-        'indextitle' => 'Dashboard Data Cleaning',
-        // Header exportCleaningData
-        'header_name_member'  => 'Nama Anggota',
-        'header_oa'           => 'OA',
-        'header_ov'           => 'OV',
-        'header_stay'         => 'Stay',
-        'header_vec'          => 'Vec',
-        'header_premier'      => 'Premier',
-        'header_total'        => 'Total',
-        'header_name_member2' => 'Nama Anggota',
-        'header_poin'         => 'Poin',
-
-        // Header exportRekapBulanan
-        'header_no'           => 'No',
-        'header_nama'         => 'Nama',
-        'header_day'          => 'Hari',
-        'header_total_poin'   => 'Total Poin',
-
-        // Filename
-        'filename_cleaning'   => 'Laporan Cleaning',
-        'filename_rekap'      => 'Laporan Bulanan',
-        'checkerDataTitle' => 'Data Poin Checker | Dashboard',
-
-        'no_active_formula' => 'Tidak ada formula aktif yang ditemukan.',
-        'filename' => 'Laporan_Checker.xlsx',
-
-        'headers' => [
-            'no' => 'No',
-            'date' => 'Tanggal',
-            'name' => 'Nama',
-            'room_count' => 'Jumlah Kamar',
-            'total_points' => 'Total Poin',
+        'index' => [
+            'title' => 'အစီရင်ခံစာ ဒေတာ | ဒက်ရှ်ဘုတ်',
         ],
-        'userPoint' => [
-            'title' => 'Ringkasan Poin Anggota | Dashboard',
-        ],
-        'CleaningHistoryData' => [
-            'title' => 'Riwayat Input Cleaning',
-        ],
-        'CheckOfficeHistoryData' => [
-            'title' => 'Riwayat Checker dan Office | Dashboard',
-        ],
-    ],
 
-
+        'reply' => [
+            'success_reply' => 'အကြောင်းပြန်ခြင်းနှင့် အမှတ်များကို အောင်မြင်စွာ ပေးထားပါသည်။',
+        ]
+    ]
 ];
