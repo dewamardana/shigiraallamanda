@@ -88,7 +88,9 @@
               required>
               <option value="">{{ __('cleaning.select_member_placeholder') }}</option>
               @foreach ($users as $user)
-                <option value="{{ $user->id }}">{{ $user->nama }}</option>
+                <option value="{{ $user->id }}" {{ old('members.0') == $user->id ? 'selected' : '' }}>
+                  {{ $user->nama }}
+                </option>
               @endforeach
             </select>
             <button type="button" onclick="removeMemberSelect(this)"
@@ -105,7 +107,7 @@
           required>
           <option value="">{{ __('cleaning.select_building') }}</option>
           @foreach ($building as $build)
-            <option value="{{ $build->id }} {{ old('building_id') == $build->id ? 'selected' : '' }}">
+            <option value="{{ $build->id }}" {{ old('building_id') == $build->id ? 'selected' : '' }}>
               {{ $build->building_name }}</option>
           @endforeach
         </select>
@@ -124,7 +126,10 @@
           <input id="datepicker-autohide" name="date" datepicker datepicker-autohide datepicker-autoselect-today
             datepicker-format="yyyy-mm-dd" type="text" value="{{ old('date') }}"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
-            placeholder="{{ __('form.date_placeholder') }}">
+            placeholder="{{ __('form.date_placeholder') }}" required>
+          @error('date')
+            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+          @enderror
         </div>
       </div>
 
@@ -215,7 +220,7 @@
 
         <a href="{{ route('homepage') }}"
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 focus:outline-none">
-          Back
+          {{ __('button.back') }}
         </a>
       </div>
     </form>
@@ -224,30 +229,44 @@
 
 @section('script')
   <script>
-    function addMemberSelect() {
-      const container = document.getElementById("memberSelectContainer");
-      const originalSelect = document.querySelector('#memberSelectContainer select');
+    // Simpan template options dari select pertama
+    let templateOptions = '';
+    document.addEventListener("DOMContentLoaded", function() {
+      const firstSelect = document.querySelector('#memberSelectContainer select');
+      if (firstSelect) {
+        firstSelect.querySelectorAll('option').forEach(opt => {
+          templateOptions += `<option value="${opt.value}">${opt.text}</option>`;
+        });
+      }
+    });
 
-      let options = '';
-      originalSelect.querySelectorAll('option:not([value=""])').forEach(opt => {
-        options += `<option value="${opt.value}">${opt.text}</option>`;
-      });
+    function addMemberSelect(selectedValue = '') {
+      const container = document.getElementById("memberSelectContainer");
 
       const div = document.createElement("div");
       div.className = "flex gap-2 mb-2";
       div.innerHTML = `
-          <select name="members[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
-          <option value="">{{ __('cleaning.select_member_placeholder') }}</option>
-          ${options}
-          </select>
-          <button type="button" onclick="removeMemberSelect(this)" class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center ">{{ __('button.remove') }}</button>
-      `;
+      <select name="members[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+        focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+        ${templateOptions}
+      </select>
+      <button type="button" onclick="removeMemberSelect(this)" 
+        class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 
+        font-medium rounded-sm text-sm px-5 py-2.5 text-center">
+        {{ __('button.remove') }}
+      </button>
+    `;
 
       container.appendChild(div);
-      feather.replace(); // panggil ulang icon
+
+      const select = div.querySelector('select');
+      if (selectedValue) {
+        select.value = selectedValue;
+      }
+
+      feather.replace();
       updateRemoveButtonState();
     }
-
 
     function removeMemberSelect(button) {
       button.parentElement.remove();
@@ -267,25 +286,17 @@
       }
     }
 
+    // Restore old members
     let oldMembers = @json(old('members', []));
     document.addEventListener('DOMContentLoaded', function() {
-      // Cek kalau old data ada
-      if (oldMembers.length > 1) {
-        // Hapus select default
+      if (oldMembers.length > 0) {
         document.getElementById('memberSelectContainer').innerHTML = '';
-
-        oldMembers.forEach(member => {
-          addMemberSelect();
-          let selects = document.querySelectorAll('#memberSelectContainer select');
-          selects[selects.length - 1].value = member;
-        });
-      } else if (oldMembers.length == 1) {
-        document.querySelector('#memberSelectContainer select').value = oldMembers[0];
+        oldMembers.forEach(member => addMemberSelect(member));
       }
-
       updateRemoveButtonState();
     });
 
+    // Counter functions
     function increment(id) {
       const input = document.getElementById(id);
       input.value = parseInt(input.value) + 1;
@@ -313,13 +324,14 @@
       document.getElementById("total_room").value = total;
     }
 
+    // Toggle premier field
     function togglePremier(buildingName) {
       const premierInput = document.getElementById('premierInput');
       if (buildingName.toLowerCase().includes('royal')) {
         premierInput.classList.remove('hidden');
       } else {
         premierInput.classList.add('hidden');
-        document.getElementById('premier').value = 0; // reset nilai jika disembunyikan
+        document.getElementById('premier').value = 0;
       }
     }
 
@@ -328,15 +340,14 @@
       updateRemoveButtonState();
 
       const buildingSelect = document.querySelector('select[name="building_id"]');
-      const premierInput = document.getElementById('premierInput');
 
-      // Trigger saat pertama kali load
-      togglePremier(buildingSelect.options[buildingSelect.selectedIndex].text);
+      if (buildingSelect) {
+        togglePremier(buildingSelect.options[buildingSelect.selectedIndex].text);
 
-      // Trigger saat value building dipilih
-      buildingSelect.addEventListener('change', function() {
-        togglePremier(this.options[this.selectedIndex].text);
-      });
+        buildingSelect.addEventListener('change', function() {
+          togglePremier(this.options[this.selectedIndex].text);
+        });
+      }
     });
   </script>
 @endsection

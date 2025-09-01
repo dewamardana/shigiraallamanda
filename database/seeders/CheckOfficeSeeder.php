@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Checks;
+use App\Models\DailyPoint;
 use App\Models\CheckRecords;
 use App\Models\FormulaCheck;
 use Illuminate\Support\Carbon;
@@ -59,7 +60,7 @@ class CheckOfficeSeeder extends Seeder
                 ]);
 
                 // Hitung total poin
-                $total = 
+                $total =
                     ($jumlah_kamar * $formula->jumlah_kamar) +
                     ($mengajar * $formula->mengajar) +
                     ($pembersihan_khusus * $formula->pembersihan_khusus) +
@@ -91,7 +92,7 @@ class CheckOfficeSeeder extends Seeder
                     'Mengajar'           => $mengajar,
                     'Pembersihan Khusus' => $pembersihan_khusus,
                     'Mengangkat Barang'  => $mengangkat_barang,
-                    'Membersihkan Gudang'=> $membersihkan_gudang,
+                    'Membersihkan Gudang' => $membersihkan_gudang,
                     'Obat Pool'          => $obat_pool,
                     'Membersihkan Pool'  => $membersihkan_pool,
                     'Sampah'             => $sampah
@@ -101,12 +102,15 @@ class CheckOfficeSeeder extends Seeder
                     ->map(fn($val, $key) => "$key: $val")
                     ->implode(', ');
 
-                DailyCleaningPoint::create([
+                DailyPoint::create([
                     'user_id'        => $user->id,
                     'date'           => $date,
-                    'activity_type'  => 'Checker',
-                    'activity_detail'=> $detailString,
-                    'point'          => $total
+                    'activity_type'  => Checks::class,
+                    'activity_id'    => $check->id,
+                    'activity_detail' => $detailString,
+                    'point'          => $total,
+                    'created_at'     => $createdAt,
+                    'updated_at'     => $createdAt,
                 ]);
             }
 

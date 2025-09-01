@@ -39,8 +39,10 @@ Route::middleware('auth')->group(function () {
 Route::middleware('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/cleaningdata', [DataController::class, 'cleaningData'])->name('cleaningdata');
+    Route::delete('/dashboard/cleaningdata/{cleaning}', [DataController::class, 'destroycleaningData'])->name('cleaning.destroy');
     Route::get('/dashboard/cleaningexport', [DataController::class, 'exportCleaningData'])->name('cleaningexport');
     Route::get('/dashboard/checker', [DataController::class, 'checkerData'])->name('checkerdata');
+    Route::delete('/dashboard/checker/{check}', [DataController::class, 'checkerDestroy'])->name('checkerDestroy');
     Route::get('/dashboard/checkerexport', [DataController::class, 'exportCheckerData'])->name('checkerexport');
     Route::get('/dashboard/office', [DataController::class, 'officeData'])->name('officedata');
     Route::get('/dashboard/officeexport', [DataController::class, 'officeexport'])->name('officeexport');

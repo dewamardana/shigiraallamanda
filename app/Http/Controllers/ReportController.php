@@ -8,9 +8,13 @@ use App\Models\Report;
 use App\Models\ReportType;
 use Illuminate\Http\Request;
 use App\Models\DailyCleaningPoint;
+use App\Traits\HandlesDailyPoints;
 
 class ReportController extends Controller
 {
+
+    use HandlesDailyPoints;
+
     public function reportData(Request $request)
     {
         $title = __('dashboardReportData.controller.index.title');
@@ -66,7 +70,7 @@ class ReportController extends Controller
                         $member->id,
                         $report->date,
                         $request->point,
-                        'Laporan',
+                        $report, // pakai model Report, bukan string
                         [
                             'Reply Admin' => $request->point,
                             'Jenis'       => $report->report_type
@@ -80,7 +84,7 @@ class ReportController extends Controller
                     $report->user_id,
                     $report->date,
                     $request->point,
-                    'Laporan',
+                    $report, // pakai model Report
                     [
                         'Reply Admin' => $request->point,
                         'Jenis'       => $report->report_type
@@ -90,22 +94,5 @@ class ReportController extends Controller
         }
 
         return redirect()->route('reportData')->with('success', __('dashboardReportData.controller.reply.success_reply'));
-    }
-
-
-    private function addDailyPoint($userId, $date, $point, $activityType, array $detailArray = [])
-    {
-        // Gabungkan detail array jadi string, contoh: "OA: 5, OV: 3"
-        $detailString = collect($detailArray)
-            ->map(fn($val, $key) => "$key: $val")
-            ->implode(', ');
-
-        DailyCleaningPoint::create([
-            'user_id'         => $userId,
-            'date'            => $date,
-            'activity_type'   => $activityType,
-            'activity_detail' => $detailString,
-            'point'           => $point
-        ]);
     }
 }

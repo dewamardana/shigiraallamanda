@@ -139,6 +139,9 @@
                 <th scope="col" class="px-6 py-3">
                   {{ __('dashboardCleaning.cleaningdata.table.point') }}
                 </th>
+                <th scope="col" class="px-6 py-3">
+                  {{ __('dashboardBuilding.index.table.action') }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -205,6 +208,21 @@
                     <td class="px-6 py-4 text-center text-blue-800 font-bold">
                       {{ number_format($cleaning['poin_per_member'], 2) }}
                     </td>
+                    @if ($index === 0)
+                      <td class="px-6 py-4 text-center text-blue-800 font-bold"
+                        rowspan="{{ $cleaning['member_count'] }}">
+
+                        <form action="{{ route('cleaning.destroy', $cleaning['id']) }}" method="POST"
+                          class="inline-block" data-confirm="{{ __('button.delete_confirm') }}">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit"
+                            class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2">
+                            {{ __('button.delete') }}
+                          </button>
+                        </form>
+                      </td>
+                    @endif
                   </tr>
                 @endforeach
               @endforeach
@@ -214,4 +232,19 @@
       </div>
     @endforeach
   </div>
+@endsection
+
+@section('scripts')
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('form[data-confirm]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+          const message = form.getAttribute('data-confirm');
+          if (!confirm(message)) {
+            e.preventDefault();
+          }
+        });
+      });
+    });
+  </script>
 @endsection

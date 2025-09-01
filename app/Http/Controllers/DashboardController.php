@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Checks;
 use App\Models\Cleaning;
+use App\Models\DailyPoint;
+use App\Models\OfficeRecord;
 use Illuminate\Http\Request;
-use App\Models\DailyCleaningPoint;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -99,8 +101,8 @@ class DashboardController extends Controller
                 ];
             })->sortByDesc('total')->values();
 
-        // Total Poin Per User dari tabel daily_cleaning_points
-        $totalPointsPerUser = DailyCleaningPoint::select('user_id', DB::raw('SUM(point) as total_point'))
+        // Total Poin Per User dari tabel daily_points
+        $totalPointsPerUser = DailyPoint::select('user_id', DB::raw('SUM(point) as total_point'))
             ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->groupBy('user_id')
@@ -117,24 +119,35 @@ class DashboardController extends Controller
         $mostActiveUser = $totalPointsPerUser->first();
 
         // Ambil daftar aktivitas (activity_type & activity_detail)
-        $activityLogs = DailyCleaningPoint::with('user')
+        $activityLogs = DailyPoint::with('user')
             ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->orderBy('date', 'desc')
             ->get();
 
-        $activityTypes = ['Cleaning', 'Checker', 'Office'];
+        // Mapping activity_type => label
+        $activityTypes = [
+            Cleaning::class => 'Cleaning',
+            Checks::class  => 'Checker',
+            OfficeRecord::class   => 'Office',
+        ];
+
         $topUsersPerActivity = [];
 
-        foreach ($activityTypes as $type) {
-            $topUsersPerActivity[$type] = DailyCleaningPoint::select('users.nama as nama')
-                ->join('users', 'users.id', '=', 'daily_cleaning_points.user_id')
+        foreach ($activityTypes as $type => $label) {
+            $topUsersPerActivity[$label] = DailyPoint::with('user')
+                ->select('user_id', DB::raw('SUM(point) as total'))
                 ->where('activity_type', $type)
-                ->groupBy('users.id', 'users.nama')
-                ->selectRaw('users.nama as nama, SUM(point) as total')
+                ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+                ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
+                ->groupBy('user_id')
                 ->orderByDesc('total')
                 ->limit(6)
-                ->get();
+                ->get()
+                ->map(fn($item) => [
+                    'nama'  => $item->user->nama ?? 'Unknown',
+                    'total' => $item->total,
+                ]);
         }
 
         return view('Dashboard.index', compact(

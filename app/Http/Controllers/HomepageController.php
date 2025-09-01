@@ -10,6 +10,8 @@ use App\Models\Formula;
 use App\Models\Building;
 use App\Models\Cleaning;
 use App\Models\TaskGroup;
+use App\Models\DailyPoint;
+use App\Models\ReportType;
 use App\Models\ReportMedia;
 use App\Models\CheckRecords;
 use App\Models\FormulaCheck;
@@ -20,13 +22,15 @@ use Illuminate\Support\Carbon;
 use App\Models\CleaningRecords;
 use App\Models\OfficeTaskDetail;
 use App\Models\DailyCleaningPoint;
-use App\Models\ReportType;
+use App\Traits\HandlesDailyPoints;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class HomepageController extends Controller
 {
+    use HandlesDailyPoints;
+
     public function index()
     {
         $title = __('homepageControllerMessage.index.title');
@@ -62,7 +66,7 @@ class HomepageController extends Controller
             'stay'       => 'required|integer|min:0',
             'vec'        => 'required|integer|min:0',
             'premier'    => 'nullable|integer|min:0',
-            'date'       => 'required|date',
+            'date'       => 'required|date|after:2000-01-01',
             'total_room' => 'required|integer|min:0',
             'members'    => 'required|array',
             'members.*'  => 'exists:users,id'
@@ -100,9 +104,6 @@ class HomepageController extends Controller
 
         $validated['premier'] = $validated['premier'] ?? 0;
 
-        // Simpan cleaning record
-        $cleaning = Cleaning::create($validated);
-        $cleaning->members()->attach($validated['members']);
 
         // Ambil slug building
         $building = Building::findOrFail($validated['building_id']);
@@ -136,6 +137,10 @@ class HomepageController extends Controller
         $poinPerMember = $memberCount > 0 ? $total / $memberCount : 0;
 
 
+        // Simpan cleaning record
+        $cleaning = Cleaning::create($validated);
+        $cleaning->members()->attach($validated['members']);
+
         // Simpan ke tabel poin_records
         CleaningRecords::create([
             'cleaning_id'   => $cleaning->id,
@@ -162,13 +167,34 @@ class HomepageController extends Controller
                 $detail['Premier'] = $validated['premier'];
             }
 
-            $this->addDailyPoint(
-                $memberId,
-                $date,
-                $poinPerMember,
-                'Cleaning',
-                $detail
-            );
+            if ($buildingSlug === 'royal') {
+                $this->addDailyPoint(
+                    $memberId,
+                    $date,
+                    $poinPerMember,
+                    $cleaning,   // 👈 langsung passing model Cleaning
+                    [
+                        'OA' => $request->oa,
+                        'OV' => $request->ov,
+                        'Stay' => $request->stay,
+                        'Vec' => $request->vec,
+                        'Premier' => $request->premier
+                    ]
+                );
+            } else {
+                $this->addDailyPoint(
+                    $memberId,
+                    $date,
+                    $poinPerMember,
+                    $cleaning,   // 👈 langsung passing model Cleaning
+                    [
+                        'OA' => $request->oa,
+                        'OV' => $request->ov,
+                        'Stay' => $request->stay,
+                        'Vec' => $request->vec,
+                    ]
+                );
+            }
         }
 
         return redirect()->route('homepage')->with('success', __('homepageControllerMessage.cleaning.success_store'));
@@ -265,35 +291,14 @@ class HomepageController extends Controller
             $request->user_id,
             $request->date,
             $total,
-            'Checker', // jenis aktivitas
-            $detail    // detail aktivitas
+            $check,   // pakai model Checks, bukan string
+            $detail
         );
+
 
         return redirect()->route('homepage')->with('success',  __('homepageControllerMessage.checker.success_store'));
     }
 
-    // public function office() {
-    //     $title = 'Office Input | Homepage';
-    //     $user = Auth::user();
-
-    //     $date = now()->format('Y-m-d');
-
-    //     // Ambil task group aktif beserta relasi tasks dan detail siapa yang kerjakan
-    //     $tasksActive = TaskGroup::where('active', true)
-    //         ->with(['tasks.details' => function($q) use ($date) {
-    //             $q->whereHas('record', function($qr) use ($date) {
-    //                 $qr->where('date', $date);
-    //             })->with('user');
-    //         }])
-    //         ->first();
-
-    //     return view('Homepage.office', [
-    //         'title'       => $title,
-    //         'user'        => $user,
-    //         'tasksActive' => $tasksActive,
-    //         'date'        => $date,
-    //     ]);
-    // }
 
     public function office(Request $request)
     {
@@ -363,30 +368,13 @@ class HomepageController extends Controller
             $request->user_id,
             $request->date,
             $totalPoint,
-            'Office',
+            $record, // pakai OfficeRecord instance
             ['Tasks' => implode(', ', $taskNames)]
         );
 
+
         return redirect()->route('homepage')->with('success', __('homepageControllerMessage.office.success_store'));
     }
-
-    // private function addDailyPoint($userId, $date, $point)
-    // {
-    //     $existing = DailyCleaningPoint::where('user_id', $userId)
-    //                 ->where('date', $date)
-    //                 ->first();
-
-    //     if ($existing) {
-    //         $existing->total_point += $point;
-    //         $existing->save();
-    //     } else {
-    //         DailyCleaningPoint::create([
-    //             'user_id'     => $userId,
-    //             'date'        => $date,
-    //             'total_point' => $point
-    //         ]);
-    //     }
-    // }
 
     public function history(Request $request)
     {
@@ -398,7 +386,7 @@ class HomepageController extends Controller
         $endDate   = $request->end_date ? \Carbon\Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d') : null;
 
         // Query dasar
-        $query = DailyCleaningPoint::where('user_id', $userId);
+        $query = DailyPoint::where('user_id', $userId);
 
         // Filter date range jika ada input
         if ($startDate && $endDate) {
@@ -412,8 +400,26 @@ class HomepageController extends Controller
         // Ambil data poin per tanggal
         $points = $query->orderBy('date', 'desc')->get()->groupBy('date');
 
-        // Rekap bulanan, juga mengikuti filter date kalau ada
-        $monthlySummaryQuery = DailyCleaningPoint::where('user_id', $userId);
+        // Format activity_type & activity_detail biar rapi
+        $points = $points->map(function ($records) {
+            return $records->map(function ($record) {
+                // Rapiin activity_type -> hanya ambil nama kelas terakhir
+                $record->activity_type = class_basename($record->activity_type);
+
+                // Rapiin activity_detail
+                if (is_array($record->activity_detail)) {
+                    $record->activity_detail = json_encode($record->activity_detail, JSON_UNESCAPED_UNICODE);
+                } elseif (is_string($record->activity_detail) && $this->isJson($record->activity_detail)) {
+                    $decoded = json_decode($record->activity_detail, true);
+                    $record->activity_detail = json_encode($decoded, JSON_UNESCAPED_UNICODE);
+                }
+
+                return $record;
+            });
+        });
+
+        // Rekap bulanan
+        $monthlySummaryQuery = DailyPoint::where('user_id', $userId);
         if ($startDate && $endDate) {
             $monthlySummaryQuery->whereBetween('date', [$startDate, $endDate]);
         } elseif ($startDate) {
@@ -434,6 +440,14 @@ class HomepageController extends Controller
 
         return view('Homepage.history', compact('points', 'monthlySummary', 'title'));
     }
+
+    // Helper untuk cek JSON
+    private function isJson($string)
+    {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
+    }
+
 
 
     public function report()
@@ -655,7 +669,7 @@ class HomepageController extends Controller
             })->sortByDesc('total')->values();
 
         // Total Poin Per User dari tabel daily_cleaning_points
-        $totalPointsPerUser = DailyCleaningPoint::select('user_id', DB::raw('SUM(point) as total_point'))
+        $totalPointsPerUser = DailyPoint::select('user_id', DB::raw('SUM(point) as total_point'))
             ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->groupBy('user_id')
@@ -670,24 +684,34 @@ class HomepageController extends Controller
             });
 
         // Ambil daftar aktivitas (activity_type & activity_detail)
-        $activityLogs = DailyCleaningPoint::with('user')
+        $activityLogs = DailyPoint::with('user')
             ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->orderBy('date', 'desc')
             ->get();
 
-        $activityTypes = ['Cleaning', 'Checker', 'Office'];
+        // Mapping activity_type => label
+        $activityTypes = [
+            Cleaning::class => 'Cleaning',
+            Checks::class  => 'Checker',
+            OfficeRecord::class   => 'Office',
+        ];
         $topUsersPerActivity = [];
 
-        foreach ($activityTypes as $type) {
-            $topUsersPerActivity[$type] = DailyCleaningPoint::select('users.nama as nama')
-                ->join('users', 'users.id', '=', 'daily_cleaning_points.user_id')
+        foreach ($activityTypes as $type => $label) {
+            $topUsersPerActivity[$label] = DailyPoint::with('user')
+                ->select('user_id', DB::raw('SUM(point) as total'))
                 ->where('activity_type', $type)
-                ->groupBy('users.id', 'users.nama')
-                ->selectRaw('users.nama as nama, SUM(point) as total')
+                ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
+                ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
+                ->groupBy('user_id')
                 ->orderByDesc('total')
                 ->limit(6)
-                ->get();
+                ->get()
+                ->map(fn($item) => [
+                    'nama'  => $item->user->nama ?? 'Unknown',
+                    'total' => $item->total,
+                ]);
         }
 
         return view('Homepage.profile', compact(
@@ -764,21 +788,4 @@ class HomepageController extends Controller
     //         ->route('homepage')
     //         ->with('success', 'Profile Berhasil di Perbarui');
     // }
-
-
-    private function addDailyPoint($userId, $date, $point, $activityType, array $detailArray = [])
-    {
-        // Gabungkan detail array jadi string, contoh: "OA: 5, OV: 3"
-        $detailString = collect($detailArray)
-            ->map(fn($val, $key) => "$key: $val")
-            ->implode(', ');
-
-        DailyCleaningPoint::create([
-            'user_id'         => $userId,
-            'date'            => $date,
-            'activity_type'   => $activityType,
-            'activity_detail' => $detailString,
-            'point'           => $point
-        ]);
-    }
 }

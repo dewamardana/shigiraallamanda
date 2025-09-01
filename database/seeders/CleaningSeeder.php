@@ -5,19 +5,22 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Building;
 use App\Models\Cleaning;
-use App\Models\CleaningRecords;
 use Illuminate\Support\Carbon;
+use App\Models\CleaningRecords;
 use Illuminate\Database\Seeder;
 use App\Models\DailyCleaningPoint;
+use App\Traits\HandlesDailyPoints;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CleaningSeeder extends Seeder
 {
+    use HandlesDailyPoints;
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+
         $buildings = Building::all();
         $users = User::all('id'); // Ambil collection penuh
         $startDate = Carbon::now()->subDays(6); // 7 hari ke belakang
@@ -124,17 +127,18 @@ class CleaningSeeder extends Seeder
                         $detailArray['Premier'] = $premier;
                     }
 
-                    DailyCleaningPoint::create([
-                        'user_id'         => $userId,
-                        'date'            => $date,
-                        'activity_type'   => 'Cleaning',
-                        'activity_detail' => collect($detailArray)
-                            ->map(fn($val, $key) => "$key: $val")
-                            ->implode(', '),
-                        'point'           => $poinPerUser,
-                        'created_at'      => $createdAt,
-                        'updated_at'      => $createdAt,
-                    ]);
+                    $this->addDailyPoint(
+                        $userId,
+                        $date,
+                        $poinPerUser,
+                        $cleaning,   // model Cleaning langsung
+                        [
+                            'OA'   => $oa,
+                            'OV'   => $ov,
+                            'Stay' => $stay,
+                            'Vec'  => $vec,
+                        ]
+                    );
                 }
             }
 

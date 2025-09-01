@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('daily_cleaning_points', function (Blueprint $table) {
+        Schema::create('daily_points', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
             $table->date('date');
-            $table->string('activity_type'); // Cleaning, Checker, Office
-            $table->text('activity_detail'); // OA: 5, OV: 3... / Kamar: 4...
+            $table->unsignedBigInteger('activity_id');   // ID aktivitas
+            $table->string('activity_type');             // Model aktivitas (Cleaning, Checker, Office, Teaching, dll)
+            $table->text('activity_detail');             // Detail JSON
             $table->decimal('point', 8, 2)->default(0);
             $table->timestamps();
+
+            $table->index(['activity_id', 'activity_type']); // biar cepat dicari
         });
     }
 
@@ -27,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('daily_cleaning_points');
+        Schema::dropIfExists('daily_points');
     }
 };

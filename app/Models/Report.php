@@ -28,4 +28,16 @@ class Report extends Model
     {
         return $this->belongsToMany(User::class, 'report_members');
     }
+
+    public function dailyPoints()
+    {
+        return $this->morphMany(DailyPoint::class, 'activity');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($report) {
+            $report->dailyPoints()->delete();
+        });
+    }
 }

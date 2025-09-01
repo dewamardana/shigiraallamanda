@@ -7,10 +7,11 @@ use App\Models\User;
 use App\Models\Checks;
 use App\Models\Building;
 use App\Models\Cleaning;
+use App\Models\DailyPoint;
 use App\Models\OfficeRecord;
 use Illuminate\Http\Request;
-use App\Models\DailyCleaningPoint;
 use App\Models\OfficeTaskDetail;
+use App\Models\DailyCleaningPoint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -98,6 +99,7 @@ class DataController extends Controller
             $poinPerMember = $memberCountNow > 0 ? $total / $memberCountNow : 0;
 
             $grouped[$groupKey][] = [
+                'id' => $cleaning->id,
                 'date' => $cleaning->date_formatted,
                 'building_name' => $cleaning->building->building_name ?? 'Unknown',
                 'oa' => $cleaning->oa,
@@ -126,6 +128,14 @@ class DataController extends Controller
         $users = User::orderBy('nama')->get();
 
         return view('Dashboard.cleaning.cleaningdata', compact('title', 'grouped', 'buildings', 'users'));
+    }
+
+    public function destroycleaningData(Cleaning $cleaning)
+    {
+        $cleaning->delete();
+
+        return redirect()->route('cleaningdata')
+            ->with('success', 'Data cleaning berhasil dihapus beserta relasinya.');
     }
 
     public function exportCleaningData(Request $request)
@@ -351,6 +361,14 @@ class DataController extends Controller
         return view('Dashboard.cleaning.checkerdata', compact('checkerData', 'title', 'users'));
     }
 
+
+    public function checkerDestroy(Checks $check)
+    {
+        $check->delete(); // otomatis hapus poin record dan daily point
+
+        return redirect()->back()->with('success', 'Checker berhasil dihapus.');
+    }
+
     public function exportCheckerData(Request $request)
     {
         $startDate = $request->get('start_date');
@@ -563,9 +581,6 @@ class DataController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
-
-
-
     public function userPoint(Request $request)
     {
         $title = __('dashboardCleaning.controller.userPoint.title');
@@ -591,7 +606,7 @@ class DataController extends Controller
         $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
 
         // Ambil data sekalian group by user_id|date
-        $points = DailyCleaningPoint::whereYear('date', $year)
+        $points = DailyPoint::whereYear('date', $year)
             ->whereMonth('date', $month)
             ->get()
             ->groupBy(function ($item) {
@@ -638,7 +653,7 @@ class DataController extends Controller
 
         $users = User::orderBy('nama')->get();
 
-        $points = DailyCleaningPoint::whereYear('date', $year)
+        $points = DailyPoint::whereYear('date', $year)
             ->whereMonth('date', $month)
             ->get()
             ->groupBy('user_id');
