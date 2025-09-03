@@ -11,14 +11,14 @@ return [
         'team' => 'Team Collaboration',
         'team_desc' => 'Add multiple team members easily.',
         'quote' => 'Great work today! Your efforts make our resort exceptional.',
-        'manager_name' => 'Sarah Johnson',
-        'manager_title' => 'Hotel Manager',
+        'manager_name' => 'YAMAMOTO AKINORI',
+        'manager_title' => 'General Manager',
     ],
 
-    
+
     'dashboard' => 'Dashboard',
     'room_data_input' => 'Room Data Input',
-    
+
 
     'cleaning' => 'Cleaning',
     'checker' => 'Checker',
@@ -30,4 +30,4 @@ return [
         'open' => 'Open dropdown',
         'profile' => 'Profile',
     ],
-]; 
+];

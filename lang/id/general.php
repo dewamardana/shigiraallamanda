@@ -4,7 +4,7 @@ return [
     'brand_name'      => 'SHIGIRA',
     'brand_subtitle'  => 'Seven Miles Resort',
     'quote'           => 'Memberikan pengalaman resor terbaik bagi tamu kami yang berharga.',
-    'gm_name'         => 'Kenji Nakamura',
+    'gm_name'         => 'YAMAMOTO AKINORI',
     'gm_position'     => 'General Manager',
 
     // Pemilih bahasa

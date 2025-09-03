@@ -4,7 +4,7 @@ return [
     'brand_name'      => 'SHIGIRA',
     'brand_subtitle'  => 'Seven Miles အနားယူစရာနေရာ',
     'quote'           => 'တန်ဖိုးရှိသောဧည့်သည်များအတွက် အကောင်းဆုံးအနားယူစရာအတွေ့အကြုံကိုပေးစွမ်းပါသည်။',
-    'gm_name'         => 'Kenji Nakamura',
+    'gm_name'         => 'YAMAMOTO AKINORI',
     'gm_position'     => 'ယေနရာလ်မန်နေဂျာ',
 
     // ဘာသာစကားရွေးချယ်ခြင်း

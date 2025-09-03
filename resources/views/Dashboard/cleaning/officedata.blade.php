@@ -88,6 +88,7 @@
             <th scope="col" class="px-6 py-3">{{ __('dashboardCleaning.officedata.table.task_group') }}</th>
             <th scope="col" class="px-6 py-3">{{ __('dashboardCleaning.officedata.table.task_point') }}</th>
             <th scope="col" class="px-6 py-3">{{ __('dashboardCleaning.officedata.table.total') }}</th>
+            <th scope="col" class="px-6 py-3">{{ __('dashboardBuilding.index.table.action') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -131,6 +132,17 @@
               {{-- Total Point --}}
               <td class="px-6 py-4 text-center font-bold text-green-700 whitespace-nowrap">
                 {{ $record->details->sum('point') }}
+              </td>
+              <td class="px-6 py-4 text-center font-bold text-green-700 whitespace-nowrap">
+                <form action="{{ route('officeDestroy', $record->id) }}" method="POST" class="inline-block"
+                  data-confirm="{{ __('button.delete_confirm') }}">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit"
+                    class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-2 py-1 mx-2 my-2">
+                    {{ __('button.delete') }}
+                  </button>
+                </form>
               </td>
             </tr>
           @empty

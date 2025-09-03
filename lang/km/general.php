@@ -4,7 +4,7 @@ return [
     'brand_name'      => 'SHIGIRA',
     'brand_subtitle'  => 'កន្លែងសំណាក់ Seven Miles',
     'quote'           => 'ផ្តល់នូវបទពិសោធន៍សំណាក់ល្អបំផុតដល់ភ្ញៀវដ៏ថ្លៃថ្នូររបស់យើង។',
-    'gm_name'         => 'Kenji Nakamura',
+    'gm_name'         => 'YAMAMOTO AKINORI',
     'gm_position'     => 'មន្ត្រីគ្រប់គ្រងទូទៅ',
 
     // ជ្រើសរើសភាសា

@@ -41,7 +41,7 @@ class User extends Authenticatable
         ];
     }
 
-        public function getRouteKeyName(): string
+    public function getRouteKeyName(): string
     {
         return 'slug';
     }
@@ -50,10 +50,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Cleaning::class, 'cleaning_user');
     }
-    
+
     public function dailyCleaningPoints()
     {
-        return $this->hasMany(DailyCleaningPoint::class);
+        return $this->hasMany(DailyPoint::class);
     }
 
     public function checks()
@@ -80,5 +80,16 @@ class User extends Authenticatable
     {
         $skill = Skill::firstOrCreate(['name' => $skillName]);
         $this->skills()->syncWithoutDetaching([$skill->id]);
+    }
+
+    public function hasRole(string $roleName): bool
+    {
+        // langsung query, aman walaupun roles belum di-load
+        return $this->roles()->where('name', $roleName)->exists();
+    }
+
+    public function hasAnyRole(array $roleNames): bool
+    {
+        return $this->roles()->whereIn('name', $roleNames)->exists();
     }
 }

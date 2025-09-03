@@ -4,7 +4,7 @@ return [
     'brand_name'      => 'SHIGIRA',
     'brand_subtitle'  => 'セブンマイルズリゾート',
     'quote'           => '大切なお客様に最高のリゾート体験をお届けします。',
-    'gm_name'         => '中村 健司',
+    'gm_name'         => '山本明徳 ',
     'gm_position'     => 'ゼネラルマネージャー',
 
     // 言語選択

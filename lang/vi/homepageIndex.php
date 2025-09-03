@@ -11,8 +11,8 @@ return [
         'team' => 'Làm việc nhóm',
         'team_desc' => 'Dễ dàng thêm thành viên vào nhóm.',
         'quote' => 'Làm tốt hôm nay! Nỗ lực của bạn khiến khu nghỉ dưỡng của chúng tôi trở nên tuyệt vời.',
-        'manager_name' => 'Sarah Johnson',
-        'manager_title' => 'Quản lý khách sạn',
+        'manager_name' => 'YAMAMOTO AKINORI',
+        'manager_title' => 'Quản lý tổng',
     ],
 
     'dashboard' => 'Bảng điều khiển',

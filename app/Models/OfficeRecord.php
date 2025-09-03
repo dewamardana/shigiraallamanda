@@ -23,4 +23,22 @@ class OfficeRecord extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function dailyPoints()
+    {
+        return $this->morphMany(DailyPoint::class, 'activity');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($record) {
+            // hapus semua detail (jadi collection dulu)
+            $record->details()->get()->each(function ($detail) {
+                $detail->delete();
+            });
+
+            // hapus daily points
+            $record->dailyPoints()->delete();
+        });
+    }
 }

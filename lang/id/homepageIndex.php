@@ -11,8 +11,8 @@ return [
         'team' => 'Kolaborasi Tim',
         'team_desc' => 'Tambah anggota tim dengan mudah.',
         'quote' => 'Kerja hebat hari ini! Usaha Anda membuat resort kami luar biasa.',
-        'manager_name' => 'Sarah Johnson',
-        'manager_title' => 'Manajer Hotel',
+        'manager_name' => 'YAMAMOTO AKINORI',
+        'manager_title' => 'General manager',
     ],
 
     'dashboard' => 'Dasbor',

@@ -487,6 +487,15 @@ class DataController extends Controller
         return view('Dashboard.cleaning.officedata', compact('records', 'title', 'users'));
     }
 
+    public function officeDestroy(OfficeRecord $office)
+    {
+        $office->delete(); // otomatis cascade hapus details + daily_points
+
+        return redirect()
+            ->route('officedata') // sesuaikan dengan route index-mu
+            ->with('success', 'Checker berhasil dihapus.');
+    }
+
     public function officeexport(Request $request)
     {
         $startDate = $request->get('start_date');
@@ -747,17 +756,18 @@ class DataController extends Controller
 
     public function CleaningHistoryData(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
         $title = __('dashboardCleaning.controller.CleaningHistoryData.title');
 
         $cleanings = Cleaning::with(['poinRecord', 'building', 'members', 'user'])
-            ->when($user->role !== 'admin', function ($query) use ($user) {
+            ->when(!$user->hasRole('admin'), function ($query) use ($user) {
                 $query->where(function ($q) use ($user) {
                     $q->where('user_id', $user->id)
                         ->orWhereHas('members', fn($q) => $q->where('user_id', $user->id));
                 });
             })
-            ->orderBy('date', 'desc') // ✅ urutkan berdasarkan kolom date
+            ->orderBy('date', 'desc')
             ->get();
 
         $cleaningData = $cleanings->map(function ($cleaning) {

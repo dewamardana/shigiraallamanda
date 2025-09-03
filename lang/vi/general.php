@@ -4,7 +4,7 @@ return [
     'brand_name'      => 'SHIGIRA',
     'brand_subtitle'  => 'Khu nghỉ dưỡng Seven Miles',
     'quote'           => 'Mang đến trải nghiệm nghỉ dưỡng tốt nhất cho khách hàng quý giá của chúng tôi.',
-    'gm_name'         => 'Kenji Nakamura',
+    'gm_name'         => 'YAMAMOTO AKINORI',
     'gm_position'     => 'Quản lý tổng',
 
     // Chọn ngôn ngữ

@@ -22,15 +22,4 @@ class OfficeTaskDetail extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function dailyPoints()
-    {
-        return $this->morphMany(DailyPoint::class, 'activity');
-    }
-
-    protected static function booted()
-    {
-        static::deleting(function ($office) {
-            $office->dailyPoints()->delete();
-        });
-    }
 }

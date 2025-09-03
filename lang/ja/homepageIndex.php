@@ -11,8 +11,8 @@ return [
         'team' => 'チーム連携',
         'team_desc' => 'チームメンバーを簡単に追加できます。',
         'quote' => '今日も素晴らしい仕事！ 皆さんの努力が、当リゾートを特別にしています。',
-        'manager_name' => 'Sarah Johnson',
-        'manager_title' => 'ホテルマネージャー',
+        'manager_name' => '山本明徳 ',
+        'manager_title' => 'ゼネラルマネージャー',
     ],
 
     'dashboard' => 'ダッシュボード',
