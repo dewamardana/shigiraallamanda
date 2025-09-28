@@ -1,7 +1,7 @@
 @extends('Homepage.Layout.main')
 
 @section('content')
-  <div class="mt-4 mb-40 md:mb-20 mx-4 md:mx-auto md:max-w-3xl p-6 bg-white border border-gray-200 rounded-lg shadow-2xl">
+  <div class="my-4 md:mb-20 mx-4 md:mx-auto md:max-w-3xl p-6 bg-white border border-gray-200 rounded-lg shadow-2xl">
     <!-- FORM Report -->
     <h2 class="text-2xl font-bold text-center text-teal-1001 mb-6 border-b pb-2">
       {{ __('report.title') }}

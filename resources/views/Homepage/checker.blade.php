@@ -68,7 +68,7 @@
 
 
   <div
-    class="mt-4 my-20 mx-4 md:mx-auto md:max-w-2xl p-4 bg-white border border-gray-200 rounded-lg shadow-2xl sm:p-6 md:p-8">
+    class="my-4 md:mb-20 mx-4 md:mx-auto md:max-w-2xl p-4 bg-white border border-gray-200 rounded-lg shadow-2xl sm:p-6 md:p-8">
     <!-- FORM CHECKER -->
     <div id="form-checker" class="mt-6">
       <div class="flex justify-between items-center mb-4">

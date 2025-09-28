@@ -1,7 +1,7 @@
 @extends('Homepage.Layout.main')
 
 @section('content')
-  <div class="mt-4 my-20 mx-10 md:max-w-full p-4 bg-white border border-gray-200 rounded-lg shadow-2xl sm:p-6 md:p-8">
+  <div class="my-4 mx-10 md:max-w-full p-4 bg-white border border-gray-200 rounded-lg shadow-2xl sm:p-6 md:p-8">
     <h2 class="text-2xl font-bold text-teal-1001 text-center">{{ __('history.tooltip.activity_detail') }}</h2>
 
     {{-- Filter --}}

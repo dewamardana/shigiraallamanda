@@ -66,7 +66,7 @@
   @endif
   {{-- End Alert Component --}}
 
-  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 items-stretch mb-36 md:mb-0">
+  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 items-stretch mb-4">
     {{-- User Profile Card (span 2 cols) --}}
     <div class="lg:col-span-2 h-full">
       <div class="w-full bg-white rounded-lg shadow-2xl">
