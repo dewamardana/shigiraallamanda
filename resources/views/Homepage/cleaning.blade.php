@@ -282,7 +282,7 @@
                     <i data-feather="minus" class="text-accent-1000"></i>
                 </button>
 
-                <input type="text" name="tasks[${task.id}]" id="task_${task.id}" value="0" min="0" required
+                <input type="number" name="tasks[${task.id}]" id="task_${task.id}" value="0" min="0" required
                     class="w-full text-center text-sm font-medium bg-gray-50 h-11 
                         border-t border-b border-gray-300 focus:ring-blue-500 
                         focus:border-blue-500 outline-none min-w-0" />
@@ -295,6 +295,8 @@
                 </div>
             `;
             taskContainer.appendChild(wrapper);
+            const input = wrapper.querySelector("input");
+            input.addEventListener("input", updateTotal);
           });
 
           // Refresh feather icons setelah inject HTML
