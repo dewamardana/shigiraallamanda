@@ -75,7 +75,7 @@ class DashboardController extends Controller
             ->orderBy('date')
             ->get();
 
-        return view('dashboard.index', compact(
+        return view('Dashboard.index', compact(
             'title',
             'totalUsers',
             'activeUsers',
