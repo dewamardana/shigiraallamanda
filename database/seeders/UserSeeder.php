@@ -16,32 +16,84 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $userData = [
-            'nama' => 'I Dewa Made Mardana',
-            'slug' => Str::slug('I Dewa Made Mardana'),
-            'username' => 'dewa',
-            'password' => bcrypt('password'), // default password
-            'email' => 'dewamardana@gmail.com',
-            'department' => 'Public Area Section',
-            'nomor_telp' => '085777766655',
-            'gender' => 'L',
-            'foto' => null,
-            'remember_token' => Str::random(10),
-            'status' => 'Active',
-            'created_at' => now(),
-            'updated_at' => now(),
+        $userList = [
+            [
+                'nama' => 'I Dewa Made Mardana',
+                'username' => 'dewa',
+                'email' => 'dewamardana@gmail.com',
+            ],
+            [
+                'nama' => 'Komang Adi Putra',
+                'username' => 'komang',
+                'email' => 'komang@gmail.com',
+            ],
+            [
+                'nama' => 'Nyoman Gede',
+                'username' => 'nyoman',
+                'email' => 'nyoman@gmail.com',
+            ],
+            [
+                'nama' => 'Ketut Sudiarta',
+                'username' => 'ketut',
+                'email' => 'ketut@gmail.com',
+            ],
+            [
+                'nama' => 'Made Putri Ayu',
+                'username' => 'putri',
+                'email' => 'putri@gmail.com',
+            ],
+            [
+                'nama' => 'Wayan Arta',
+                'username' => 'wayan',
+                'email' => 'wayan@gmail.com',
+            ],
+            [
+                'nama' => 'Kadek Budi',
+                'username' => 'kadek',
+                'email' => 'kadek@gmail.com',
+            ],
+            [
+                'nama' => 'Gusti Ayu',
+                'username' => 'gusti',
+                'email' => 'gusti@gmail.com',
+            ],
+            [
+                'nama' => 'Putu Eka',
+                'username' => 'putu',
+                'email' => 'putu@gmail.com',
+            ],
+            [
+                'nama' => 'Ketut Rai',
+                'username' => 'rai',
+                'email' => 'rai@gmail.com',
+            ],
         ];
 
-        // Insert user ke tabel users
-        $user = User::create($userData);
+        foreach ($userList as $data) {
+            $userData = [
+                'nama' => $data['nama'],
+                'slug' => Str::slug($data['nama']),
+                'username' => $data['username'],
+                'password' => bcrypt('password'), // default password
+                'email' => $data['email'],
+                'department' => 'Public Area Section',
+                'nomor_telp' => '08' . rand(1000000000, 9999999999),
+                'gender' => rand(0, 1) ? 'L' : 'P',
+                'foto' => null,
+                'remember_token' => Str::random(10),
+                'status' => 'Active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
 
-        // Ambil semua role
-        $roles = Role::all();
+            $user = User::create($userData);
 
-        if ($roles->count() > 0) {
-            // Pilih role random (1 atau 2 role)
-            $randomRoles = 2;
-            $user->roles()->attach($randomRoles);
+            // Assign role
+            $roles = Role::all();
+            if ($roles->count() > 0) {
+                // Misalnya selalu assign role id = 2 (user biasa)
+                $user->roles()->attach(2);
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
 @section('content')
   <div class="w-full max-w-screen-2xl mx-auto px-5 py-6">
     <h1 class="text-2xl font-bold mb-4">{{ __('dashboardIndex.title') }}</h1>
-
+    {{--  
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
       <!-- Total Users -->
       <div class="rounded-xl shadow overflow-hidden bg-gradient-to-r from-teal-600 to-teal-800 text-white">
@@ -77,7 +77,7 @@
     <div id="pointChart" class="w-full h-[420px]"></div>
     <h2 class="text-xl font-semibold mb-4 text-center">{{ __('dashboardIndex.total_point') }}</h2>
 
-    {{-- Tambahan: Top 6 per Activity Type --}}
+    Tambahan: Top 6 per Activity Type
     @foreach ($topUsersPerActivity as $type => $data)
       <h2 class="text-lg font-semibold mt-8 mb-4 text-center">
         Top 6 {{ $type }} {{ __('dashboardIndex.points') }}
@@ -284,4 +284,5 @@
       chart.render();
     });
   </script>
-@endsection
+  --}}
+  @endsection

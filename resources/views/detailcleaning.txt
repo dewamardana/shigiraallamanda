@@ -1,0 +1,156 @@
+Schema::create('cleaning_groups', function (Blueprint $table) {
+            $table->id();
+            $table->string('building_name')->unique();
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->string('foto')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
+        });        
+
+Schema::create('cleaning_tasks', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();   // ex: OV, OA, Stay, Vec
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
+        });
+
+        Schema::create('cleaning_records', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('cleaning_group_id')->constrained()->cascadeOnDelete(); // gedung
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // yang mengerjakan
+            $table->string('member_count'); // angka (1, 2, 3) atau 'random'
+            $table->integer('total_room');
+            $table->float('total_point')->default(0);
+            $table->date('date');
+            $table->timestamps();
+        });
+
+        Schema::create('cleaning_record_details', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('cleaning_record_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('cleaning_task_id')->constrained()->cascadeOnDelete();
+            $table->string('value');             // contoh: "OA", "OV", "Stay", "Vec"
+            $table->float('formula')->default(1); // untuk formula dasar
+            $table->float('calculated')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('cleaning_record_user', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('cleaning_record_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('cleaning_group_tasks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('cleaning_group_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('cleaning_task_id')->constrained()->cascadeOnDelete();
+            $table->float('formula')->default(0); // default poin untuk task ini di group tsb
+            $table->timestamps();
+
+            $table->unique(['cleaning_group_id', 'cleaning_task_id']); // supaya 1 task tidak dobel di satu group
+        });
+
+dan modelnya :
+class CleaningGroup extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['building_name', 'slug', 'description', 'status', 'foto', 'status'];
+
+    public function tasks()
+    {
+        return $this->belongsToMany(CleaningTask::class, 'cleaning_group_tasks')
+            ->withPivot('formula')
+            ->withTimestamps();
+    }
+
+    public function records()
+    {
+        return $this->hasMany(CleaningRecord::class);
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+}
+
+class CleaningRecord extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'cleaning_group_id',
+        'user_id',
+        'member_count',
+        'total_room',
+        'total_point',
+        'date',
+    ];
+
+    public function group()
+    {
+        return $this->belongsTo(CleaningGroup::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id'); // leader/pencatat
+    }
+
+    public function details()
+    {
+        return $this->hasMany(CleaningRecordDetail::class);
+    }
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'cleaning_record_user')
+            ->withTimestamps();
+    }
+}
+
+class CleaningRecordDetail extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'cleaning_record_id',
+        'cleaning_task_id',
+        'value',
+        'formula',
+        'calculated',
+    ];
+
+    public function record()
+    {
+        return $this->belongsTo(CleaningRecord::class);
+    }
+
+    public function task()
+    {
+        return $this->belongsTo(CleaningTask::class);
+    }
+}
+
+class CleaningTask extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['name', 'status'];
+
+    public function groups()
+    {
+        return $this->belongsToMany(CleaningGroup::class, 'cleaning_group_task')
+            ->withPivot('formula')
+            ->withTimestamps();
+    }
+
+    public function recordDetails()
+    {
+        return $this->hasMany(CleaningRecordDetail::class);
+    }
+}

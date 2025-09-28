@@ -10,10 +10,13 @@ use App\Http\Controllers\FormulaController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AddValueController;
 use App\Http\Controllers\BuildingController;
+use App\Http\Controllers\CheckerTaskController;
 use App\Http\Controllers\HomepageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TaskGroupController;
+use App\Http\Controllers\CleaningTaskController;
 use App\Http\Controllers\FormulaCheckController;
+use App\Http\Controllers\CleaningGroupController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', [AuthController::class, 'index'])->name('loginPage');
@@ -22,6 +25,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/homepage', [HomepageController::class, 'index'])->name('homepage');
     Route::get('/homepage/cleaning', [HomepageController::class, 'cleaning'])->name('cleaning');
+    Route::get('/homepage/cleaning/getTask/{id}', [HomepageController::class, 'getTasks'])->name('getTask');
     Route::post('/homepage/cleaning', [HomepageController::class, 'cleaningStore'])->name('cleaningStore');
     Route::get('/homepage/checker', [HomepageController::class, 'checker'])->name('checker');
     Route::post('/homepage/checker', [HomepageController::class, 'checkerStore'])->name('checkerStore');
@@ -39,7 +43,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/cleaningdata', [DataController::class, 'cleaningData'])->name('cleaningdata');
-    Route::delete('/dashboard/cleaningdata/{cleaning}', [DataController::class, 'destroycleaningData'])->name('cleaning.destroy');
+    Route::delete('/dashboard/cleaningdata/{cleaningRecord}', [DataController::class, 'destroycleaningData'])->name('cleaning.destroy');
     Route::get('/dashboard/cleaningexport', [DataController::class, 'exportCleaningData'])->name('cleaningexport');
     Route::get('/dashboard/checker', [DataController::class, 'checkerData'])->name('checkerdata');
     Route::delete('/dashboard/checker/{check}', [DataController::class, 'checkerDestroy'])->name('checkerDestroy');
@@ -51,9 +55,13 @@ Route::middleware('admin')->group(function () {
     Route::get('/dashboard/userpointexport', [DataController::class, 'userPointExport'])->name('userPointExport');
     Route::get('/dashboard/cleaninghistorydata', [DataController::class, 'CleaningHistoryData'])->name('Cleaninghistorydata');
     Route::get('/dashboard/checkofficehistorydata', [DataController::class, 'CheckOfficeHistoryData'])->name('CheckOfficeHistoryData');
+    Route::get('/userpoint/{user}/{year}/{month}/rekap', [DataController::class, 'userPointRekap'])->name('userpoint.rekap');
+
 
     Route::resource('/dashboard/user', UserController::class);
-    Route::resource('/dashboard/building', BuildingController::class);
+    Route::resource('/dashboard/cleaningGroups', CleaningGroupController::class);
+    Route::resource('/dashboard/cleaningTasks', CleaningTaskController::class);
+    Route::resource('/dashboard/checker-tasks', CheckerTaskController::class);
     Route::resource('/dashboard/formula', FormulaController::class);
     Route::resource('/dashboard/formulaCheck', FormulaCheckController::class);
     Route::resource('/dashboard/task-groups', TaskGroupController::class);

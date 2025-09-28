@@ -87,21 +87,19 @@
             </th>
             <th class="border border-gray-300 px-4 py-3 text-left">{{ __('dashboardCleaning.checkdata.table.name') }}
             </th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('dashboardCleaning.checkdata.table.room') }}
-            </th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('checker.teaching') }}</th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('checker.special_cleaning') }}</th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('checker.lifting') }}</th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('checker.warehouse_cleaning') }}</th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('checker.pool_chemicals') }}</th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('checker.pool_cleaning') }}</th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('checker.waste_disposal') }}</th>
-            <th class="border border-gray-300 px-3 py-3 text-center">{{ __('dashboardCleaning.checkdata.table.total') }}
+
+            @foreach ($tasks as $task)
+              <th class="border border-gray-300 px-3 py-3 text-center">
+                {{ $task->name }}
+              </th>
+            @endforeach
+
+            <th class="border border-gray-300 px-3 py-3 text-center">
+              {{ __('dashboardCleaning.checkdata.table.total') }}
             </th>
             <th class="border border-gray-300 px-3 py-3 text-center">
               {{ __('dashboardBuilding.index.table.action') }}
             </th>
-
           </tr>
         </thead>
         <tbody class="text-sm">
@@ -110,26 +108,24 @@
               <td class="px-4 py-2 whitespace-nowrap">{{ \Carbon\Carbon::parse($data['date'])->format('d M Y') }}</td>
               <td class="px-4 py-2 whitespace-nowrap">{{ $data['user_name'] }}</td>
 
-              <td class="text-center whitespace-nowrap">
-                {{ $data['jumlah_kamar'] }} × {{ $data['poin']->jumlah_kamar ?? '-' }}
-              </td>
-
-              <td class="text-center">{{ $data['mengajar'] ? '✅ + ' . ($data['poin']->mengajar ?? '-') : '❌' }}</td>
-              <td class="text-center">
-                {{ $data['pembersihan_khusus'] ? '✅ + ' . ($data['poin']->pembersihan_khusus ?? '-') : '❌' }}</td>
-              <td class="text-center">
-                {{ $data['mengangkat_barang'] ? '✅ + ' . ($data['poin']->mengangkat_barang ?? '-') : '❌' }}</td>
-              <td class="text-center">
-                {{ $data['membersihkan_gudang'] ? '✅ + ' . ($data['poin']->membersihkan_gudang ?? '-') : '❌' }}</td>
-              <td class="text-center">{{ $data['obat_pool'] ? '✅ + ' . ($data['poin']->obat_pool ?? '-') : '❌' }}</td>
-              <td class="text-center">
-                {{ $data['membersihkan_pool'] ? '✅ + ' . ($data['poin']->membersihkan_pool ?? '-') : '❌' }}</td>
-              <td class="text-center">{{ $data['sampah'] ? '✅ + ' . ($data['poin']->sampah ?? '-') : '❌' }}</td>
+              @foreach ($tasks as $task)
+                @php
+                  $value = $data['tasks'][$task->name] ?? null;
+                  $point = $data['tasks'][$task->name . '_poin'] ?? null;
+                @endphp
+                <td class="text-center">
+                  @if ($task->type === 'number')
+                    {{ $value ? $value . ' × ' . $task->formula : '❌' }}
+                  @else
+                    {{ $value ? '✅ + ' . $task->formula : '❌' }}
+                  @endif
+                </td>
+              @endforeach
 
               <td class="text-center font-bold text-green-700 whitespace-nowrap">
                 {{ number_format($data['total_point'], 2) }}
               </td>
-              <td class="text-center font-bold text-green-700 whitespace-nowrap">
+              <td class="text-center">
                 <form action="{{ route('checkerDestroy', $data['id']) }}" method="POST" class="inline-block"
                   data-confirm="{{ __('button.delete_confirm') }}">
                   @csrf
@@ -143,11 +139,13 @@
             </tr>
           @empty
             <tr>
-              <td colspan="12" class="text-center text-gray-500 py-6">
-                {{ __('dashboardCleaning.checkdata.table.no_data') }}</td>
+              <td colspan="{{ 3 + count($tasks) }}" class="text-center text-gray-500 py-6">
+                {{ __('dashboardCleaning.checkdata.table.no_data') }}
+              </td>
             </tr>
           @endforelse
         </tbody>
+
       </table>
     </div>
   </div>

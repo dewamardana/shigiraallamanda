@@ -3,9 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\CleaningRecords;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -46,6 +47,13 @@ class User extends Authenticatable
         return 'slug';
     }
 
+    public function cleaningRecords()
+    {
+        return $this->belongsToMany(CleaningRecord::class, 'cleaning_record_user')
+            ->withTimestamps();
+    }
+
+
     public function cleanings()
     {
         return $this->belongsToMany(Cleaning::class, 'cleaning_user');
@@ -60,6 +68,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Checks::class);
     }
+
+    public function checkerRecords()
+    {
+        return $this->hasMany(CheckerRecord::class);
+    }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class);

@@ -51,32 +51,32 @@
         </a>
       </li>
       <li>
-        <a href="{{ route('building.index') }}"
-          class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-teal-1000 hover:text-white {{ request()->routeIs('building.*') ? 'bg-teal-1001 text-white' : '' }}">
-          <i data-feather="home" class="text-accent-1000"></i>
-          <span class="flex-1 ms-3 whitespace-nowrap">{{ __('layoutMessage.sidebar_building') }}</span>
-        </a>
-      </li>
-      <li>
-      <li>
         <button type="button"
-          class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-teal-1000 hover:text-white {{ request()->routeIs(['formula.*', 'formulaCheck.*']) ? 'bg-teal-1001 text-white' : '' }}"
-          aria-controls="dropdown-formula" data-collapse-toggle="dropdown-formula">
+          class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-teal-1000 hover:text-white {{ request()->routeIs(['cleaningTasks*', 'cleaningGroups.*']) ? 'bg-teal-1001 text-white' : '' }}"
+          aria-controls="dropdown-cleaning" data-collapse-toggle="dropdown-cleaning">
           <i data-feather="thermometer" class="text-accent-1000"></i>
-          <span
-            class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ __('layoutMessage.sidebar_formula') }}</span>
+          <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Cleaning Manage</span>
           <i data-feather="chevron-down"></i>
         </button>
-        <ul id="dropdown-formula" class="hidden py-2 space-y-2">
+        <ul id="dropdown-cleaning" class="hidden py-2 space-y-2">
           <li>
-            <a href="{{ route('formula.index') }}"
-              class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-teal-1000 hover:text-white {{ request()->routeIs('formula.*') ? 'bg-teal-1001 text-white' : '' }}">{{ __('layoutMessage.sidebar_formulabuilding') }}</a>
+            <a href="{{ route('cleaningTasks.index') }}"
+              class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-teal-1000 hover:text-white {{ request()->routeIs('cleaningTasks.*') ? 'bg-teal-1001 text-white' : '' }}">Cleaning
+              Task</a>
           </li>
           <li>
-            <a href="{{ route('formulaCheck.index') }}"
-              class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-teal-1000 hover:text-white {{ request()->routeIs('formulaCheck.*') ? 'bg-teal-1001 text-white' : '' }}">{{ __('layoutMessage.sidebar_formulacheck') }}</a>
+            <a href="{{ route('cleaningGroups.index') }}"
+              class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-teal-1000 hover:text-white {{ request()->routeIs('cleaningGroups.*') ? 'bg-teal-1001 text-white' : '' }}">Cleaning
+              Group</a>
           </li>
         </ul>
+      </li>
+      <li>
+        <a href="{{ route('checker-tasks.index') }}"
+          class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-teal-1000 hover:text-white {{ request()->routeIs('checker-tasks.index.*') ? 'bg-teal-1001 text-white' : '' }}">
+          <i data-feather="check-square" class="text-accent-1000"></i>
+          <span class="flex-1 ms-3 whitespace-nowrap">Checker</span>
+        </a>
       </li>
       <li>
         <a href="{{ route('task-groups.index') }}"

@@ -64,13 +64,24 @@
       </button>
     </div>
   @endif
-  {{-- End Alert Component --}}
 
+  @if ($errors->any())
+    <div class="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
+      <ul class="list-disc ms-5">
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
+
+  {{-- End Alert Component --}}
 
   <div
     class="mt-4 mb-40 md:mb-20 mx-4 md:mx-auto md:max-w-2xl p-4 bg-white border border-gray-200 rounded-lg shadow-2xl sm:p-6 md:p-8">
     <form action="{{ route('cleaningStore') }}" method="POST">
       @csrf
+
       <!-- Team Members -->
       <div class="mb-6">
         <div class="flex justify-between items-center mb-3">
@@ -93,29 +104,33 @@
                 </option>
               @endforeach
             </select>
+            @error('members')
+              <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
             <button type="button" onclick="removeMemberSelect(this)"
-              class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center ">{{ __('button.remove') }}</button>
+              class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center">{{ __('button.remove') }}</button>
           </div>
         </div>
       </div>
 
-      <!-- Building -->
+      {{-- Cleaning Group --}}
       <div class="mb-6">
-        <label for="building" class="block mb-2 text-sm font-medium text-teal-1001">{{ __('cleaning.building') }}</label>
-        <select id="building" name="building_id"
-          class="g-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-          required>
+        <label class="block mb-2 text-sm font-medium text-teal-1001">{{ __('cleaning.building') }}</label>
+        <select id="cleaning_group" name="cleaning_group_id"
+          class="bg-gray-50 border border-gray-300 text-sm rounded-lg w-full p-2.5" required>
           <option value="">{{ __('cleaning.select_building') }}</option>
-          @foreach ($building as $build)
-            <option value="{{ $build->id }}" {{ old('building_id') == $build->id ? 'selected' : '' }}>
-              {{ $build->building_name }}</option>
+          @foreach ($groups as $group)
+            <option value="{{ $group->id }}">{{ $group->building_name }}</option>
           @endforeach
         </select>
+        @error('cleaning_group_id')
+          <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+        @enderror
       </div>
 
       <!-- Date Input -->
       <div class="mb-6">
-        <label for="date" class="block mb-1 font-medium text-teal-1001">
+        <label for="datepicker-autohide" class="block mb-1 font-medium text-teal-1001">
           {{ __('form.date_input') ?? 'Date' }}
         </label>
 
@@ -133,93 +148,36 @@
         </div>
       </div>
 
-
-      <!-- Room Status -->
+      {{-- Tasks --}}
       <div>
         <label class="block mb-2 font-semibold text-teal-800">{{ __('cleaning.room_status') }}</label>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          @php
-            $rooms = ['oa', 'ov', 'stay', 'vec'];
-          @endphp
-
-          @foreach ($rooms as $room)
-            <div class="flex flex-col space-y-1 max-w-full">
-              <label for="{{ $room }}" class="text-sm font-medium text-teal-800">
-                {{ __('cleaning.' . $room) }}
-              </label>
-              <div class="relative flex items-center rounded-lg shadow-sm overflow-hidden">
-                <button type="button" onclick="decrement('{{ $room }}')"
-                  class="bg-gray-100 hover:bg-gray-200 border border-gray-300 p-2 h-11 focus:ring-2 focus:ring-gray-100 focus:outline-none rounded-l-lg">
-                  <i data-feather="minus" class="text-accent-1000"></i>
-                </button>
-
-                <input type="text" name="{{ $room }}" id="{{ $room }}"
-                  value="{{ old($room, 0) }}" min="0" required
-                  class="w-full text-center text-sm font-medium bg-gray-50 h-11 border-t border-b border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none min-w-0" />
-
-                <button type="button" onclick="increment('{{ $room }}')"
-                  class="bg-gray-100 hover:bg-gray-200 border border-gray-300 p-2 h-11 focus:ring-2 focus:ring-gray-100 focus:outline-none rounded-r-lg">
-                  <i data-feather="plus" class="text-accent-1000"></i>
-                </button>
-
-                <div
-                  class="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center text-xs text-gray-400 space-x-1">
-                  <i data-feather="home" class="w-3 h-3 text-accent-1000"></i>
-                </div>
-              </div>
-            </div>
-          @endforeach
-
-          {{-- Optional: PREMIER --}}
-          <div id="premierInput" class="flex flex-col space-y-1 max-w-full">
-            <label for="premier" class="text-sm font-medium text-teal-800">
-              {{ __('cleaning.premier') }}
-            </label>
-            <div class="relative flex items-center rounded-lg shadow-sm overflow-hidden">
-              <button type="button" onclick="decrement('premier')"
-                class="bg-gray-100 hover:bg-gray-200 border border-gray-300 p-2 h-11 focus:ring-2 focus:ring-gray-100 focus:outline-none rounded-l-lg">
-                <i data-feather="minus" class="text-accent-1000"></i>
-              </button>
-
-              <input type="text" name="premier" id="premier" value="{{ old('premier', 0) }}" min="0"
-                required
-                class="w-full text-center text-sm font-medium bg-gray-50 h-11 border-t border-b border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none min-w-0" />
-
-              <button type="button" onclick="increment('premier')"
-                class="bg-gray-100 hover:bg-gray-200 border border-gray-300 p-2 h-11 focus:ring-2 focus:ring-gray-100 focus:outline-none rounded-r-lg">
-                <i data-feather="plus" class="text-accent-1000"></i>
-              </button>
-
-              <div class="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center text-xs text-gray-400 space-x-1">
-                <i data-feather="home" class="w-3 h-3 text-accent-1000"></i>
-              </div>
-            </div>
-          </div>
+        <div id="taskContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {{-- Akan diisi via JS sesuai group --}}
         </div>
+        @error('tasks')
+          <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+        @enderror
       </div>
 
+      {{-- Total --}}
+      <div class="flex items-center justify-between py-3 border-t border-gray-200 mt-4">
+        <span class="font-medium text-teal-1001 text-2xl">{{ __('cleaning.total_rooms') }}</span>
+        <span id="total_room" class="text-2xl font-bold bg-teal-1001 text-gold min-w-20 text-center rounded p-2"></span>
+        <input type="hidden" id="total_room_input" name="total_room">
 
-      <!-- Total -->
-      <div class="flex items-center  justify-between py-3 border-t border-gray-200">
-        <span class="font-medium text-teal-1001 text-4xl">{{ __('cleaning.total_rooms') }}</span>
-        <span id="total" class="text-4xl font-bold bg-teal-1001 text-gold min-w-20 text-center rounded p-2"></span>
-        <input id="total_room" type="hidden" name="total_room" value="{{ old('total_room') }}">
       </div>
 
-      <!-- User Id -->
-      <div class="flex items-center  justify-between py-3 border-t border-gray-200">
-        <input id="user_id" type="hidden" name="user_id" value="{{ $user_id->id }}">
-      </div>
+      {{-- Hidden User --}}
+      <input type="hidden" name="user_id" value="{{ $user_id->id }}">
 
-      <!-- Submit -->
+      {{-- Submit --}}
       <div class="flex justify-center gap-4 mt-6">
         <button type="submit"
-          class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-2.5">
+          class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-2.5">
           {{ __('button.submit') }}
         </button>
-
         <a href="{{ route('homepage') }}"
-          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 focus:outline-none">
+          class="text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-6 py-2.5">
           {{ __('button.back') }}
         </a>
       </div>
@@ -296,58 +254,82 @@
       updateRemoveButtonState();
     });
 
-    // Counter functions
+    // Fetch tasks by group
+    document.getElementById('cleaning_group').addEventListener('change', function() {
+      const groupId = this.value;
+      const taskContainer = document.getElementById('taskContainer');
+      if (!groupId) {
+        taskContainer.innerHTML = '';
+        return;
+      }
+
+      fetch("{{ route('getTask', ':id') }}".replace(':id', groupId))
+        .then(res => res.json())
+        .then(tasks => {
+          taskContainer.innerHTML = '';
+          tasks.forEach(task => {
+            const wrapper = document.createElement('div');
+            wrapper.className = "flex flex-col space-y-1 max-w-full mb-4";
+
+            wrapper.innerHTML = `
+                <label for="task_${task.id}" class="text-sm font-medium text-teal-800">
+                ${task.name}
+                </label>
+                <div class="relative flex items-center rounded-lg shadow-sm overflow-hidden">
+                <button type="button" onclick="decrement('task_${task.id}')"
+                    class="bg-gray-100 hover:bg-gray-200 border border-gray-300 p-2 h-11 
+                        focus:ring-2 focus:ring-gray-100 focus:outline-none rounded-l-lg">
+                    <i data-feather="minus" class="text-accent-1000"></i>
+                </button>
+
+                <input type="text" name="tasks[${task.id}]" id="task_${task.id}" value="0" min="0" required
+                    class="w-full text-center text-sm font-medium bg-gray-50 h-11 
+                        border-t border-b border-gray-300 focus:ring-blue-500 
+                        focus:border-blue-500 outline-none min-w-0" />
+
+                <button type="button" onclick="increment('task_${task.id}')"
+                    class="bg-gray-100 hover:bg-gray-200 border border-gray-300 p-2 h-11 
+                        focus:ring-2 focus:ring-gray-100 focus:outline-none rounded-r-lg">
+                    <i data-feather="plus" class="text-accent-1000"></i>
+                </button>
+                </div>
+            `;
+            taskContainer.appendChild(wrapper);
+          });
+
+          // Refresh feather icons setelah inject HTML
+          if (window.feather) {
+            feather.replace();
+          }
+        });
+
+
+    });
+
     function increment(id) {
       const input = document.getElementById(id);
-      input.value = parseInt(input.value) + 1;
+      let val = parseInt(input.value) || 0;
+      input.value = val + 1;
       updateTotal();
     }
 
     function decrement(id) {
       const input = document.getElementById(id);
-      if (parseInt(input.value) > 0) {
-        input.value = parseInt(input.value) - 1;
-        updateTotal();
-      }
+      let val = parseInt(input.value) || 0;
+      if (val > 0) input.value = val - 1;
+      updateTotal();
     }
 
     function updateTotal() {
-      const oa = parseInt(document.getElementById("oa").value) || 0;
-      const ov = parseInt(document.getElementById("ov").value) || 0;
-      const stay = parseInt(document.getElementById("stay").value) || 0;
-      const vec = parseInt(document.getElementById("vec").value) || 0;
-      const premierInput = document.getElementById("premier");
-      const premier = premierInput ? (parseInt(premierInput.value) || 0) : 0;
-
-      const total = oa + ov + stay + vec + premier;
-      document.getElementById("total").textContent = total;
-      document.getElementById("total_room").value = total;
+      let total = 0;
+      document.querySelectorAll('#taskContainer input').forEach(input => {
+        total += parseInt(input.value) || 0;
+      });
+      document.getElementById('total_room').textContent = total;
+      document.getElementById('total_room_input').value = total;
     }
-
-    // Toggle premier field
-    function togglePremier(buildingName) {
-      const premierInput = document.getElementById('premierInput');
-      if (buildingName.toLowerCase().includes('royal')) {
-        premierInput.classList.remove('hidden');
-      } else {
-        premierInput.classList.add('hidden');
-        document.getElementById('premier').value = 0;
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
+    document.querySelector("form").addEventListener("submit", function() {
       updateTotal();
-      updateRemoveButtonState();
-
-      const buildingSelect = document.querySelector('select[name="building_id"]');
-
-      if (buildingSelect) {
-        togglePremier(buildingSelect.options[buildingSelect.selectedIndex].text);
-
-        buildingSelect.addEventListener('change', function() {
-          togglePremier(this.options[this.selectedIndex].text);
-        });
-      }
     });
   </script>
 @endsection

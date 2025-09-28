@@ -4,7 +4,7 @@
   <div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-full">
     <h2 class="font-bold text-4xl text-center text-black-500 mb-8">{{ __('dashboardBuilding.edit.title') }}</h2>
 
-    <form action="{{ route('building.update', ['building' => $building->slug]) }}" method="POST"
+    <form action="{{ route('cleaningGroup.update', ['cleaningGroup' => $building->slug]) }}" method="POST"
       enctype="multipart/form-data">
       @csrf
       @method('PUT')
@@ -64,7 +64,7 @@
               {{ __('button.edit') }}
             </button>
 
-            <a href="{{ route('building.index') }}"
+            <a href="{{ route('cleaningGroup.index') }}"
               class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 focus:outline-none">
               {{ __('button.back') }}
             </a>

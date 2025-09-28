@@ -5,11 +5,14 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Checks;
 use App\Models\DailyPoint;
+use App\Models\CheckerTask;
 use App\Models\CheckRecords;
 use App\Models\FormulaCheck;
+use App\Models\CheckerRecord;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
 use App\Models\DailyCleaningPoint;
+use App\Models\CheckerRecordDetail;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CheckOfficeSeeder extends Seeder
@@ -22,93 +25,65 @@ class CheckOfficeSeeder extends Seeder
         $users = User::all();
         $startDate = Carbon::now()->subDays(6); // 7 hari ke belakang
 
-        $formula = FormulaCheck::where('active', true)->first();
-        if (!$formula) {
-            $this->command->info('Formula aktif tidak ditemukan.');
+        // Ambil semua task aktif
+        $tasks = CheckerTask::where('active', true)->get();
+        if ($tasks->isEmpty()) {
+            $this->command->info('Tidak ada CheckerTask aktif.');
             return;
         }
 
         for ($i = 0; $i < 7; $i++) {
             foreach ($users as $user) {
-                // Random nilai input
-                $jumlah_kamar = rand(1, 10);
-                $mengajar = rand(0, 1);
-                $pembersihan_khusus = rand(0, 1);
-                $mengangkat_barang = rand(0, 1);
-                $membersihkan_gudang = rand(0, 1);
-                $obat_pool = rand(0, 1);
-                $membersihkan_pool = rand(0, 1);
-                $sampah = rand(0, 1);
-
                 $date = $startDate->copy()->toDateString();
                 $createdAt = Carbon::parse($date)->addHours(rand(6, 18));
 
-                // Simpan ke tabel checks
-                $check = Checks::create([
-                    'user_id'               => $user->id,
-                    'jumlah_kamar'          => $jumlah_kamar,
-                    'mengajar'              => $mengajar,
-                    'pembersihan_khusus'    => $pembersihan_khusus,
-                    'mengangkat_barang'     => $mengangkat_barang,
-                    'membersihkan_gudang'   => $membersihkan_gudang,
-                    'obat_pool'             => $obat_pool,
-                    'membersihkan_pool'     => $membersihkan_pool,
-                    'sampah'                => $sampah,
-                    'date'                  => $date,
-                    'created_at'            => $createdAt,
-                    'updated_at'            => $createdAt,
+                // Buat record utama
+                $record = CheckerRecord::create([
+                    'user_id'     => $user->id,
+                    'date'        => $date,
+                    'total_point' => 0, // dihitung setelah detail masuk
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt,
                 ]);
 
-                // Hitung total poin
-                $total =
-                    ($jumlah_kamar * $formula->jumlah_kamar) +
-                    ($mengajar * $formula->mengajar) +
-                    ($pembersihan_khusus * $formula->pembersihan_khusus) +
-                    ($mengangkat_barang * $formula->mengangkat_barang) +
-                    ($membersihkan_gudang * $formula->membersihkan_gudang) +
-                    ($obat_pool * $formula->obat_pool) +
-                    ($membersihkan_pool * $formula->membersihkan_pool) +
-                    ($sampah * $formula->sampah);
+                $totalPoint = 0;
+                $activityDetail = [];
 
-                // Simpan check record
-                CheckRecords::create([
-                    'check_id'              => $check->id,
-                    'jumlah_kamar'          => $jumlah_kamar,
-                    'mengajar'              => $mengajar * $formula->mengajar,
-                    'pembersihan_khusus'    => $pembersihan_khusus * $formula->pembersihan_khusus,
-                    'mengangkat_barang'     => $mengangkat_barang * $formula->mengangkat_barang,
-                    'membersihkan_gudang'   => $membersihkan_gudang * $formula->membersihkan_gudang,
-                    'obat_pool'             => $obat_pool * $formula->obat_pool,
-                    'membersihkan_pool'     => $membersihkan_pool * $formula->membersihkan_pool,
-                    'sampah'                => $sampah * $formula->sampah,
-                    'total'                 => $total,
-                    'created_at'            => $createdAt,
-                    'updated_at'            => $createdAt,
-                ]);
+                // Generate detail untuk setiap task
+                foreach ($tasks as $task) {
+                    if ($task->type === 'number') {
+                        $value = rand(1, 10); // contoh jumlah kamar
+                    } else {
+                        $value = rand(0, 1);  // contoh checkbox
+                    }
 
-                // DailyCleaningPoint untuk Check Seeder
-                $detailArray = [
-                    'Kamar'              => $jumlah_kamar,
-                    'Mengajar'           => $mengajar,
-                    'Pembersihan Khusus' => $pembersihan_khusus,
-                    'Mengangkat Barang'  => $mengangkat_barang,
-                    'Membersihkan Gudang' => $membersihkan_gudang,
-                    'Obat Pool'          => $obat_pool,
-                    'Membersihkan Pool'  => $membersihkan_pool,
-                    'Sampah'             => $sampah
-                ];
+                    $calculated = $value * $task->formula;
+                    $totalPoint += $calculated;
 
-                $detailString = collect($detailArray)
-                    ->map(fn($val, $key) => "$key: $val")
-                    ->implode(', ');
+                    CheckerRecordDetail::create([
+                        'checker_record_id' => $record->id,
+                        'checker_task_id'   => $task->id,
+                        'value'             => $value,
+                        'formula'           => $task->formula,
+                        'calculated'        => $calculated,
+                        'created_at'        => $createdAt,
+                        'updated_at'        => $createdAt,
+                    ]);
 
+                    $activityDetail[] = $task->name . ': ' . $value;
+                }
+
+                // Update total point
+                $record->update(['total_point' => $totalPoint]);
+
+                // Simpan ke DailyPoint
                 DailyPoint::create([
                     'user_id'        => $user->id,
                     'date'           => $date,
-                    'activity_type'  => Checks::class,
-                    'activity_id'    => $check->id,
-                    'activity_detail' => $detailString,
-                    'point'          => $total,
+                    'activity_type'  => 'Checker',
+                    'activity_id'    => $record->id,
+                    'activity_detail' => implode(', ', $activityDetail),
+                    'point'          => $totalPoint,
                     'created_at'     => $createdAt,
                     'updated_at'     => $createdAt,
                 ]);

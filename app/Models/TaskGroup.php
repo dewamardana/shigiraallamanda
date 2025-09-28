@@ -12,4 +12,9 @@ class TaskGroup extends Model
     {
         return $this->hasMany(Task::class);
     }
+
+    public function officeRecords()
+    {
+        return $this->hasMany(OfficeRecord::class, 'task_group_id');
+    }
 }

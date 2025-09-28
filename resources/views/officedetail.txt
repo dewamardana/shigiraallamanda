@@ -1,0 +1,137 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Task extends Model
+{
+    protected $fillable = ['task_group_id', 'name', 'point'];
+
+    public function group()
+    {
+        return $this->belongsTo(TaskGroup::class, 'task_group_id');
+    }
+
+    public function details()
+    {
+        return $this->hasMany(OfficeTaskDetail::class, 'task_id');
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class TaskGroup extends Model
+{
+    protected $fillable = ['name', 'active'];
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+
+class OfficeRecord extends Model
+{
+    protected $fillable = ['task_group_id', 'date'];
+
+    public function details()
+    {
+        return $this->hasMany(OfficeTaskDetail::class, 'office_record_id');
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(TaskGroup::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function dailyPoints()
+    {
+        return $this->morphMany(DailyPoint::class, 'activity');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($record) {
+            // hapus semua detail (jadi collection dulu)
+            $record->details()->get()->each(function ($detail) {
+                $detail->delete();
+            });
+
+            // hapus daily points
+            $record->dailyPoints()->delete();
+        });
+    }
+}
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class OfficeTaskDetail extends Model
+{
+    protected $fillable = ['office_record_id', 'task_id', 'user_id', 'point'];
+
+    public function record()
+    {
+        return $this->belongsTo(OfficeRecord::class, 'office_record_id');
+    }
+
+    public function task()
+    {
+        return $this->belongsTo(Task::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+
+
+Schema::create('task_groups', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->boolean('active')->default(false);
+    $table->timestamps();
+});
+
+Schema::create('tasks', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('task_group_id')->constrained()->restrictOnDelete();
+    $table->string('name');
+    $table->integer('point')->default(0);
+    $table->timestamps();
+});
+
+Schema::create('office_records', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('task_group_id')->constrained()->restrictOnDelete();
+    $table->date('date');
+    $table->timestamps();
+});
+
+Schema::create('office_task_details', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('office_record_id')->constrained()->restrictOnDelete();
+    $table->foreignId('task_id')->constrained()->restrictOnDelete();
+    $table->foreignId('user_id')->constrained()->restrictOnDelete();
+    $table->integer('point')->default(0);
+    $table->timestamps();
+});
+

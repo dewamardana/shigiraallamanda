@@ -94,132 +94,80 @@
       </form>
     </div>
 
-
-
-    {{-- Tabel per group --}}
-    @foreach ($grouped as $groupKey => $cleanings)
+    @foreach ($grouped as $groupKey => $data)
       @php
         [$buildingSlug, $memberCount] = explode('|', $groupKey);
-        $buildingName = $cleanings[0]['building_name'] ?? 'Unknown';
+        $records = $data['records'];
+        $buildingName = $records[0]['building_name'] ?? 'Unknown';
+        $taskNames = array_keys($data['all_task_names']);
       @endphp
 
       <div class="mb-10">
-        <h2 class="text-2xl font-semibold mb-4 text-blue-800">{{ $buildingName }} — <span
-            class="text-gray-600">{{ $memberCount }} {{ __('dashboardCleaning.cleaningdata.members') }}</span></h2>
+        <h2 class="text-2xl font-semibold mb-4 text-blue-800">
+          {{ $buildingName }} — <span class="text-gray-600">{{ $memberCount }} members</span>
+        </h2>
+
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-          <table class="w-full text-sm text-left rtl:text-right text-black">
-            <thead class="text-xs text-white uppercase bg-teal-1001 ">
+          <table class="w-full text-sm text-left text-black">
+            <thead class="text-xs text-white uppercase bg-teal-1001">
               <tr>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardCleaning.cleaningdata.table.date') }}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardCleaning.cleaningdata.table.name') }}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardCleaning.cleaningdata.table.oa') }}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardCleaning.cleaningdata.table.ov') }}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardCleaning.cleaningdata.table.stay') }}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardCleaning.cleaningdata.table.vec') }}
-                </th>
-                @if ($buildingSlug === 'royal')
-                  <th scope="col" class="px-6 py-3">
-                    {{ __('dashboardCleaning.cleaningdata.table.premier') }}
-                @endif
-                </th>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardCleaning.cleaningdata.table.total') }}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardCleaning.cleaningdata.table.point') }}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                  {{ __('dashboardBuilding.index.table.action') }}
-                </th>
+                <th class="px-6 py-3">Date</th>
+                <th class="px-6 py-3">Member</th>
+                @foreach ($taskNames as $taskName)
+                  <th class="px-6 py-3">{{ $taskName }}</th>
+                @endforeach
+                <th class="px-6 py-3">Total</th>
+                <th class="px-6 py-3">Point</th>
+                <th class="px-6 py-3">Action</th>
               </tr>
             </thead>
             <tbody>
-              @foreach ($cleanings as $cleaning)
-                @foreach ($cleaning['members'] as $index => $member)
+              @foreach ($records as $rec)
+                @foreach ($rec['members'] as $i => $member)
                   <tr class="{{ $loop->parent->iteration % 2 === 0 ? 'bg-slate-100' : 'bg-white' }} hover:bg-yellow-50">
-                    @if ($index === 0)
-                      <td class="px-6 py-4" rowspan="{{ $cleaning['member_count'] }}">
-                        {{ $cleaning['date'] }}
-                      </td>
+                    @if ($i === 0)
+                      <td rowspan="{{ $rec['member_count'] }}" class="px-6 py-4">{{ $rec['date'] }}</td>
                     @endif
+
                     <td class="px-6 py-4">{{ $member['nama'] }}</td>
 
-                    @if ($index === 0)
-                      {{-- OA --}}
-                      <td class="px-6 py-4" rowspan="{{ $cleaning['member_count'] }}">
-                        <div>{{ $cleaning['oa'] }}</div>
-                        <div class="text-gray-500">× {{ number_format($cleaning['oa_value'], 2) }}</div>
-                        <div class="mt-1 font-bold text-base">{{ number_format($cleaning['oa_total'], 1) }}</div>
-                      </td>
-
-                      {{-- OV --}}
-                      <td class="px-6 py-4" rowspan="{{ $cleaning['member_count'] }}">
-                        <div>{{ $cleaning['ov'] }}</div>
-                        <div class="text-gray-500">× {{ number_format($cleaning['ov_value'], 2) }}</div>
-                        <div class="mt-1 font-bold text-base">{{ number_format($cleaning['ov_total'], 1) }}</div>
-                      </td>
-
-                      {{-- Stay --}}
-                      <td class="px-6 py-4" rowspan="{{ $cleaning['member_count'] }}">
-                        <div>{{ $cleaning['stay'] }}</div>
-                        <div class="text-gray-500">× {{ number_format($cleaning['stay_value'], 2) }}</div>
-                        <div class="mt-1 font-bold text-base">{{ number_format($cleaning['stay_total'], 1) }}</div>
-                      </td>
-
-                      {{-- Vec --}}
-                      <td class="px-6 py-4" rowspan="{{ $cleaning['member_count'] }}">
-                        <div>{{ $cleaning['vec'] }}</div>
-                        <div class="text-gray-500">× {{ number_format($cleaning['vec_value'], 2) }}</div>
-                        <div class="mt-1 font-bold text-base">{{ number_format($cleaning['vec_total'], 1) }}</div>
-                      </td>
-
-                      {{-- Premier --}}
-                      @if ($buildingSlug === 'royal')
-                        <td class="px-6 py-4" rowspan="{{ $cleaning['member_count'] }}">
-                          <div>{{ $cleaning['premier'] }}</div>
-                          <div class="text-gray-500">× {{ number_format($cleaning['premier_value'], 2) }}</div>
-                          <div class="mt-1 font-bold text-base">{{ number_format($cleaning['premier_total'], 1) }}</div>
+                    @if ($i === 0)
+                      @foreach ($taskNames as $taskName)
+                        @php
+                          $t = $rec['tasks'][$taskName] ?? null;
+                        @endphp
+                        <td rowspan="{{ $rec['member_count'] }}" class="px-6 py-4">
+                          @if ($t)
+                            <div>{{ $t['value'] }}</div>
+                            <div class="text-gray-500">× {{ $t['formula'] }}</div>
+                            <div class="mt-1 font-bold text-base">{{ $t['calculated'] }}</div>
+                          @else
+                            – {{-- jika task tidak ada di record ini --}}
+                          @endif
                         </td>
-                      @endif
+                      @endforeach
 
-                      {{-- Total --}}
-                      <td class="px-6 py-4 bg-blue-100" rowspan="{{ $cleaning['member_count'] }}">
-                        <div>{{ __('dashboardCleaning.cleaningdata.table.total_info') }}:
-                          {{ number_format($cleaning['total'], 1) }}</div>
-                        <div class="text-gray-500">/ {{ $cleaning['member_count'] }}
-                          {{ __('dashboardCleaning.cleaningdata.table.member') }}</div>
-                        <div class="mt-1 font-bold text-base text-blue-800">=
-                          {{ number_format($cleaning['poin_per_member'], 2) }}</div>
+                      <td rowspan="{{ $rec['member_count'] }}" class="px-6 py-4 bg-blue-100">
+                        <div>Total: {{ number_format($rec['total'], 1) }}</div>
+                        <div class="text-gray-500">/ {{ $rec['member_count'] }} member</div>
+                        <div class="mt-1 font-bold text-base text-blue-800">
+                          {{ number_format($rec['poin_per_member'], 2) }}
+                        </div>
                       </td>
                     @endif
 
-                    {{-- Poin per member --}}
+                    {{-- Point per member --}}
                     <td class="px-6 py-4 text-center text-blue-800 font-bold">
-                      {{ number_format($cleaning['poin_per_member'], 2) }}
+                      {{ number_format($rec['poin_per_member'], 2) }}
                     </td>
-                    @if ($index === 0)
-                      <td class="px-6 py-4 text-center text-blue-800 font-bold"
-                        rowspan="{{ $cleaning['member_count'] }}">
 
-                        <form action="{{ route('cleaning.destroy', $cleaning['id']) }}" method="POST"
-                          class="inline-block" data-confirm="{{ __('button.delete_confirm') }}">
+                    @if ($i === 0)
+                      <td rowspan="{{ $rec['member_count'] }}" class="px-6 py-4">
+                        <form action="{{ route('cleaning.destroy', $rec['id']) }}" method="POST"
+                          data-confirm="{{ __('button.delete_confirm') }}">
                           @csrf
                           @method('DELETE')
-                          <button type="submit"
-                            class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2">
-                            {{ __('button.delete') }}
-                          </button>
+                          <button class="text-white bg-red-600 px-4 py-2 rounded">{{ __('button.delete') }}</button>
                         </form>
                       </td>
                     @endif
@@ -231,6 +179,8 @@
         </div>
       </div>
     @endforeach
+
+
   </div>
 @endsection
 

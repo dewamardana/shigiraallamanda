@@ -70,11 +70,12 @@ class ReportController extends Controller
                         $member->id,
                         $report->date,
                         $request->point,
-                        $report, // pakai model Report, bukan string
+                        'Report',        // langsung string
+                        $report->id,
                         [
                             'Reply Admin' => $request->point,
                             'Jenis'       => $report->report_type
-                        ]
+                        ]   // hanya task + value
                     );
                 }
             }
@@ -84,11 +85,12 @@ class ReportController extends Controller
                     $report->user_id,
                     $report->date,
                     $request->point,
-                    $report, // pakai model Report
+                    'Report',        // langsung string
+                    $report->id,
                     [
                         'Reply Admin' => $request->point,
                         'Jenis'       => $report->report_type
-                    ]
+                    ]   // hanya task + value
                 );
             }
         }

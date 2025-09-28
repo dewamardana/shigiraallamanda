@@ -12,18 +12,24 @@ use App\Models\Cleaning;
 use App\Models\TaskGroup;
 use App\Models\DailyPoint;
 use App\Models\ReportType;
+use App\Models\CheckerTask;
 use App\Models\ReportMedia;
 use App\Models\CheckRecords;
+use App\Models\CleaningTask;
 use App\Models\FormulaCheck;
 use App\Models\OfficeRecord;
 use App\Models\ReportMember;
 use Illuminate\Http\Request;
+use App\Models\CheckerRecord;
+use App\Models\CleaningGroup;
+use App\Models\CleaningRecord;
 use Illuminate\Support\Carbon;
 use App\Models\CleaningRecords;
 use App\Models\OfficeTaskDetail;
 use App\Models\DailyCleaningPoint;
 use App\Traits\HandlesDailyPoints;
 use Illuminate\Support\Facades\DB;
+use App\Models\CheckerRecordDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -44,169 +50,127 @@ class HomepageController extends Controller
     public function cleaning()
     {
         $title = __('homepageControllerMessage.cleaning.title');
-        $user = User::where('status', 'Active')->get();
-        $user_id = Auth::user();
-        $building = Building::all();
+        $users = User::all();
+        $groups = CleaningGroup::all();
+        $user_id = Auth::user(); // user login
         return view('Homepage.cleaning', [
             'title' => $title,
-            'users' => $user,
-            'building' => $building,
+            'users' => $users,
+            'groups' => $groups,
             'user_id' => $user_id,
         ]);
     }
 
-    public function cleaningstore(Request $request)
+    public function getTasks($id)
     {
+        $group = CleaningGroup::with('tasks')->find($id);
 
-        $validated = $request->validate([
-            'building_id' => 'required|exists:buildings,id',
-            'user_id'    => 'required|integer',
-            'oa'         => 'required|integer|min:0',
-            'ov'         => 'required|integer|min:0',
-            'stay'       => 'required|integer|min:0',
-            'vec'        => 'required|integer|min:0',
-            'premier'    => 'nullable|integer|min:0',
-            'date'       => 'required|date|after:2000-01-01',
-            'total_room' => 'required|integer|min:0',
-            'members'    => 'required|array',
-            'members.*'  => 'exists:users,id'
-        ], [
-            'building_id.required' => __('homepageControllerMessage.cleaning.validation.building_required'),
-            'building_id.exists'   => __('homepageControllerMessage.cleaning.validation.building_id_exists'),
-
-            'oa.required'          => __('homepageControllerMessage.cleaning.validation.oa_required'),
-            'oa.integer'           => __('homepageControllerMessage.cleaning.validation.oa_integer'),
-            'oa.min'               => __('homepageControllerMessage.cleaning.validation.oa_min'),
-
-            'ov.required'          => __('homepageControllerMessage.cleaning.validation.ov_required'),
-            'ov.integer'           => __('homepageControllerMessage.cleaning.validation.ov_integer'),
-            'ov.min'               => __('homepageControllerMessage.cleaning.validation.ov_min'),
-
-            'stay.required'        => __('homepageControllerMessage.cleaning.validation.stay_required'),
-            'stay.integer'         => __('homepageControllerMessage.cleaning.validation.stay_integer'),
-            'stay.min'             => __('homepageControllerMessage.cleaning.validation.stay_min'),
-
-            'vec.required'         => __('homepageControllerMessage.cleaning.validation.vec_required'),
-            'vec.integer'          => __('homepageControllerMessage.cleaning.validation.vec_integer'),
-            'vec.min'              => __('homepageControllerMessage.cleaning.validation.vec_min'),
-
-            'date.required'        => __('homepageControllerMessage.cleaning.validation.date_required'),
-            'date.date'            => __('homepageControllerMessage.cleaning.validation.date_date'),
-
-            'total_room.required'  => __('homepageControllerMessage.cleaning.validation.total_room_required'),
-            'total_room.integer'   => __('homepageControllerMessage.cleaning.validation.total_room_integer'),
-            'total_room.min'       => __('homepageControllerMessage.cleaning.validation.total_room_min'),
-
-            'members.required'     => __('homepageControllerMessage.cleaning.validation.members_required'),
-            'members.array'        => __('homepageControllerMessage.cleaning.validation.members_array'),
-            'members.*.exists'     => __('homepageControllerMessage.cleaning.validation.members_exists')
-        ]);
-
-        $validated['premier'] = $validated['premier'] ?? 0;
-
-
-        // Ambil slug building
-        $building = Building::findOrFail($validated['building_id']);
-        $buildingSlug = $building->slug;
-
-        $memberCount = count($validated['members']);
-        $formulaKey = $memberCount;
-
-        // Ambil formula sesuai building & member count
-        $formula = Formula::where('building_slug', $buildingSlug)
-            ->where('member_count', $formulaKey)
-            ->first();
-
-        if (!$formula) {
-            return redirect()->back()->with('warning', __('homepageControllerMessage.cleaning.warning_formula'));
+        if (!$group) {
+            return response()->json([], 404);
         }
 
-        // Hitung total poin dari hasil perkalian masing-masing kategori dengan formula
-        $oaPoint   = $validated['oa'] * $formula->oa;
-        $ovPoint   = $validated['ov'] * $formula->ov;
-        $stayPoint = $validated['stay'] * $formula->stay;
-        $vecPoint  = $validated['vec'] * $formula->vec;
-
-        $total = $oaPoint + $ovPoint + $stayPoint + $vecPoint;
-
-        if ($buildingSlug === 'royal') {
-            $total += $validated['premier'] * $formula->premier;
-        }
-
-        // Hitung poin per member
-        $poinPerMember = $memberCount > 0 ? $total / $memberCount : 0;
-
-
-        // Simpan cleaning record
-        $cleaning = Cleaning::create($validated);
-        $cleaning->members()->attach($validated['members']);
-
-        // Simpan ke tabel poin_records
-        CleaningRecords::create([
-            'cleaning_id'   => $cleaning->id,
-            'user_id'       => $validated['user_id'],
-            'member_count'  => $memberCount,
-            'oa'            => $formula->oa,
-            'ov'            => $formula->ov,
-            'stay'          => $formula->stay,
-            'vec'           => $formula->vec,
-            'premier'       => $buildingSlug === 'royal' ? $formula->premier : null,
-        ]);
-
-
-        // Simpan ke tabel daily_cleaning_points
-        $date = $validated['date'];
-        foreach ($validated['members'] as $memberId) {
-            $detail = [
-                'OA' => $validated['oa'],
-                'OV' => $validated['ov'],
-                'Stay' => $validated['stay'],
-                'Vec' => $validated['vec']
+        $tasks = $group->tasks->map(function ($task) {
+            return [
+                'id' => $task->id,
+                'name' => $task->name,
+                'formula' => $task->pivot->formula ?? null,
             ];
-            if ($buildingSlug === 'royal') {
-                $detail['Premier'] = $validated['premier'];
-            }
+        });
 
-            if ($buildingSlug === 'royal') {
-                $this->addDailyPoint(
-                    $memberId,
-                    $date,
-                    $poinPerMember,
-                    $cleaning,   // 👈 langsung passing model Cleaning
-                    [
-                        'OA' => $request->oa,
-                        'OV' => $request->ov,
-                        'Stay' => $request->stay,
-                        'Vec' => $request->vec,
-                        'Premier' => $request->premier
-                    ]
-                );
-            } else {
-                $this->addDailyPoint(
-                    $memberId,
-                    $date,
-                    $poinPerMember,
-                    $cleaning,   // 👈 langsung passing model Cleaning
-                    [
-                        'OA' => $request->oa,
-                        'OV' => $request->ov,
-                        'Stay' => $request->stay,
-                        'Vec' => $request->vec,
-                    ]
-                );
+        return response()->json($tasks);
+    }
+
+
+    public function cleaningStore(Request $request)
+    {
+        $validated = $request->validate([
+            'cleaning_group_id' => 'required|exists:cleaning_groups,id',
+            'user_id'           => 'required|exists:users,id',
+            'date'              => 'required|date|after:2000-01-01',
+            'total_room'        => 'required|integer|min:0',
+            'members'           => 'required|array|min:1',
+            'members.*'         => 'exists:users,id',
+            'tasks'             => 'required|array',
+            'tasks.*'           => 'integer|min:0',
+        ]);
+
+        $group = CleaningGroup::with('tasks')->findOrFail($validated['cleaning_group_id']);
+
+        // 1. simpan record utama
+        $record = CleaningRecord::create([
+            'cleaning_group_id' => $validated['cleaning_group_id'],
+            'user_id'           => $validated['user_id'],
+            'member_count'      => count($validated['members']),
+            'total_room'        => $validated['total_room'],
+            'total_point'       => 0,
+            'date'              => $validated['date'],
+        ]);
+
+        // 2. simpan anggota (pivot)
+        $record->members()->attach($validated['members']);
+
+        // 3. simpan detail per task
+        $totalPoint = 0;
+        $taskSummaries = [];
+
+        foreach ($validated['tasks'] as $taskId => $value) {
+            if ($value > 0) {
+                $task = $group->tasks->firstWhere('id', $taskId);
+
+                if ($task) {
+                    $formula    = $task->pivot->formula ?? 1;
+                    $calculated = $value * $formula;
+
+                    $record->details()->create([
+                        'cleaning_task_id' => $taskId,
+                        'value'            => $value,
+                        'formula'          => $formula,
+                        'calculated'       => $calculated,
+                    ]);
+
+                    $totalPoint += $calculated;
+                    $taskSummaries[$task->name] = $value;
+                }
             }
         }
 
-        return redirect()->route('homepage')->with('success', __('homepageControllerMessage.cleaning.success_store'));
+        // Update total_point di record utama
+        $record->update([
+            'total_point' => $totalPoint,
+        ]);
+
+        // 5. bagi rata ke member → simpan pakai trait
+        $memberCount   = count($validated['members']);
+        $poinPerMember = $memberCount > 0 ? $totalPoint / $memberCount : 0;
+
+        foreach ($validated['members'] as $memberId) {
+            $this->addDailyPoint(
+                $memberId,
+                $validated['date'],
+                $poinPerMember,
+                'Cleaning',        // langsung string
+                $record->id,
+                $taskSummaries     // hanya task + value
+            );
+        }
+
+
+        return redirect()->route('homepage')
+            ->with('success', 'Data cleaning berhasil disimpan.');
     }
 
     public function checker()
     {
         $title = __('homepageControllerMessage.checker.title');
         $user = Auth::user();
+
+        // ambil semua task aktif
+        $tasks = CheckerTask::where('active', true)->get();
+
         return view('Homepage.checker', [
             'title' => $title,
             'user'  => $user,
+            'tasks' => $tasks,
         ]);
     }
 
@@ -214,90 +178,154 @@ class HomepageController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'date' => 'required|date',
-            'jumlah_kamar' => 'required|integer|min:0',
-        ], [
-            'user_id.required' => __('homepageControllerMessage.checker.validation.user_id_required'),
-            'user_id.exists' =>  __('homepageControllerMessage.checker.validation.user_id_exists'),
-            'date.required' =>  __('homepageControllerMessage.checker.validation.date_required'),
-            'date.date' =>  __('homepageControllerMessage.checker.validation.date_date'),
-            'jumlah_kamar.required' =>  __('homepageControllerMessage.checker.validation.jumlah_kamar_required'),
-            'jumlah_kamar.integer' =>  __('homepageControllerMessage.checker.validation.jumlah_kamar_integer'),
-            'jumlah_kamar.min' =>  __('homepageControllerMessage.checker.validation.jumlah_kamar_min'),
+            'date'    => 'required|date',
         ]);
 
-        // Ambil formula yang aktif
-        $formulaCheck = FormulaCheck::where('active', true)->first();
+        // simpan header record
+        $record = CheckerRecord::create([
+            'user_id'     => $request->user_id,
+            'date'        => $request->date,
+            'total_point' => 0, // akan diupdate
+        ]);
 
-        if (!$formulaCheck) {
-            return redirect()->route('homepage')->with('error',  __('homepageControllerMessage.checker.error_no_formula'));
+        $total = 0;
+
+        // loop semua task aktif
+        $tasks = CheckerTask::where('active', true)->get();
+
+        $detail = [];
+        foreach ($tasks as $task) {
+            $value = $request->input("task_{$task->id}");
+
+            // boolean => 1/0
+            if ($task->type === 'boolean') {
+                $value = $value ? 1 : 0;
+            }
+
+            // hitung
+            $calculated = $value * $task->formula;
+            $total += $calculated;
+
+            CheckerRecordDetail::create([
+                'checker_record_id' => $record->id,
+                'checker_task_id'   => $task->id,
+                'value'             => $value,
+                'formula'           => $task->formula,
+                'calculated'        => $calculated,
+            ]);
+
+            // buat detail activity untuk history
+            if ($value > 0) {
+                $detail[$task->name] = $value;
+            }
         }
 
-        // Hitung total poin berdasarkan formula aktif dan input user
-        $total =
-            ($request->jumlah_kamar * $formulaCheck->jumlah_kamar) +
-            ($request->has('mengajar') ? $formulaCheck->mengajar : 0) +
-            ($request->has('pembersihan_khusus') ? $formulaCheck->pembersihan_khusus : 0) +
-            ($request->has('membawa_bagasi') ? $formulaCheck->mengangkat_barang : 0) +
-            ($request->has('membersihkan_gudang') ? $formulaCheck->membersihkan_gudang : 0) +
-            ($request->has('obat_pool') ? $formulaCheck->obat_pool : 0) +
-            ($request->has('membersihkan_kolam') ? $formulaCheck->membersihkan_pool : 0) +
-            ($request->has('sampah') ? $formulaCheck->sampah : 0);
-
-        // Simpan ke tabel `checks`
-        $check = Checks::create([
-            'user_id' => $request->user_id,
-            'date' => $request->date,
-            'jumlah_kamar' => $request->jumlah_kamar,
-            'mengajar' => $request->has('mengajar'),
-            'pembersihan_khusus' => $request->has('pembersihan_khusus'),
-            'mengangkat_barang' => $request->has('membawa_bagasi'),
-            'membersihkan_gudang' => $request->has('membersihkan_gudang'),
-            'obat_pool' => $request->has('obat_pool'),
-            'membersihkan_pool' => $request->has('membersihkan_kolam'),
-            'sampah' => $request->has('sampah'),
+        // update total point
+        $record->update([
+            'total_point' => $total
         ]);
 
-        // Simpan ke `check_records`
-        CheckRecords::create([
-            'check_id'             => $check->id,
-            'user_id'              => $request->user_id,
-            'jumlah_kamar'         => $formulaCheck->jumlah_kamar,
-            'mengajar'             => $formulaCheck->mengajar,
-            'pembersihan_khusus'   => $formulaCheck->pembersihan_khusus,
-            'mengangkat_barang'    => $formulaCheck->mengangkat_barang,
-            'membersihkan_gudang'  => $formulaCheck->membersihkan_gudang,
-            'obat_pool'            => $formulaCheck->obat_pool,
-            'membersihkan_pool'    => $formulaCheck->membersihkan_pool,
-            'sampah'               => $formulaCheck->sampah,
-            'total'                => $total,
-        ]);
-
-
-        // Siapkan detail aktivitas untuk history
-        $detail = [
-            'Kamar' => $request->jumlah_kamar
-        ];
-        if ($request->has('mengajar')) $detail['Mengajar'] = 1;
-        if ($request->has('pembersihan_khusus')) $detail['Pembersihan Khusus'] = 1;
-        if ($request->has('membawa_bagasi')) $detail['Mengangkat Barang'] = 1;
-        if ($request->has('membersihkan_gudang')) $detail['Membersihkan Gudang'] = 1;
-        if ($request->has('obat_pool')) $detail['Obat Pool'] = 1;
-        if ($request->has('membersihkan_kolam')) $detail['Membersihkan Kolam'] = 1;
-        if ($request->has('sampah')) $detail['Sampah'] = 1;
-
-        // Simpan ke tabel daily_cleaning_points (untuk history)
+        // tambahkan ke daily point
         $this->addDailyPoint(
             $request->user_id,
             $request->date,
             $total,
-            $check,   // pakai model Checks, bukan string
+            'Checker', // type activity
+            $record->id,
             $detail
         );
 
-
-        return redirect()->route('homepage')->with('success',  __('homepageControllerMessage.checker.success_store'));
+        return redirect()->route('homepage')->with('success', __('homepageControllerMessage.checker.success_store'));
     }
+    // public function checkerStore(Request $request)
+    // {
+    //     $request->validate([
+    //         'user_id' => 'required|exists:users,id',
+    //         'date' => 'required|date',
+    //         'jumlah_kamar' => 'required|integer|min:0',
+    //     ], [
+    //         'user_id.required' => __('homepageControllerMessage.checker.validation.user_id_required'),
+    //         'user_id.exists' =>  __('homepageControllerMessage.checker.validation.user_id_exists'),
+    //         'date.required' =>  __('homepageControllerMessage.checker.validation.date_required'),
+    //         'date.date' =>  __('homepageControllerMessage.checker.validation.date_date'),
+    //         'jumlah_kamar.required' =>  __('homepageControllerMessage.checker.validation.jumlah_kamar_required'),
+    //         'jumlah_kamar.integer' =>  __('homepageControllerMessage.checker.validation.jumlah_kamar_integer'),
+    //         'jumlah_kamar.min' =>  __('homepageControllerMessage.checker.validation.jumlah_kamar_min'),
+    //     ]);
+
+    //     // Ambil formula yang aktif
+    //     $formulaCheck = FormulaCheck::where('active', true)->first();
+
+    //     if (!$formulaCheck) {
+    //         return redirect()->route('homepage')->with('error',  __('homepageControllerMessage.checker.error_no_formula'));
+    //     }
+
+    //     // Hitung total poin berdasarkan formula aktif dan input user
+    //     $total =
+    //         ($request->jumlah_kamar * $formulaCheck->jumlah_kamar) +
+    //         ($request->has('mengajar') ? $formulaCheck->mengajar : 0) +
+    //         ($request->has('pembersihan_khusus') ? $formulaCheck->pembersihan_khusus : 0) +
+    //         ($request->has('membawa_bagasi') ? $formulaCheck->mengangkat_barang : 0) +
+    //         ($request->has('membersihkan_gudang') ? $formulaCheck->membersihkan_gudang : 0) +
+    //         ($request->has('obat_pool') ? $formulaCheck->obat_pool : 0) +
+    //         ($request->has('membersihkan_kolam') ? $formulaCheck->membersihkan_pool : 0) +
+    //         ($request->has('sampah') ? $formulaCheck->sampah : 0);
+
+    //     // Simpan ke tabel `checks`
+    //     $check = Checks::create([
+    //         'user_id' => $request->user_id,
+    //         'date' => $request->date,
+    //         'jumlah_kamar' => $request->jumlah_kamar,
+    //         'mengajar' => $request->has('mengajar'),
+    //         'pembersihan_khusus' => $request->has('pembersihan_khusus'),
+    //         'mengangkat_barang' => $request->has('membawa_bagasi'),
+    //         'membersihkan_gudang' => $request->has('membersihkan_gudang'),
+    //         'obat_pool' => $request->has('obat_pool'),
+    //         'membersihkan_pool' => $request->has('membersihkan_kolam'),
+    //         'sampah' => $request->has('sampah'),
+    //     ]);
+
+    //     // Simpan ke `check_records`
+    //     CheckRecords::create([
+    //         'check_id'             => $check->id,
+    //         'user_id'              => $request->user_id,
+    //         'jumlah_kamar'         => $formulaCheck->jumlah_kamar,
+    //         'mengajar'             => $formulaCheck->mengajar,
+    //         'pembersihan_khusus'   => $formulaCheck->pembersihan_khusus,
+    //         'mengangkat_barang'    => $formulaCheck->mengangkat_barang,
+    //         'membersihkan_gudang'  => $formulaCheck->membersihkan_gudang,
+    //         'obat_pool'            => $formulaCheck->obat_pool,
+    //         'membersihkan_pool'    => $formulaCheck->membersihkan_pool,
+    //         'sampah'               => $formulaCheck->sampah,
+    //         'total'                => $total,
+    //     ]);
+
+
+    //     // Siapkan detail aktivitas untuk history
+    //     $detail = [
+    //         'Kamar' => $request->jumlah_kamar
+    //     ];
+    //     if ($request->has('mengajar')) $detail['Mengajar'] = 1;
+    //     if ($request->has('pembersihan_khusus')) $detail['Pembersihan Khusus'] = 1;
+    //     if ($request->has('membawa_bagasi')) $detail['Mengangkat Barang'] = 1;
+    //     if ($request->has('membersihkan_gudang')) $detail['Membersihkan Gudang'] = 1;
+    //     if ($request->has('obat_pool')) $detail['Obat Pool'] = 1;
+    //     if ($request->has('membersihkan_kolam')) $detail['Membersihkan Kolam'] = 1;
+    //     if ($request->has('sampah')) $detail['Sampah'] = 1;
+
+
+    //     $this->addDailyPoint(
+    //         $request->user_id,
+    //         $request->date,
+    //         $total,
+    //         'Checker',        // langsung string
+    //         $check->id,
+    //         $detail     // hanya task + value
+    //     );
+
+
+    //     return redirect()->route('homepage')->with('success',  __('homepageControllerMessage.checker.success_store'));
+    // }
 
 
     public function office(Request $request)
@@ -363,13 +391,13 @@ class HomepageController extends Controller
             ]);
         }
 
-        // Tambahkan ke DailyCleaningPoint
         $this->addDailyPoint(
             $request->user_id,
             $request->date,
             $totalPoint,
-            $record, // pakai OfficeRecord instance
-            ['Tasks' => implode(', ', $taskNames)]
+            'Office',        // langsung string
+            $record->id,
+            ['Tasks' => implode(', ', $taskNames)],   // hanya task + value
         );
 
 

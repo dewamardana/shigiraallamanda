@@ -3,13 +3,13 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Building;
-use App\Models\Cleaning;
+use App\Models\CleaningTask;
+use App\Models\CleaningGroup;
+use App\Models\CleaningRecord;
 use Illuminate\Support\Carbon;
-use App\Models\CleaningRecords;
 use Illuminate\Database\Seeder;
-use App\Models\DailyCleaningPoint;
 use App\Traits\HandlesDailyPoints;
+use App\Models\CleaningRecordDetail;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CleaningSeeder extends Seeder
@@ -20,129 +20,162 @@ class CleaningSeeder extends Seeder
      */
     public function run(): void
     {
-
-        $buildings = Building::all();
-        $users = User::all('id'); // Ambil collection penuh
-        $startDate = Carbon::now()->subDays(6); // 7 hari ke belakang
-
+        $users = User::all();
         if ($users->isEmpty()) {
             $this->command->warn('Tidak ada user ditemukan, seeder dihentikan.');
             return;
         }
 
-        // Formula poin per building & member count
-        $formulas = [
-            'lagoon|2'         => ['oa' => 4, 'ov' => 3, 'stay' => 3, 'vec' => 2],
-            'lagoon|3'         => ['oa' => 3, 'ov' => 2, 'stay' => 2, 'vec' => 1.5],
-            'jacuzzi|2'        => ['oa' => 3, 'ov' => 2, 'stay' => 2, 'vec' => 1.5],
-            'jacuzzi|3'        => ['oa' => 3, 'ov' => 2, 'stay' => 2, 'vec' => 1.5],
-            'main-building|2'  => ['oa' => 2.5, 'ov' => 2, 'stay' => 2, 'vec' => 1.5],
-            'main-building|3'  => ['oa' => 2.5, 'ov' => 2, 'stay' => 2, 'vec' => 1.5],
-            'premier|2'        => ['oa' => 3.5, 'ov' => 3, 'stay' => 2.5, 'vec' => 2],
-            'premier|3'        => ['oa' => 3, 'ov' => 2.5, 'stay' => 2, 'vec' => 1.5],
-            'royal|random'     => ['oa' => 5, 'ov' => 4, 'stay' => 4, 'vec' => 3, 'premier' => 6.5],
+        // Data building + task
+        $groups = [
+            [
+                'building_name' => 'Lagoon',
+                'slug' => 'lagoon',
+                'description' => 'Gedung Lagoon',
+                'foto' => null,
+                'tasks' => [
+                    ['name' => 'OA',   'formula' => 4],
+                    ['name' => 'OV',   'formula' => 3],
+                    ['name' => 'Stay', 'formula' => 3],
+                    ['name' => 'Vec',  'formula' => 2],
+                ]
+            ],
+            [
+                'building_name' => 'Jacuzzi',
+                'slug' => 'jacuzzi',
+                'description' => 'Gedung Jacuzzi',
+                'foto' => null,
+                'tasks' => [
+                    ['name' => 'OA',   'formula' => 3],
+                    ['name' => 'OV',   'formula' => 2],
+                    ['name' => 'Stay', 'formula' => 2],
+                    ['name' => 'Vec',  'formula' => 1.5],
+                ]
+            ],
+            [
+                'building_name' => 'Main Building',
+                'slug' => 'main-building',
+                'description' => 'Gedung Utama',
+                'foto' => null,
+                'tasks' => [
+                    ['name' => 'OA',   'formula' => 2.5],
+                    ['name' => 'OV',   'formula' => 2],
+                    ['name' => 'Stay', 'formula' => 2],
+                    ['name' => 'Vec',  'formula' => 1.5],
+                ]
+            ],
+            [
+                'building_name' => 'Premier',
+                'slug' => 'premier',
+                'description' => 'Gedung Premier',
+                'foto' => null,
+                'tasks' => [
+                    ['name' => 'OA',   'formula' => 3.5],
+                    ['name' => 'OV',   'formula' => 3],
+                    ['name' => 'Stay', 'formula' => 2.5],
+                    ['name' => 'Vec',  'formula' => 2],
+                ]
+            ],
+            [
+                'building_name' => 'Royal',
+                'slug' => 'royal',
+                'description' => 'Gedung Royal',
+                'foto' => null,
+                'tasks' => [
+                    ['name' => 'OA',      'formula' => 5],
+                    ['name' => 'OV',      'formula' => 4],
+                    ['name' => 'Stay',    'formula' => 4],
+                    ['name' => 'Vec',     'formula' => 3],
+                    ['name' => 'Premier', 'formula' => 6.5],
+                ]
+            ],
         ];
 
-        for ($i = 0; $i < 7; $i++) {
-            foreach ($buildings as $building) {
-                $buildingSlug = $building->slug;
+        $startDate = Carbon::now()->subDays(6); // 7 hari ke belakang
 
-                // Tentukan jumlah member
-                $memberCount = ($buildingSlug == 'royal') ? rand(1, 5) : rand(2, 3);
-                $memberCount = min($memberCount, $users->count()); // jaga-jaga kalau user sedikit
+        foreach ($groups as $groupData) {
+            $tasks = $groupData['tasks'];
+            unset($groupData['tasks']);
 
-                // Generate angka random
-                $oa      = rand(0, 5);
-                $ov      = rand(0, 5);
-                $stay    = rand(0, 5);
-                $vec     = rand(0, 5);
-                $premier = ($buildingSlug == 'royal') ? rand(0, 3) : 0;
+            // Buat cleaning group
+            $group = CleaningGroup::firstOrCreate(
+                ['slug' => $groupData['slug']],
+                $groupData
+            );
 
-                // Tentukan user inputter
-                $inputter = $users->random()->id;
-
-                // Tentukan tanggal cleaning
-                $date = $startDate->copy()->toDateString();
-                $createdAt = Carbon::parse($date)->addHours(rand(6, 18));
-
-                // Simpan cleaning
-                $cleaning = Cleaning::create([
-                    'building_id' => $building->id,
-                    'user_id'     => $inputter,
-                    'oa'          => $oa,
-                    'ov'          => $ov,
-                    'stay'        => $stay,
-                    'vec'         => $vec,
-                    'premier'     => $premier,
-                    'total_room'  => $oa + $ov + $stay + $vec + $premier,
-                    'date'        => $date,
-                    'created_at'  => $createdAt,
-                    'updated_at'  => $createdAt,
-                ]);
-
-                // Assign random member
-                if ($memberCount > 1) {
-                    $assignedUsers = $users->random($memberCount)->pluck('id');
-                } else {
-                    $assignedUsers = collect([$users->random()->id]);
-                }
-                $cleaning->members()->attach($assignedUsers);
-
-                // Hitung poin
-                $formulaKey = ($buildingSlug == 'royal') ? 'royal|random' : "{$buildingSlug}|{$memberCount}";
-                $formula = $formulas[$formulaKey] ?? ['oa' => 0, 'ov' => 0, 'stay' => 0, 'vec' => 0, 'premier' => 0];
-
-                $totalPoin = (
-                    ($oa * $formula['oa']) +
-                    ($ov * $formula['ov']) +
-                    ($stay * $formula['stay']) +
-                    ($vec * $formula['vec']) +
-                    ($buildingSlug == 'royal' ? ($premier * ($formula['premier'] ?? 0)) : 0)
+            // Attach tasks ke group (pivot dengan formula)
+            foreach ($tasks as $taskData) {
+                $task = CleaningTask::firstOrCreate(
+                    ['name' => $taskData['name']]
                 );
 
-                $poinPerUser = $memberCount > 0 ? $totalPoin / $memberCount : 0;
+                // hubungkan lewat pivot dengan formula
+                $group->tasks()->syncWithoutDetaching([
+                    $task->id => ['formula' => $taskData['formula']]
+                ]);
+            }
 
-                // Simpan ke tabel cleaning_records
-                CleaningRecords::create([
-                    'cleaning_id'  => $cleaning->id,
-                    'user_id'      => $inputter,
-                    'member_count' => $memberCount,
-                    'oa'           => $oa,
-                    'ov'           => $ov,
-                    'stay'         => $stay,
-                    'vec'          => $vec,
-                    'premier'      => $premier,
+            // Generate cleaning record selama 7 hari
+            for ($i = 0; $i < 7; $i++) {
+                $date = $startDate->copy()->addDays($i)->toDateString();
+                $memberCount = ($group->slug == 'royal') ? rand(2, 5) : rand(2, 3);
+                $memberCount = min($memberCount, $users->count());
+
+                // pilih siapa yg input
+                $inputter = $users->random();
+
+                // Buat record
+                $record = CleaningRecord::create([
+                    'cleaning_group_id' => $group->id,
+                    'user_id'           => $inputter->id,
+                    'member_count'      => $memberCount,
+                    'total_room'        => 0,
+                    'date'              => $date,
                 ]);
 
-                // Simpan ke daily_cleaning_points
-                foreach ($assignedUsers as $userId) {
-                    $detailArray = [
-                        'OA'   => $oa,
-                        'OV'   => $ov,
-                        'Stay' => $stay,
-                        'Vec'  => $vec,
-                    ];
+                // assign members ke record
+                $assignedUsers = $users->random($memberCount)->pluck('id');
+                $record->members()->attach($assignedUsers);
 
-                    if ($buildingSlug == 'royal') {
-                        $detailArray['Premier'] = $premier;
-                    }
+                // isi detail task
+                $totalRoomCalc = 0;
+                foreach ($group->tasks as $task) {
+                    $value = rand(0, 5); // jumlah kamar
+                    $formula = $task->pivot->formula; // formula dari pivot
+                    $calculated = $value * $formula;
 
+                    CleaningRecordDetail::create([
+                        'cleaning_record_id' => $record->id,
+                        'cleaning_task_id'   => $task->id,
+                        'value'              => $value,
+                        'formula'            => $formula,
+                        'calculated'         => $calculated,
+                    ]);
+
+                    $totalRoomCalc += $value;
+                }
+
+                // update total room & total_point
+                $record->update([
+                    'total_room'  => $totalRoomCalc,
+                    'total_point' => $record->details()->sum('calculated'),
+                ]);
+
+                // Tambahkan ke DailyPoint untuk semua member yang ikut cleaning
+                foreach ($assignedUsers as $uid) {
                     $this->addDailyPoint(
-                        $userId,
+                        $uid,
                         $date,
-                        $poinPerUser,
-                        $cleaning,   // model Cleaning langsung
+                        $record->total_point / $memberCount, // bagi rata poin
+                        'cleaning',
+                        $record->id,
                         [
-                            'OA'   => $oa,
-                            'OV'   => $ov,
-                            'Stay' => $stay,
-                            'Vec'  => $vec,
+                            'group'   => $group->building_name,
+                            'tasks'   => $record->details->pluck('value', 'cleaning_task_id'),
                         ]
                     );
                 }
             }
-
-            $startDate->addDay();
         }
     }
 }

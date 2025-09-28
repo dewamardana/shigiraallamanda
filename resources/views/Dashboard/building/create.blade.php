@@ -4,7 +4,7 @@
   <div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-full">
     <h2 class="font-bold text-4xl text-center text-black-500 mb-8">{{ __('dashboardBuilding.create.title') }}</h2>
 
-    <form action="{{ route('building.store') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('cleaningGroup.store') }}" method="POST" enctype="multipart/form-data">
       @csrf
       <div class="flex flex-col md:flex-row gap-8 justify-center p-6">
 
@@ -24,7 +24,7 @@
             for="foto">{{ __('dashboardBuilding.form.image_upload') }}</label>
           <input type="file" name="foto" id="foto" accept="image/*"
             class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:bg-teal-1001 file:text-white hover:file:bg-teal-1000" />
-          <p class="mt-1 text-sm text-teal-1001" id="foto">{{ __('dashboardBuilding.form.upload_hint') }}</p>
+          <p class="mt-1 text-sm text-teal-1001">{{ __('dashboardBuilding.form.upload_hint') }}</p>
 
           @error('foto')
             <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
@@ -47,22 +47,23 @@
           <div>
             <label for="description"
               class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardBuilding.form.description') }}</label>
-            <textarea name="description" id="description" value="{{ old('description') }}" rows="4"
-              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            <textarea name="description" id="description" rows="4"
+              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500">{{ old('description') }}</textarea>
             @error('description')
               <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
             @enderror
           </div>
-
         </div>
       </div>
+
+      {{-- Tombol Aksi --}}
       <div class="flex justify-center gap-4 mt-6">
         <button type="submit"
           class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-2.5">
           {{ __('button.add') }}
         </button>
 
-        <a href="{{ route('user.index') }}"
+        <a href="{{ route('cleaningGroup.index') }}"
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
           {{ __('button.back') }}
         </a>

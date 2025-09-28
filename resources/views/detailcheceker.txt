@@ -1,0 +1,100 @@
+class CheckerTask extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['code', 'display_name'];
+
+    public function groups()
+    {
+        return $this->belongsToMany(CleaningGroup::class, 'cleaning_group_task')
+            ->withPivot('formula', 'active')
+            ->withTimestamps();
+    }
+
+    public function details()
+    {
+        return $this->hasMany(CleaningRecordDetail::class);
+    }
+}
+
+class CheckerRecordDetail extends Model
+{
+
+    use HasFactory;
+
+    protected $fillable = [
+        'checker_record_id',
+        'checker_task_id',
+        'value',
+        'formula',
+        'calculated',
+    ];
+
+    public function record()
+    {
+        return $this->belongsTo(CheckerRecord::class, 'checker_record_id');
+    }
+
+    public function task()
+    {
+        return $this->belongsTo(CheckerTask::class, 'checker_task_id');
+    }
+}
+class CheckerRecord extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'date',
+        'total_point',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function details()
+    {
+        return $this->hasMany(CheckerRecordDetail::class);
+    }
+}
+
+
+migrasi 
+public function up(): void
+    {
+        Schema::create('checker_tasks', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');              // contoh: Jumlah Kamar, Mengajar, dll
+            $table->enum('type', ['number', 'boolean'])->default('boolean');
+            $table->float('formula')->default(1);
+            $table->boolean('active')->default(true);
+
+            $table->timestamps();
+        });
+    }
+        public function up(): void
+    {
+        Schema::create('checker_records', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->date('date');
+            $table->float('total_point')->default(0);
+            $table->timestamps();
+        });
+    }
+
+    public function up(): void
+    {
+        Schema::create('checker_record_details', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('checker_record_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('checker_task_id')->constrained()->cascadeOnDelete();
+            $table->string('value');          // nilai input user
+            $table->float('formula')->default(1);
+            $table->float('calculated')->nullable();
+            $table->timestamps();
+        });
+    }

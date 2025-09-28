@@ -67,7 +67,7 @@
   {{-- Alert Component --}}
 
   <h1 class="text-3xl font-bold mb-8 text-gray-800">{{ __('dashboardBuilding.index.title') }}</h1>
-  <a href="{{ route('building.create') }}"
+  <a href="{{ route('cleaningGroup.create') }}"
     class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2">{{ __('button.add') }}</a>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
     <table class="w-full text-sm text-left rtl:text-right text-gray-500">
@@ -93,11 +93,11 @@
               {{ $build->description }}
             </td>
             <td class="px-6 py-4">
-              <a href="{{ route('building.edit', ['building' => $build->slug]) }}"
+              <a href="{{ route('cleaningGroup.edit', ['cleaningGroup' => $build->slug]) }}"
                 class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2">{{ __('button.edit') }}</a>
-              <a href="{{ route('building.show', ['building' => $build->slug]) }}"
+              <a href="{{ route('cleaningGroup.show', ['cleaningGroup' => $build->slug]) }}"
                 class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2 focus:outline-none">{{ __('button.show') }}</a>
-              <form action="{{ route('building.destroy', ['building' => $build->slug]) }}" method="POST"
+              <form action="{{ route('cleaningGroup.destroy', ['cleaningGroup' => $build->slug]) }}" method="POST"
                 class="inline-block" data-confirm="{{ __('button.delete_confirm') }}">
                 @csrf
                 @method('DELETE')
