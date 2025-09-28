@@ -2,18 +2,11 @@ class CheckerTask extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'display_name'];
-
-    public function groups()
-    {
-        return $this->belongsToMany(CleaningGroup::class, 'cleaning_group_task')
-            ->withPivot('formula', 'active')
-            ->withTimestamps();
-    }
+    protected $fillable = ['name', 'type', 'formula', 'active'];
 
     public function details()
     {
-        return $this->hasMany(CleaningRecordDetail::class);
+        return $this->hasMany(CheckerRecordDetail::class, 'checker_task_id');
     }
 }
 

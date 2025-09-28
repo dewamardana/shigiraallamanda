@@ -2,287 +2,246 @@
 
 @section('content')
   <div class="w-full max-w-screen-2xl mx-auto px-5 py-6">
-    <h1 class="text-2xl font-bold mb-4">{{ __('dashboardIndex.title') }}</h1>
-    {{--  
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-      <!-- Total Users -->
-      <div class="rounded-xl shadow overflow-hidden bg-gradient-to-r from-teal-600 to-teal-800 text-white">
-        <div class="p-5">
-          <p class="text-sm opacity-80">{{ __('dashboardIndex.total_users') }}</p>
-          <p class="text-3xl font-bold">{{ $totalUsers }}</p>
+
+    {{-- Judul Halaman --}}
+    <h1 class="text-3xl font-bold mb-8 text-gray-800 tracking-tight">
+      {{ $title }}
+    </h1>
+
+    {{-- Cards Statistik --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 mb-10">
+      <div
+        class="rounded-xl shadow-lg overflow-hidden bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:shadow-xl transition">
+        <div class="p-6 text-center">
+          <p class="text-sm opacity-80">Total User</p>
+          <p class="text-3xl font-bold mt-2">{{ $totalUsers }}</p>
         </div>
       </div>
-
-      <!-- Active Users -->
-      <div class="rounded-xl shadow overflow-hidden bg-gradient-to-r from-green-600 to-green-800 text-white">
-        <div class="p-5">
-          <p class="text-sm opacity-80">{{ __('dashboardIndex.active_users') }}</p>
-          <p class="text-3xl font-bold">{{ $activeUsers }}</p>
+      <div
+        class="rounded-xl shadow-lg overflow-hidden bg-gradient-to-r from-green-600 to-emerald-700 text-white hover:shadow-xl transition">
+        <div class="p-6 text-center">
+          <p class="text-sm opacity-80">User Aktif</p>
+          <p class="text-3xl font-bold mt-2">{{ $activeUsers }}</p>
         </div>
       </div>
-
-      <!-- Most Active User -->
-      <div class="rounded-xl shadow overflow-hidden bg-gradient-to-r from-indigo-600 to-indigo-800 text-white">
-        <div class="p-5">
-          <p class="text-sm opacity-80">{{ __('dashboardIndex.most_active_user') }}</p>
-          <div class="flex flex-row gap-2 my-2">
-            <img class="w-8 h-8 rounded-full" src="{{ asset('images/user-profile.png') }}" alt="user photo">
-            <p class="text-xl font-bold">{{ $mostActiveUser['nama'] ?? '-' }}</p>
-          </div>
-          <p class="text-sm opacity-80">
-            {{ number_format($mostActiveUser['total'] ?? 0) }} {{ __('dashboardIndex.points') }}
-          </p>
+      <div class="rounded-xl shadow bg-white border border-gray-100 hover:shadow-lg transition">
+        <div class="p-6 text-center">
+          <p class="text-sm font-medium text-gray-600">Cleaning</p>
+          <p class="text-3xl font-bold text-blue-600 mt-2">{{ $totalCleaning['activity'] }}</p>
+          <p class="text-md text-gray-500">{{ $totalCleaning['point'] }} Poin</p>
+        </div>
+      </div>
+      <div class="rounded-xl shadow bg-white border border-gray-100 hover:shadow-lg transition">
+        <div class="p-6 text-center">
+          <p class="text-sm font-medium text-gray-600">Checker</p>
+          <p class="text-3xl font-bold text-purple-600 mt-2">{{ $totalChecker['activity'] }}</p>
+          <p class="text-md text-gray-500">{{ $totalChecker['point'] }} Poin</p>
+        </div>
+      </div>
+      <div class="rounded-xl shadow bg-white border border-gray-100 hover:shadow-lg transition">
+        <div class="p-6 text-center">
+          <p class="text-sm font-medium text-gray-600">Office</p>
+          <p class="text-3xl font-bold text-orange-600 mt-2">{{ $totalOffice['activity'] }}</p>
+          <p class="text-md text-gray-500">{{ $totalOffice['point'] }} Poin</p>
         </div>
       </div>
     </div>
 
-
-    <form method="GET" action="/dashboard" class="flex gap-4 items-center mb-6">
-
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-          <i data-feather="calendar" class="w-4 y-4 text-accent-1000"></i>
+    {{-- Diagram Per Aktivitas --}}
+    <div class="space-y-8 mb-10">
+      <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-700">Poin Cleaning per User</h2>
+          <select id="cleaningFilter"
+            class="border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="all">All User</option>
+            <option value="5">Top 5</option>
+            <option value="10">Top 10</option>
+          </select>
         </div>
-        <input id="datepicker-start" name="start_date" value="{{ request('start_date') }}" datepicker datepicker-autohide
-          datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text" value="{{ old('date') }}"
-          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
-          placeholder="{{ __('dashboardIndex.start_date') }}">
+        <canvas id="cleaningChart" height="150"></canvas>
       </div>
 
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-          <i data-feather="calendar" class="w-4 y-4 text-accent-1000"></i>
+      <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-700">Poin Checker per User</h2>
+          <select id="checkerFilter"
+            class="border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
+            <option value="all">All User</option>
+            <option value="5">Top 5</option>
+            <option value="10">Top 10</option>
+          </select>
         </div>
-        <input id="datepicker-end" name="end_date" value="{{ request('end_date') }}" datepicker datepicker-autohide
-          datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text" value="{{ old('date') }}"
-          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
-          placeholder="{{ __('dashboardIndex.end_date') }}">
+        <canvas id="checkerChart" height="150"></canvas>
       </div>
 
-      <button type="submit"
-        class="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center me-2 mb-2">
-        {{ __('button.filter') }}</button>
+      <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-700">Poin Office per User</h2>
+          <select id="officeFilter"
+            class="border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none">
+            <option value="all">All User</option>
+            <option value="5">Top 5</option>
+            <option value="10">Top 10</option>
+          </select>
+        </div>
+        <canvas id="officeChart" height="150"></canvas>
+      </div>
+    </div>
 
-      <a href="/dashboard">
-        <button type="button"
-          class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2.5 me-2 mb-2">{{ __('button.reset') }}</button>
-      </a>
-    </form>
+    {{-- Leaderboard --}}
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-10 hover:shadow-xl transition">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Leaderboard Semua User</h2>
+      <canvas id="leaderboardChart" height="200"></canvas>
+    </div>
 
-
-    <h2 class="text-xl font-semibold my-5 text-center">{{ __('dashboardIndex.daily_stat') }}</h2>
-    <div id="dailyChart" class="w-full h-[420px]"></div>
-
-    <h2 class="text-xl font-semibold mb-4 text-center">{{ __('dashboardIndex.total_point') }}</h2>
-    <div id="pointChart" class="w-full h-[420px]"></div>
-    <h2 class="text-xl font-semibold mb-4 text-center">{{ __('dashboardIndex.total_point') }}</h2>
-
-    Tambahan: Top 6 per Activity Type
-    @foreach ($topUsersPerActivity as $type => $data)
-      <h2 class="text-lg font-semibold mt-8 mb-4 text-center">
-        Top 6 {{ $type }} {{ __('dashboardIndex.points') }}
-      </h2>
-      <div id="chart-{{ \Illuminate\Support\Str::slug($type) }}" class="w-full h-[420px]"></div>
-    @endforeach
-
+    {{-- Tren Harian --}}
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-700">Tren Harian Aktivitas</h2>
+      <canvas id="dailyChart" height="150"></canvas>
+    </div>
   </div>
 @endsection
 
 @section('scripts')
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const dailyOptions = {
-      chart: {
-        type: 'area',
-        height: 420,
-        toolbar: {
-          show: false
-        }
-      },
-      colors: ['#0b292b', '#F1D6AB', '#00A896', '#F67280', '#E67E22', '#355C7D'],
-      dataLabels: {
-        enabled: false
-      },
-      stroke: {
-        curve: 'smooth',
-        width: 2
-      },
-      series: [{
-          name: 'OA',
-          data: {!! json_encode($oaData) !!}
-        },
-        {
-          name: 'OV',
-          data: {!! json_encode($ovData) !!}
-        },
-        {
-          name: 'Stay',
-          data: {!! json_encode($stayData) !!}
-        },
-        {
-          name: 'Vec',
-          data: {!! json_encode($vecData) !!}
-        },
-        {
-          name: 'Premier',
-          data: {!! json_encode($premierData) !!}
-        },
-        {
-          name: 'Total Room',
-          data: {!! json_encode($totalRoomData) !!}
-        }
-      ],
-      xaxis: {
-        categories: {!! json_encode($dates) !!},
-        labels: {
-          style: {
-            colors: '#555'
-          }
-        },
-        axisBorder: {
-          color: '#ccc'
-        },
-        axisTicks: {
-          color: '#ccc'
-        }
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: '#555'
-          }
-        },
-        min: 0
-      },
-      legend: {
-        position: 'top',
-        labels: {
-          colors: '#333'
-        }
-      },
-      tooltip: {
-        theme: 'light'
-      },
-      grid: {
-        borderColor: '#eee'
+    const chartData = @json($chartData);
+    const leaderboardData = @json($leaderboardData);
+    const dailyStats = @json($dailyStats);
+
+    function filterChart(chart, labels, data, top) {
+      let sorted = labels.map((label, i) => ({
+          label,
+          value: data[i]
+        }))
+        .sort((a, b) => b.value - a.value);
+
+      if (top !== 'all') {
+        sorted = sorted.slice(0, parseInt(top));
       }
-    };
 
-    const dailyChart = new ApexCharts(document.querySelector("#dailyChart"), dailyOptions);
-    dailyChart.render();
-  </script>
+      chart.data.labels = sorted.map(x => x.label);
+      chart.data.datasets[0].data = sorted.map(x => x.value);
+      chart.update();
+    }
 
-  <script>
-    const pointOptions = {
-      chart: {
-        type: 'bar',
-        height: 420,
-        toolbar: {
-          show: false
-        }
+    // Cleaning Chart
+    const cleaningChart = new Chart(document.getElementById('cleaningChart'), {
+      type: 'bar',
+      data: {
+        labels: chartData.labels,
+        datasets: [{
+          label: 'Cleaning',
+          data: chartData.cleaning,
+          backgroundColor: '#3b82f6'
+        }]
       },
-      plotOptions: {
-        bar: {
-          horizontal: false,
-          columnWidth: '55%',
-          endingShape: 'rounded'
-        }
-      },
-      dataLabels: {
-        enabled: false
-      },
-      colors: ['#3498db'],
-      series: [{
-        name: 'Total Poin',
-        data: {!! json_encode($totalPointsPerUser->pluck('total')) !!}
-      }],
-      xaxis: {
-        categories: {!! json_encode($totalPointsPerUser->pluck('nama')) !!},
-        labels: {
-          style: {
-            colors: '#555'
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
           }
         }
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: '#555'
-          }
-        },
-        min: 0
-      },
-      grid: {
-        borderColor: '#eee'
-      },
-      tooltip: {
-        theme: 'light'
       }
-    };
+    });
+    document.getElementById('cleaningFilter').addEventListener('change', e => {
+      filterChart(cleaningChart, chartData.labels, chartData.cleaning, e.target.value);
+    });
 
-    const pointChart = new ApexCharts(document.querySelector("#pointChart"), pointOptions);
-    pointChart.render();
-  </script>
-
-  <script>
-    const activityCharts = @json($topUsersPerActivity);
-
-    Object.keys(activityCharts).forEach(function(type) {
-      const users = activityCharts[type].map(item => item.nama);
-      const points = activityCharts[type].map(item => parseFloat(item.total));
-
-      const options = {
-        chart: {
-          type: 'bar',
-          height: 420,
-          toolbar: {
-            show: false
+    // Checker Chart
+    const checkerChart = new Chart(document.getElementById('checkerChart'), {
+      type: 'bar',
+      data: {
+        labels: chartData.labels,
+        datasets: [{
+          label: 'Checker',
+          data: chartData.checker,
+          backgroundColor: '#a855f7'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
           }
-        },
-        plotOptions: {
-          bar: {
-            horizontal: false,
-            columnWidth: '55%',
-            endingShape: 'rounded'
-          }
-        },
-        dataLabels: {
-          enabled: false
-        },
-        colors: ['#2ecc71'],
-        series: [{
-          name: 'Poin',
-          data: points
-        }],
-        xaxis: {
-          categories: users,
-          labels: {
-            style: {
-              colors: '#555'
-            }
-          }
-        },
-        yaxis: {
-          labels: {
-            style: {
-              colors: '#555'
-            }
-          },
-          min: 0
-        },
-        grid: {
-          borderColor: '#eee'
-        },
-        tooltip: {
-          theme: 'light'
         }
+      }
+    });
+    document.getElementById('checkerFilter').addEventListener('change', e => {
+      filterChart(checkerChart, chartData.labels, chartData.checker, e.target.value);
+    });
+
+    // Office Chart
+    const officeChart = new Chart(document.getElementById('officeChart'), {
+      type: 'bar',
+      data: {
+        labels: chartData.labels,
+        datasets: [{
+          label: 'Office',
+          data: chartData.office,
+          backgroundColor: '#f97316'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+    document.getElementById('officeFilter').addEventListener('change', e => {
+      filterChart(officeChart, chartData.labels, chartData.office, e.target.value);
+    });
+
+    // Leaderboard
+    new Chart(document.getElementById('leaderboardChart'), {
+      type: 'bar',
+      data: {
+        labels: leaderboardData.labels,
+        datasets: [{
+          label: 'Total Poin',
+          data: leaderboardData.points,
+          backgroundColor: '#6366f1'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    // Tren Harian
+    const grouped = {};
+    dailyStats.forEach(row => {
+      if (!grouped[row.type]) grouped[row.type] = {
+        label: row.type,
+        data: [],
+        borderWidth: 2,
+        fill: false
       };
-
-      const chartId = "#chart-" + type.toLowerCase().replace(/\s+/g, '-');
-      const chart = new ApexCharts(document.querySelector(chartId), options);
-      chart.render();
+    });
+    const dates = [...new Set(dailyStats.map(r => r.date))];
+    Object.keys(grouped).forEach(type => {
+      grouped[type].data = dates.map(d => {
+        const found = dailyStats.find(r => r.date === d && r.type === type);
+        return found ? found.total : 0;
+      });
+    });
+    new Chart(document.getElementById('dailyChart'), {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: Object.values(grouped)
+      }
     });
   </script>
-  --}}
-  @endsection
+@endsection

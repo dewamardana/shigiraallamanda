@@ -46,7 +46,7 @@ Route::middleware('admin')->group(function () {
     Route::delete('/dashboard/cleaningdata/{cleaningRecord}', [DataController::class, 'destroycleaningData'])->name('cleaning.destroy');
     Route::get('/dashboard/cleaningexport', [DataController::class, 'exportCleaningData'])->name('cleaningexport');
     Route::get('/dashboard/checker', [DataController::class, 'checkerData'])->name('checkerdata');
-    Route::delete('/dashboard/checker/{check}', [DataController::class, 'checkerDestroy'])->name('checkerDestroy');
+    Route::delete('/dashboard/checker/{checkerRecord}', [DataController::class, 'checkerDestroy'])->name('checkerDestroy');
     Route::get('/dashboard/checkerexport', [DataController::class, 'exportCheckerData'])->name('checkerexport');
     Route::get('/dashboard/office', [DataController::class, 'officeData'])->name('officedata');
     Route::delete('/dashboard/office/{office}', [DataController::class, 'officeDestroy'])->name('officeDestroy');

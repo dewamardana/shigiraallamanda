@@ -4,155 +4,87 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\User;
-use App\Models\Checks;
-use App\Models\Cleaning;
 use App\Models\DailyPoint;
-use App\Models\OfficeRecord;
 use Illuminate\Http\Request;
+use App\Models\CheckerRecord;
+use App\Models\CleaningRecord;
+use App\Models\OfficeTaskDetail;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
 
+
     public function index(Request $request)
     {
         $title = __('dashboardIndex.title_dashboard');
 
-        // $startDate = \DateTime::createFromFormat('d/m/Y', request('start_date'));
-        // $endDate   = \DateTime::createFromFormat('d/m/Y', request('end_date'));
+        // --- Card Statistik ---
+        $totalUsers = User::count();
+        $activeUsers = User::where('status', 'active')->count();
 
-        // $totalUsers  = User::count();
-        // $activeUsers = User::where('status', 'active')->count();
+        $totalCleaning = [
+            'activity' => DailyPoint::where('activity_type', 'Cleaning')->count(),
+            'point'    => DailyPoint::where('activity_type', 'Cleaning')->sum('point')
+        ];
+        $totalChecker = [
+            'activity' => DailyPoint::where('activity_type', 'Checker')->count(),
+            'point'    => DailyPoint::where('activity_type', 'Checker')->sum('point')
+        ];
+        $totalOffice = [
+            'activity' => DailyPoint::where('activity_type', 'Office')->count(),
+            'point'    => DailyPoint::where('activity_type', 'Office')->sum('point')
+        ];
 
-        // // Statistik harian dari tabel cleanings
-        // $dailyStats = Cleaning::selectRaw('date')
-        //     ->selectRaw('SUM(oa) as total_oa')
-        //     ->selectRaw('SUM(ov) as total_ov')
-        //     ->selectRaw('SUM(stay) as total_stay')
-        //     ->selectRaw('SUM(vec) as total_vec')
-        //     ->selectRaw('SUM(premier) as total_premier')
-        //     ->selectRaw('SUM(total_room) as total_room')
-        //     ->when($request->building_id, fn($q) => $q->where('building_id', $request->building_id))
-        //     ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-        //     ->when($endDate,   fn($q) => $q->whereDate('date', '<=', $endDate))
-        //     ->groupBy('date')
-        //     ->orderBy('date')
-        //     ->get();
+        // --- Semua User ---
+        $users = User::all();
+        $labels = $users->pluck('nama');
 
-        // // Tentukan range tanggal
-        // if ($startDate && $endDate) {
-        //     $period = Carbon::parse($startDate)->daysUntil($endDate);
-        //     $dates = [];
-        //     foreach ($period as $date) {
-        //         $dates[] = $date->format('Y-m-d');
-        //     }
-        // } else {
-        //     $dates = [];
-        //     for ($i = 6; $i >= 0; $i--) {
-        //         $dates[] = Carbon::now()->subDays($i)->format('Y-m-d');
-        //     }
-        // }
+        $cleaning = $users->map(
+            fn($u) => DailyPoint::where('user_id', $u->id)->where('activity_type', 'Cleaning')->sum('point')
+        );
+        $checker = $users->map(
+            fn($u) => DailyPoint::where('user_id', $u->id)->where('activity_type', 'Checker')->sum('point')
+        );
+        $office = $users->map(
+            fn($u) => DailyPoint::where('user_id', $u->id)->where('activity_type', 'Office')->sum('point')
+        );
 
-        // $oaData        = [];
-        // $ovData        = [];
-        // $stayData      = [];
-        // $vecData       = [];
-        // $premierData   = [];
-        // $totalRoomData = [];
+        $chartData = [
+            'labels'   => $labels,
+            'cleaning' => $cleaning,
+            'checker'  => $checker,
+            'office'   => $office,
+        ];
 
-        // foreach ($dates as $date) {
-        //     $stat = $dailyStats->firstWhere('date', $date);
-        //     $oaData[]        = $stat ? $stat->total_oa : 0;
-        //     $ovData[]        = $stat ? $stat->total_ov : 0;
-        //     $stayData[]      = $stat ? $stat->total_stay : 0;
-        //     $vecData[]       = $stat ? $stat->total_vec : 0;
-        //     $premierData[]   = $stat ? $stat->total_premier : 0;
-        //     $totalRoomData[] = $stat ? $stat->total_room : 0;
-        // }
+        // --- Leaderboard (semua user) ---
+        $leaderboard = DailyPoint::select('user_id', DB::raw('SUM(point) as total'))
+            ->groupBy('user_id')
+            ->with('user')
+            ->orderByDesc('total')
+            ->get();
 
-        // // Statistik per user
-        // $userStats = User::with(['cleanings' => function ($q) use ($startDate, $endDate, $request) {
-        //     if ($request->building_id) {
-        //         $q->where('building_id', $request->building_id);
-        //     }
-        //     if ($startDate) {
-        //         $q->whereDate('cleanings.date', '>=', $startDate);
-        //     }
-        //     if ($endDate) {
-        //         $q->whereDate('cleanings.date', '<=', $endDate);
-        //     }
-        // }])
-        //     ->get()
-        //     ->map(function ($user) use ($dates) {
-        //         $dailyTotals = array_fill_keys($dates, 0);
+        $leaderboardData = [
+            'labels' => $leaderboard->pluck('user.nama'),
+            'points' => $leaderboard->pluck('total'),
+        ];
 
-        //         foreach ($user->cleanings as $cleaning) {
-        //             $date = $cleaning->date;
-        //             if (isset($dailyTotals[$date])) {
-        //                 $memberCount = $cleaning->members->count();
-        //                 $dailyTotals[$date] += $memberCount ? ($cleaning->total_room / $memberCount) : 0;
-        //             }
-        //         }
+        // --- Tren Harian ---
+        $dailyStats = DailyPoint::select('date', 'activity_type as type', DB::raw('SUM(point) as total'))
+            ->groupBy('date', 'activity_type')
+            ->orderBy('date')
+            ->get();
 
-        //         return [
-        //             'nama'  => $user->nama,
-        //             'total' => array_sum($dailyTotals),
-        //             'data'  => array_values($dailyTotals)
-        //         ];
-        //     })->sortByDesc('total')->values();
-
-        // // Total Poin Per User dari tabel daily_points
-        // $totalPointsPerUser = DailyPoint::select('user_id', DB::raw('SUM(point) as total_point'))
-        //     ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-        //     ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
-        //     ->groupBy('user_id')
-        //     ->orderByDesc('total_point')
-        //     ->with('user')
-        //     ->get()
-        //     ->map(function ($item) {
-        //         return [
-        //             'nama'  => $item->user->nama ?? 'Unknown',
-        //             'total' => $item->total_point
-        //         ];
-        //     });
-
-        // $mostActiveUser = $totalPointsPerUser->first();
-
-        // // Ambil daftar aktivitas (activity_type & activity_detail)
-        // $activityLogs = DailyPoint::with('user')
-        //     ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-        //     ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
-        //     ->orderBy('date', 'desc')
-        //     ->get();
-
-        // // Mapping activity_type => label
-        // $activityTypes = [
-        //     Cleaning::class => 'Cleaning',
-        //     Checks::class  => 'Checker',
-        //     OfficeRecord::class   => 'Office',
-        // ];
-
-        // $topUsersPerActivity = [];
-
-        // foreach ($activityTypes as $type => $label) {
-        //     $topUsersPerActivity[$label] = DailyPoint::with('user')
-        //         ->select('user_id', DB::raw('SUM(point) as total'))
-        //         ->where('activity_type', $type)
-        //         ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-        //         ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
-        //         ->groupBy('user_id')
-        //         ->orderByDesc('total')
-        //         ->limit(6)
-        //         ->get()
-        //         ->map(fn($item) => [
-        //             'nama'  => $item->user->nama ?? 'Unknown',
-        //             'total' => $item->total,
-        //         ]);
-        // }
-
-
-        return view('Dashboard.index', compact(
+        return view('dashboard.index', compact(
             'title',
+            'totalUsers',
+            'activeUsers',
+            'totalCleaning',
+            'totalChecker',
+            'totalOffice',
+            'chartData',
+            'leaderboardData',
+            'dailyStats'
         ));
     }
 }

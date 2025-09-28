@@ -29,113 +29,6 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 class DataController extends Controller
 {
 
-    // public function cleaningData()
-    // {
-    //     $title = __('dashboardCleaning.controller.indextitle');
-
-    //     $query = Cleaning::with(['building', 'members', 'poinRecord'])->orderBy('date');
-
-
-    //     $startDate = null;
-    //     $endDate = null;
-
-    //     if (request('start_date')) {
-    //         $startDateObj = \DateTime::createFromFormat('d/m/Y', request('start_date'));
-    //         if ($startDateObj) {
-    //             $startDate = $startDateObj->format('Y-m-d');
-    //         }
-    //     }
-
-    //     if (request('end_date')) {
-    //         $endDateObj = \DateTime::createFromFormat('d/m/Y', request('end_date'));
-    //         if ($endDateObj) {
-    //             $endDate = $endDateObj->format('Y-m-d');
-    //         }
-    //     }
-
-    //     // Apply filters
-    //     if ($startDate && $endDate) {
-    //         $query->whereBetween('date', [$startDate, $endDate]);
-    //     } elseif ($startDate) {
-    //         $query->whereDate('date', '>=', $startDate);
-    //     } elseif ($endDate) {
-    //         $query->whereDate('date', '<=', $endDate);
-    //     }
-
-    //     // filter by building
-    //     if (request('building')) {
-    //         $query->whereHas('building', function ($q) {
-    //             $q->where('slug', request('building'));
-    //         });
-    //     }
-
-    //     // filter user
-    //     if (request('user')) {
-    //         $query->whereHas('members', function ($q) {
-    //             $q->where('user_id', request('user'));
-    //         });
-    //     }
-
-    //     $cleanings = $query->get();
-
-    //     // format created_at
-    //     $cleanings->each(function ($item) {
-    //         $item->date_formatted = Carbon::parse($item->date)->format('Y-m-d');
-    //     });
-
-    //     $grouped = [];
-
-    //     foreach ($cleanings as $cleaning) {
-    //         $buildingSlug = $cleaning->building->slug ?? 'unknown';
-    //         $memberCount = ($buildingSlug === 'royal') ? 'random' : $cleaning->members->count();
-    //         $groupKey = "{$buildingSlug}|{$memberCount}";
-
-    //         $poinRecord = $cleaning->poinRecord;
-
-    //         if (!$poinRecord) continue;
-
-    //         $oa = $cleaning->oa * $poinRecord->oa;
-    //         $ov = $cleaning->ov * $poinRecord->ov;
-    //         $stay = $cleaning->stay * $poinRecord->stay;
-    //         $vec = $cleaning->vec * $poinRecord->vec;
-    //         $premier = $buildingSlug === 'royal' ? ($cleaning->premier * $poinRecord->premier) : 0;
-
-    //         $total = $oa + $ov + $stay + $vec + $premier;
-    //         $memberCountNow = $cleaning->members->count();
-    //         $poinPerMember = $memberCountNow > 0 ? $total / $memberCountNow : 0;
-
-    //         $grouped[$groupKey][] = [
-    //             'id' => $cleaning->id,
-    //             'date' => $cleaning->date_formatted,
-    //             'building_name' => $cleaning->building->building_name ?? 'Unknown',
-    //             'oa' => $cleaning->oa,
-    //             'ov' => $cleaning->ov,
-    //             'stay' => $cleaning->stay,
-    //             'vec' => $cleaning->vec,
-    //             'premier' => $cleaning->premier,
-    //             'oa_value' => $poinRecord->oa,
-    //             'ov_value' => $poinRecord->ov,
-    //             'stay_value' => $poinRecord->stay,
-    //             'vec_value' => $poinRecord->vec,
-    //             'premier_value' => $poinRecord->premier,
-    //             'oa_total' => $oa,
-    //             'ov_total' => $ov,
-    //             'stay_total' => $stay,
-    //             'vec_total' => $vec,
-    //             'premier_total' => $premier,
-    //             'total' => $total,
-    //             'poin_per_member' => $poinPerMember,
-    //             'members' => $cleaning->members,
-    //             'member_count' => $memberCountNow,
-    //         ];
-    //     }
-
-    //     $buildings = Building::orderBy('building_name')->get();
-    //     $users = User::orderBy('nama')->get();
-
-    //     return view('Dashboard.cleaning.cleaningdata', compact('title', 'grouped', 'buildings', 'users'));
-    // }
-
     public function cleaningData()
     {
         $title = __('dashboardCleaning.controller.indextitle');
@@ -237,8 +130,6 @@ class DataController extends Controller
         return redirect()->route('cleaningdata')
             ->with('success', 'Data cleaning dan daily point terkait berhasil dihapus.');
     }
-
-
 
     public function exportCleaningData(Request $request)
     {
@@ -385,84 +276,6 @@ class DataController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
-    // public function checkerData()
-    // {
-    //     $user = Auth::user();
-    //     $title = __('dashboardCleaning.controller.checkerDataTitle');
-
-    //     $query = Checks::with(['user', 'poinRecord'])
-    //         ->orderBy('date', 'desc');
-
-    //     $startDate = null;
-    //     $endDate = null;
-
-    //     if (request('start_date')) {
-    //         $startDateObj = \DateTime::createFromFormat('d/m/Y', request('start_date'));
-    //         if ($startDateObj) {
-    //             $startDate = $startDateObj->format('Y-m-d');
-    //         }
-    //     }
-
-    //     if (request('end_date')) {
-    //         $endDateObj = \DateTime::createFromFormat('d/m/Y', request('end_date'));
-    //         if ($endDateObj) {
-    //             $endDate = $endDateObj->format('Y-m-d');
-    //         }
-    //     }
-
-    //     // Apply filters
-    //     if ($startDate && $endDate) {
-    //         $query->whereBetween('date', [$startDate, $endDate]);
-    //     } elseif ($startDate) {
-    //         $query->whereDate('date', '>=', $startDate);
-    //     } elseif ($endDate) {
-    //         $query->whereDate('date', '<=', $endDate);
-    //     }
-
-    //     // Filter by user (khusus admin)
-    //     if (request('user_id')) {
-    //         $query->where('user_id', request('user_id'));
-    //     }
-
-    //     $checkers = $query->get();
-
-    //     $checkerData = $checkers->map(function ($check) {
-    //         $poin = $check->poinRecord;
-
-    //         $total = $check->jumlah_kamar * ($poin->jumlah_kamar ?? 0)
-    //             + ($check->mengajar ? ($poin->mengajar ?? 0) : 0)
-    //             + ($check->pembersihan_khusus ? ($poin->pembersihan_khusus ?? 0) : 0)
-    //             + ($check->mengangkat_barang ? ($poin->mengangkat_barang ?? 0) : 0)
-    //             + ($check->membersihkan_gudang ? ($poin->membersihkan_gudang ?? 0) : 0)
-    //             + ($check->obat_pool ? ($poin->obat_pool ?? 0) : 0)
-    //             + ($check->membersihkan_pool ? ($poin->membersihkan_pool ?? 0) : 0)
-    //             + ($check->sampah ? ($poin->sampah ?? 0) : 0)
-    //             + ($check->office ? ($poin->office ?? 0) : 0);
-
-    //         return [
-    //             'id' => $check->id,
-    //             'date' => Carbon::parse($check->date)->format('Y-m-d'),
-    //             'user_name' => $check->user->nama,
-    //             'jumlah_kamar' => $check->jumlah_kamar,
-    //             'mengajar' => $check->mengajar,
-    //             'pembersihan_khusus' => $check->pembersihan_khusus,
-    //             'mengangkat_barang' => $check->mengangkat_barang,
-    //             'membersihkan_gudang' => $check->membersihkan_gudang,
-    //             'obat_pool' => $check->obat_pool,
-    //             'membersihkan_pool' => $check->membersihkan_pool,
-    //             'sampah' => $check->sampah,
-    //             'office' => $check->office,
-    //             'poin' => $poin,
-    //             'total_point' => $total,
-    //         ];
-    //     });
-
-    //     // Ambil list user untuk dropdown filter (jika user punya role admin)
-    //     $users = User::all();
-
-    //     return view('Dashboard.cleaning.checkerdata', compact('checkerData', 'title', 'users'));
-    // }
-
 
     public function checkerData()
     {
@@ -534,10 +347,15 @@ class DataController extends Controller
         return view('Dashboard.cleaning.checkerdata', compact('checkerData', 'title', 'users', 'tasks'));
     }
 
-
-    public function checkerDestroy(Checks $check)
+    public function checkerDestroy(CheckerRecord $checkerRecord)
     {
-        $check->delete(); // otomatis hapus poin record dan daily point
+        // Hapus daily points terkait
+        DailyPoint::where('activity_type', 'Checker')
+            ->where('activity_id', $checkerRecord->id)
+            ->delete();
+
+        // Hapus record (otomatis hapus details via cascade)
+        $checkerRecord->delete();
 
         return redirect()->back()->with('success', 'Checker berhasil dihapus.');
     }
@@ -933,7 +751,7 @@ class DataController extends Controller
         $user = Auth::user();
         $title = __('dashboardCleaning.controller.CleaningHistoryData.title');
 
-        $cleanings = Cleaning::with(['poinRecord', 'building', 'members', 'user'])
+        $cleanings = CleaningRecord::with(['group', 'user', 'members', 'details.task'])
             ->when(!$user->hasRole('admin'), function ($query) use ($user) {
                 $query->where(function ($q) use ($user) {
                     $q->where('user_id', $user->id)
@@ -944,23 +762,19 @@ class DataController extends Controller
             ->get();
 
         $cleaningData = $cleanings->map(function ($cleaning) {
-            $poin = $cleaning->poinRecord;
-
-            $total_oa = $cleaning->oa * ($poin->oa ?? 0);
-            $total_ov = $cleaning->ov * ($poin->ov ?? 0);
-            $total_stay = $cleaning->stay * ($poin->stay ?? 0);
-            $total_vec = $cleaning->vec * ($poin->vec ?? 0);
-            $total_premier = $cleaning->building->slug === 'royal'
-                ? $cleaning->premier * ($poin->premier ?? 0) : 0;
+            // Hitung total poin dari detail
+            $totalPoint = $cleaning->details->sum(function ($detail) {
+                return ($detail->formula ?? 1) * (is_numeric($detail->value) ? $detail->value : 1);
+            });
 
             return [
                 'date' => $cleaning->date,
-                'building' => $cleaning->building->building_name,
+                'building' => $cleaning->group->building_name ?? '-',
                 'user_name' => $cleaning->user->nama ?? '-',
                 'members' => $cleaning->members->pluck('nama'),
-                'total_point' => $total_oa + $total_ov + $total_stay + $total_vec + $total_premier,
+                'total_point' => $totalPoint,
                 'point_per_member' => $cleaning->members->count() > 0
-                    ? round(($total_oa + $total_ov + $total_stay + $total_vec + $total_premier) / $cleaning->members->count(), 2)
+                    ? round($totalPoint / $cleaning->members->count(), 2)
                     : 0,
             ];
         });
@@ -971,35 +785,37 @@ class DataController extends Controller
         ]);
     }
 
-    public function CheckOfficeHistoryData()
+    public function CheckOfficeHistoryData(Request $request)
     {
         $title = __('dashboardCleaning.controller.CheckOfficeHistoryData.title');
         $checkandoffice = [];
 
-        // Ambil data CHECKER
-        $checks = Checks::with(['user', 'poinRecord'])
+        // ========== Ambil data CHECKER ==========
+        $checkerRecords = CheckerRecord::with(['user', 'details.task'])
             ->orderBy('date', 'desc')
             ->get();
 
-        foreach ($checks as $check) {
+        foreach ($checkerRecords as $record) {
+            $totalPoint = $record->details->sum('calculated') ?? 0;
+
             $checkandoffice[] = [
                 'type'             => 'check',
-                'date'             => \Carbon\Carbon::parse($check->date)->format('Y-m-d'),
-                'user_name'        => $check->user->nama ?? '-',
-                'total_point'      => $check->poinRecord->total ?? 0,
-                'point_per_member' => $check->poinRecord->total ?? 0,
+                'date'             => \Carbon\Carbon::parse($record->date)->format('Y-m-d'),
+                'user_name'        => $record->user->nama ?? '-',
+                'total_point'      => $totalPoint,
+                'point_per_member' => $totalPoint, // checker biasanya per individu, tidak dibagi
             ];
         }
 
-        // Ambil data OFFICE
-        $officeRecords = OfficeRecord::with(['details.task', 'details.user', 'group'])
+        // ========== Ambil data OFFICE ==========
+        $officeRecords = OfficeRecord::with(['details.user', 'details.task', 'group'])
             ->orderBy('date', 'desc')
             ->get();
 
         foreach ($officeRecords as $record) {
-            $details    = $record->details ?? collect(); // pastikan jadi collection
+            $details    = $record->details ?? collect();
             $totalPoint = $details->sum('point');
-            $members    = $details->pluck('user.name')->unique()->values()->all();
+            $members    = $details->pluck('user.nama')->unique()->values()->all();
 
             $checkandoffice[] = [
                 'type'             => 'office',
@@ -1017,6 +833,54 @@ class DataController extends Controller
 
         return view('Dashboard.cleaning.checkRecord', compact('title', 'checkandoffice'));
     }
+
+
+    // public function CheckOfficeHistoryData()
+    // {
+    //     $title = __('dashboardCleaning.controller.CheckOfficeHistoryData.title');
+    //     $checkandoffice = [];
+
+    //     // Ambil data CHECKER
+    //     $checks = Checks::with(['user', 'poinRecord'])
+    //         ->orderBy('date', 'desc')
+    //         ->get();
+
+    //     foreach ($checks as $check) {
+    //         $checkandoffice[] = [
+    //             'type'             => 'check',
+    //             'date'             => \Carbon\Carbon::parse($check->date)->format('Y-m-d'),
+    //             'user_name'        => $check->user->nama ?? '-',
+    //             'total_point'      => $check->poinRecord->total ?? 0,
+    //             'point_per_member' => $check->poinRecord->total ?? 0,
+    //         ];
+    //     }
+
+    //     // Ambil data OFFICE
+    //     $officeRecords = OfficeRecord::with(['details.task', 'details.user', 'group'])
+    //         ->orderBy('date', 'desc')
+    //         ->get();
+
+    //     foreach ($officeRecords as $record) {
+    //         $details    = $record->details ?? collect(); // pastikan jadi collection
+    //         $totalPoint = $details->sum('point');
+    //         $members    = $details->pluck('user.name')->unique()->values()->all();
+
+    //         $checkandoffice[] = [
+    //             'type'             => 'office',
+    //             'date'             => \Carbon\Carbon::parse($record->date)->format('Y-m-d'),
+    //             'user_name'        => $details->first()->user->nama ?? '-',
+    //             'total_point'      => $totalPoint,
+    //             'point_per_member' => $members ? round($totalPoint / count($members), 1) : 0,
+    //         ];
+    //     }
+
+    //     // Urutkan semua data berdasarkan tanggal (desc)
+    //     usort($checkandoffice, function ($a, $b) {
+    //         return strtotime($b['date']) - strtotime($a['date']);
+    //     });
+
+    //     return view('Dashboard.cleaning.checkRecord', compact('title', 'checkandoffice'));
+    // }
 
     public function userPointRekap($userId, $year, $month)
     {
