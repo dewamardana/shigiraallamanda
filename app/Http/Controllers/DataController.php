@@ -892,16 +892,20 @@ class DataController extends Controller
             ->whereMonth('date', $month)
             ->count();
 
-        // 2. Banyak Cleaning (user ikut di cleaning_records)
-        $cleaningsAll = CleaningRecord::with(['group', 'details.task'])
-            ->whereHas('members', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            })
+        // Update personal_value untuk user ini sebelum pagination
+        CleaningRecord::with('details')
+            ->whereHas('members', fn($q) => $q->where('user_id', $userId))
             ->whereYear('date', $year)
             ->whereMonth('date', $month)
-            ->orderBy('date', 'desc')
-            ->get();
-
+            ->get()
+            ->each(function ($c) {
+                $c->details->each(function ($detail) use ($c) {
+                    if (is_null($detail->personal_value)) {
+                        $detail->personal_value = $c->member_count > 0 ? ($detail->value / $c->member_count) : 0;
+                        $detail->save();
+                    }
+                });
+            });
 
         // 2. Banyak Cleaning (user ikut di cleaning_records)
         $cleanings = CleaningRecord::with(['group', 'details.task'])
@@ -914,7 +918,7 @@ class DataController extends Controller
             ->paginate(8, ['*'], 'cleaning_page'); // ✅ pagination (8 item per halaman)
 
         // Buat array baru berisi poin per member
-        $cleaningsWithPoint = $cleaningsAll->map(function ($c) {
+        $cleaningsWithPoint = $cleanings->map(function ($c) {
             $poinPerMember = $c->member_count > 0 ? $c->total_point / $c->member_count : 0;
             // Ambil semua detail
             $c->details->each(function ($detail) use ($c) {
@@ -931,6 +935,18 @@ class DataController extends Controller
                 'poin_per_member' => $poinPerMember,
             ];
         });
+
+
+        // 2. Banyak Cleaning (user ikut di cleaning_records)
+        $cleaningsAll = CleaningRecord::with(['group', 'details.task'])
+            ->whereHas('members', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->orderBy('date', 'desc')
+            ->get();
+
 
         $totalCleaningPoint = $cleaningsWithPoint->sum('poin_per_member');
 
