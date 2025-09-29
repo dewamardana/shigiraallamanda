@@ -906,6 +906,16 @@ class DataController extends Controller
         // Buat array baru berisi poin per member
         $cleaningsWithPoint = $cleanings->map(function ($c) {
             $poinPerMember = $c->member_count > 0 ? $c->total_point / $c->member_count : 0;
+            // Ambil semua detail
+            $c->details->each(function ($detail) use ($c) {
+                // Jika personal_value kosong
+                if (is_null($detail->personal_value)) {
+                    // Hitung personal_value
+                    $detail->personal_value = $c->member_count > 0 ? ($detail->value / $c->member_count) : 0;
+                    // Simpan ke DB agar selanjutnya tidak kosong
+                    $detail->save();
+                }
+            });
             return [
                 'record' => $c,
                 'poin_per_member' => $poinPerMember,
@@ -972,8 +982,11 @@ class DataController extends Controller
             foreach ($group->records as $record) {   // 🔄 records, bukan cleanings
                 foreach ($record->details as $detail) {
                     $taskSummary[$detail->task->id]['task_name'] = $detail->task->name ?? 'Unknown';
+
+                    // TOTAL PERSONAL VALUE, bukan hanya count
                     $taskSummary[$detail->task->id]['total_times'] =
-                        ($taskSummary[$detail->task->id]['total_times'] ?? 0) + ($detail->value ?? 1);
+                        ($taskSummary[$detail->task->id]['total_times'] ?? 0) + ($detail->personal_value ?? 0);
+
                     $taskSummary[$detail->task->id]['total_point'] =
                         ($taskSummary[$detail->task->id]['total_point'] ?? 0) + ($detail->calculated ?? 0);
                 }

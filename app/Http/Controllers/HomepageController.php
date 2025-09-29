@@ -95,12 +95,13 @@ class HomepageController extends Controller
         ]);
 
         $group = CleaningGroup::with('tasks')->findOrFail($validated['cleaning_group_id']);
+        $memberCount   = count($validated['members']);
 
         // 1. simpan record utama
         $record = CleaningRecord::create([
             'cleaning_group_id' => $validated['cleaning_group_id'],
             'user_id'           => $validated['user_id'],
-            'member_count'      => count($validated['members']),
+            'member_count'      => $memberCount,
             'total_room'        => $validated['total_room'],
             'total_point'       => 0,
             'date'              => $validated['date'],
@@ -120,10 +121,12 @@ class HomepageController extends Controller
                 if ($task) {
                     $formula    = $task->pivot->formula ?? 1;
                     $calculated = $value * $formula;
+                    $personalValue = $memberCount > 0 ? $value / $memberCount : 0;
 
                     $record->details()->create([
                         'cleaning_task_id' => $taskId,
                         'value'            => $value,
+                        'personal_value'   => $personalValue,
                         'formula'          => $formula,
                         'calculated'       => $calculated,
                     ]);
@@ -140,7 +143,6 @@ class HomepageController extends Controller
         ]);
 
         // 5. bagi rata ke member → simpan pakai trait
-        $memberCount   = count($validated['members']);
         $poinPerMember = $memberCount > 0 ? $totalPoint / $memberCount : 0;
 
         foreach ($validated['members'] as $memberId) {

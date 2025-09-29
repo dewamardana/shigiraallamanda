@@ -105,6 +105,7 @@
                     <th class="px-6 py-3">No</th>
                     <th class="px-6 py-3">Task</th>
                     <th class="px-6 py-3">Jumlah</th>
+                    <th class="px-6 py-3">Personal Value</th>
                     <th class="px-6 py-3">Formula</th>
                     <th class="px-6 py-3">Calculated</th>
                   </tr>
@@ -116,6 +117,7 @@
                       <td class="px-6 py-4">{{ $loop->iteration }}</td>
                       <td class="px-6 py-4 text-left">{{ $d->task->name ?? 'Unknown' }}</td>
                       <td class="px-6 py-4">{{ $d->value ?? 1 }}</td>
+                      <td class="px-6 py-4">{{ number_format($d->personal_value ?? 0, 2) }}</td>
                       <td class="px-6 py-4">{{ $d->formula ?? '-' }}</td>
                       <td class="px-6 py-4">{{ number_format($d->calculated ?? 0, 2) }}</td>
                     </tr>
@@ -209,12 +211,12 @@
                   $count = $task['total_times'] ?? 0;
                   $rowTotal += $count;
                 @endphp
-                <td class="px-6 py-3">{{ $count }}</td>
+                <td class="px-6 py-3">{{ number_format($count, 2) }}</td>
               @endforeach
 
               {{-- Total tiap baris --}}
               <td class="px-6 py-3 font-bold bg-emerald-50 text-emerald-700">
-                {{ $rowTotal }}
+                {{ number_format($rowTotal, 2) }}
               </td>
             </tr>
           @endforeach
@@ -224,12 +226,12 @@
             <td class="px-6 py-3 text-left sticky left-0 bg-emerald-600 z-10">Total Dilakukan</td>
             @foreach ($groupSummary as $group)
               <td class="px-6 py-3">
-                {{ collect($group['taskSummary'])->sum('total_times') }}
+                {{ number_format(collect($group['taskSummary'])->sum('total_times'), 2) }}
               </td>
             @endforeach
             {{-- Total keseluruhan --}}
             <td class="px-6 py-3 bg-emerald-700">
-              {{ collect($groupSummary)->flatMap(fn($g) => $g['taskSummary'])->sum('total_times') }}
+              {{ number_format(collect($groupSummary)->flatMap(fn($g) => $g['taskSummary'])->sum('total_times'), 2) }}
             </td>
           </tr>
         </tbody>

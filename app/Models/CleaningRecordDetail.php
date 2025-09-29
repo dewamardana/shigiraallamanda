@@ -13,6 +13,7 @@ class CleaningRecordDetail extends Model
         'cleaning_record_id',
         'cleaning_task_id',
         'value',
+        'personal_value',
         'formula',
         'calculated',
     ];
