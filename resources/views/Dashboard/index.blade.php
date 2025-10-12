@@ -47,6 +47,48 @@
       </div>
     </div>
 
+    {{-- Filter Section --}}
+    <div class="mb-6">
+      <form action="{{ route('dashboard') }}" method="GET" class="grid sm:flex sm:flex-wrap sm:items-end gap-4">
+
+        {{-- Start Date --}}
+        <div class="relative w-full sm:w-auto">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <i data-feather="calendar" class="w-4 h-4 text-accent-1000"></i>
+          </div>
+          <input id="datepicker-start" name="start_date" value="{{ request('start_date') }}" datepicker
+            datepicker-autohide datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-[200px] ps-10 p-2.5"
+            placeholder="{{ __('general.filter.start_date') }}">
+        </div>
+
+        {{-- End Date --}}
+        <div class="relative w-full sm:w-auto">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <i data-feather="calendar" class="w-4 h-4 text-accent-1000"></i>
+          </div>
+          <input id="datepicker-end" name="end_date" value="{{ request('end_date') }}" datepicker datepicker-autohide
+            datepicker-autoselect-today datepicker-format="dd/mm/yyyy" type="text"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-[200px] ps-10 p-2.5"
+            placeholder="{{ __('general.filter.end_date') }}">
+        </div>
+
+        {{-- Filter Button --}}
+        <button type="submit"
+          class="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center">
+          {{ __('button.filter') }}
+        </button>
+
+        {{-- Reset Button --}}
+        <a href="{{ route('dashboard') }}"
+          class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center inline-block">
+          {{ __('button.reset') }}
+        </a>
+
+      </form>
+    </div>
+
+
     {{-- Diagram Per Aktivitas --}}
     <div class="space-y-8 mb-10">
       <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition">
@@ -55,6 +97,7 @@
           <select id="cleaningFilter"
             class="border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             <option value="all">All User</option>
+            <option value="hasPoints">User dengan Poin</option>
             <option value="5">Top 5</option>
             <option value="10">Top 10</option>
           </select>
@@ -66,8 +109,9 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-gray-700">Poin Checker per User</h2>
           <select id="checkerFilter"
-            class="border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
+            class="border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             <option value="all">All User</option>
+            <option value="hasPoints">User dengan Poin</option>
             <option value="5">Top 5</option>
             <option value="10">Top 10</option>
           </select>
@@ -79,8 +123,9 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-gray-700">Poin Office per User</h2>
           <select id="officeFilter"
-            class="border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none">
+            class="border rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             <option value="all">All User</option>
+            <option value="hasPoints">User dengan Poin</option>
             <option value="5">Top 5</option>
             <option value="10">Top 10</option>
           </select>
@@ -110,21 +155,38 @@
     const leaderboardData = @json($leaderboardData);
     const dailyStats = @json($dailyStats);
 
-    function filterChart(chart, labels, data, top) {
-      let sorted = labels.map((label, i) => ({
-          label,
-          value: data[i]
-        }))
-        .sort((a, b) => b.value - a.value);
 
-      if (top !== 'all') {
-        sorted = sorted.slice(0, parseInt(top));
+    function filterChart(chart, labels, data, top, hasPoints = null) {
+      let combined = labels.map((label, i) => ({
+        label,
+        value: data[i]
+      })).filter(x => x.label); // hapus label kosong
+
+      // --- Jika pilih “User dengan Poin” ---
+      if (top === 'hasPoints' && hasPoints) {
+        combined = combined.filter(x => x.value > 0);
       }
 
-      chart.data.labels = sorted.map(x => x.label);
-      chart.data.datasets[0].data = sorted.map(x => x.value);
+      // --- Urut dari poin terbesar ke kecil ---
+      combined.sort((a, b) => b.value - a.value);
+
+
+      // --- Jika top 5 / top 10 ---
+      if (top !== 'all' && top !== 'hasPoints') {
+        combined = combined.slice(0, parseInt(top));
+      }
+
+      // --- Jika hanya 1 user punya poin, tampilkan 1 saja ---
+      if (top === 'hasPoints' && combined.length < 5) {
+        combined = combined.slice(0, 1);
+      }
+
+
+      chart.data.labels = combined.map(x => x.label);
+      chart.data.datasets[0].data = combined.map(x => x.value);
       chart.update();
     }
+
 
     // Cleaning Chart
     const cleaningChart = new Chart(document.getElementById('cleaningChart'), {
@@ -145,9 +207,6 @@
           }
         }
       }
-    });
-    document.getElementById('cleaningFilter').addEventListener('change', e => {
-      filterChart(cleaningChart, chartData.labels, chartData.cleaning, e.target.value);
     });
 
     // Checker Chart
@@ -170,9 +229,6 @@
         }
       }
     });
-    document.getElementById('checkerFilter').addEventListener('change', e => {
-      filterChart(checkerChart, chartData.labels, chartData.checker, e.target.value);
-    });
 
     // Office Chart
     const officeChart = new Chart(document.getElementById('officeChart'), {
@@ -194,8 +250,35 @@
         }
       }
     });
+    // --- Event listener untuk dropdown ---
+    document.getElementById('cleaningFilter').addEventListener('change', e => {
+      filterChart(
+        cleaningChart,
+        chartData.labels,
+        chartData.cleaning,
+        e.target.value,
+        chartData.cleaning
+      );
+    });
+
+    document.getElementById('checkerFilter').addEventListener('change', e => {
+      filterChart(
+        checkerChart,
+        chartData.labels,
+        chartData.checker,
+        e.target.value,
+        chartData.checker
+      );
+    });
+
     document.getElementById('officeFilter').addEventListener('change', e => {
-      filterChart(officeChart, chartData.labels, chartData.office, e.target.value);
+      filterChart(
+        officeChart,
+        chartData.labels,
+        chartData.office,
+        e.target.value,
+        chartData.office
+      );
     });
 
     // Leaderboard
@@ -217,6 +300,18 @@
           }
         }
       }
+    });
+
+    window.addEventListener('load', () => {
+      // Set value dropdown ke “hasPoints”
+      document.getElementById('cleaningFilter').value = 'hasPoints';
+      document.getElementById('checkerFilter').value = 'hasPoints';
+      document.getElementById('officeFilter').value = 'hasPoints';
+
+      // Jalankan filter pertama kali
+      filterChart(cleaningChart, chartData.labels, chartData.cleaning, 'hasPoints', chartData.cleaning);
+      filterChart(checkerChart, chartData.labels, chartData.checker, 'hasPoints', chartData.checker);
+      filterChart(officeChart, chartData.labels, chartData.office, 'hasPoints', chartData.office);
     });
 
     // Tren Harian

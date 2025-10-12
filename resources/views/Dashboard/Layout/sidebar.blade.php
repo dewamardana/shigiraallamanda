@@ -5,7 +5,7 @@
     <ul class="space-y-2 font-medium">
       <li>
         <button type="button"
-          class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-teal-1000 hover:text-white {{ request()->routeIs(['dashboard', 'cleaningdata', 'checkerdata', 'userpoint', 'Cleaninghistorydata', 'CheckOfficeHistoryData']) ? 'bg-teal-1001 text-white' : '' }}"
+          class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-teal-1000 hover:text-white {{ request()->routeIs(['dashboard', 'cleaningdata', 'checkerdata', 'officedata', 'userpoint', 'Cleaninghistorydata', 'CheckOfficeHistoryData']) ? 'bg-teal-1001 text-white' : '' }}"
           aria-controls="dropdown_data" data-collapse-toggle="dropdown_data">
           <i data-feather="file-text" class="text-accent-1000"></i>
           <span

@@ -137,137 +137,146 @@ class DataController extends Controller
         $endDate      = $request->get('end_date');
         $buildingSlug = $request->get('building');
 
-        $cleanings = Cleaning::with('building', 'members', 'poinRecord')
+        $cleanings = CleaningRecord::with(['group', 'members', 'details.task'])
             ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
-            ->when($buildingSlug, fn($q) => $q->whereHas('building', fn($b) => $b->where('slug', $buildingSlug)))
+            ->when($buildingSlug, fn($q) => $q->whereHas('group', fn($b) => $b->where('slug', $buildingSlug)))
             ->orderBy('date')
             ->get();
 
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        if ($cleanings->isEmpty()) {
+            return back()->with('error', 'Tidak ada data cleaning.');
+        }
+
+        $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
+        $buildings = $cleanings->groupBy(fn($c) => strtolower($c->group->slug));
+
+        $categoryMaxCols = [];
+        foreach ($cleanings as $c) {
+            $memberCount = $c->member_count;
+            $taskCount   = $c->details->count();
+            $totalCols = 2 + $taskCount + 3;
+            if (!isset($categoryMaxCols[$memberCount]) || $totalCols > $categoryMaxCols[$memberCount]) {
+                $categoryMaxCols[$memberCount] = $totalCols;
+            }
+        }
+
         $startCols = [
-            '2'     => 'A',
-            '3'     => 'J',
-            'royal' => 'S',
+            '2' => 'A',
+            '3' => 'L',
+            '4' => 'W',
+            '5' => 'AH',
         ];
 
-        $colLetters = [
-            '2'     => ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
-            '3'     => ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'],
-            'royal' => ['S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA'],
-        ];
+        $generateColumnLetters = function ($count, $start) {
+            $letters = [];
+            $colIndex = Coordinate::columnIndexFromString($start);
+            for ($i = 0; $i < $count; $i++) {
+                $letters[] = Coordinate::stringFromColumnIndex($colIndex + $i);
+            }
+            return $letters;
+        };
 
-        $currentRows = [
-            '2'     => 1,
-            '3'     => 1,
-            'royal' => 1,
-        ];
+        $colLetters = [];
+        foreach ($categoryMaxCols as $category => $colCount) {
+            $start = $startCols[$category] ?? 'A';
+            $colLetters[$category] = $generateColumnLetters($colCount, $start);
+        }
 
-        $buildings = $cleanings->groupBy(fn($c) => strtolower($c->building->slug));
+        $currentRows = [];
+        foreach ($colLetters as $key => $cols) {
+            $currentRows[$key] = 1;
+        }
 
         foreach ($buildings as $slug => $buildingGroup) {
-            $buildingName = optional($buildingGroup->first()->building)->building_name ?? 'Unknown';
-            $categories = $slug === 'royal' ? ['royal'] : ['2', '3'];
+            $buildingName = optional($buildingGroup->first()->group)->building_name ?? 'Unknown';
+            $memberCategories = $buildingGroup->pluck('member_count')->unique();
 
-            foreach ($categories as $category) {
-                $groupData = $buildingGroup->filter(function ($c) use ($slug, $category) {
-                    $memberCount = $c->members->count();
-                    return $slug === 'royal' ? true : $memberCount == $category;
-                });
-
+            foreach ($memberCategories as $memberCount) {
+                $groupData = $buildingGroup->where('member_count', $memberCount);
                 if ($groupData->isEmpty()) continue;
 
-                $colStart = $startCols[$category];
-                $row = $currentRows[$category];
-                $maxColIndex = count($colLetters[$category]) - 1;
-                $endCol = $colLetters[$category][$maxColIndex];
-                $sheet->setCellValue("{$colStart}{$row}", strtoupper($buildingName));
-                $sheet->mergeCells("{$colStart}{$row}:{$endCol}{$row}");
+                $cols = $colLetters[$memberCount];
+                $colStart = $cols[0];
+                $colEnd   = end($cols);
+                $row      = $currentRows[$memberCount];
+
+                // 🔹 Header Gedung
+                $sheet->setCellValue("{$colStart}{$row}", strtoupper($buildingName) . " ({$memberCount} Member)");
+                $sheet->mergeCells("{$colStart}{$row}:{$colEnd}{$row}");
                 $sheet->getStyle("{$colStart}{$row}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-                $sheet->getStyle("{$colStart}{$row}")->getFill()->setFillType('solid')->getStartColor()->setRGB('0070C0');
+                $sheet->getStyle("{$colStart}{$row}")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('305496');
                 $row++;
 
-                $headers = [
-                    __('dashboardCleaning.controller.header_name_member'),
-                    __('dashboardCleaning.controller.header_oa'),
-                    __('dashboardCleaning.controller.header_ov'),
-                    __('dashboardCleaning.controller.header_stay'),
-                    __('dashboardCleaning.controller.header_vec'),
-                ];
-                if ($slug === 'royal') {
-                    $headers[] = __('dashboardCleaning.controller.header_premier');
-                }
-                $headers[] = __('dashboardCleaning.controller.header_total');
-                $headers[] = __('dashboardCleaning.controller.header_name_member2');
-                $headers[] = __('dashboardCleaning.controller.header_poin');
+                // 🔹 Header Kolom
+                $exampleRecord = $groupData->first();
+                $taskNames = $exampleRecord->details->pluck('task.name')->toArray();
+
+                $headers = array_merge(['Date', 'Member'], $taskNames, ['Total', 'Member (Copy)', 'Poin / Member']);
 
                 $colIdx = 0;
                 foreach ($headers as $header) {
-                    $cell = $colLetters[$category][$colIdx++] . $row;
+                    if (!isset($cols[$colIdx])) break;
+                    $cell = $cols[$colIdx++] . $row;
                     $sheet->setCellValue($cell, $header);
                     $sheet->getStyle($cell)->getFont()->setBold(true);
-                    $sheet->getStyle($cell)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    $sheet->getStyle($cell)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
                 }
                 $row++;
 
-                $colors = ['D9E1F2', 'FCE4D6', 'E2EFDA', 'FFF2CC'];
-                $currentColorIdx = 0;
-
+                // 🔹 Isi Data + warna bergantian
+                $colorToggle = true;
                 foreach ($groupData as $cleaning) {
-                    $poin = $cleaning->poinRecord;
-                    if (!$poin) continue;
+                    $fillColor = $colorToggle ? 'DCE6F1' : 'EBF1DE'; // dua warna biru muda bergantian
+                    $colorToggle = !$colorToggle;
 
-                    $oa      = $cleaning->oa * $poin->oa;
-                    $ov      = $cleaning->ov * $poin->ov;
-                    $stay    = $cleaning->stay * $poin->stay;
-                    $vec     = $cleaning->vec * $poin->vec;
-                    $premier = $slug === 'royal' ? ($cleaning->premier * $poin->premier) : 0;
-                    $total   = $oa + $ov + $stay + $vec + ($slug === 'royal' ? $premier : 0);
+                    $taskValues = $cleaning->details->mapWithKeys(fn($d) => [$d->task->name => $d->value])->toArray();
+                    $taskSum = array_sum($cleaning->details->pluck('calculated')->toArray());
                     $memberCountNow = $cleaning->members->count();
-                    $poinPerMember  = $memberCountNow > 0 ? $total / $memberCountNow : 0;
+                    $poinPerMember = $memberCountNow > 0 ? $taskSum / $memberCountNow : 0;
 
-                    $fillColor = $colors[$currentColorIdx % count($colors)];
+                    $startRow = $row;
 
                     foreach ($cleaning->members as $member) {
                         $colIdx = 0;
-                        $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, $member->nama);
-                        $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, $cleaning->oa);
-                        $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, $cleaning->ov);
-                        $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, $cleaning->stay);
-                        $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, $cleaning->vec);
-                        if ($slug === 'royal') {
-                            $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, $cleaning->premier);
+                        $sheet->setCellValue($cols[$colIdx++] . $row, \Carbon\Carbon::parse($cleaning->date)->format('Y-m-d'));
+                        $sheet->setCellValue($cols[$colIdx++] . $row, $member->nama);
+
+                        foreach ($taskNames as $taskName) {
+                            $sheet->setCellValue($cols[$colIdx++] . $row, $taskValues[$taskName] ?? 0);
                         }
-                        $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, number_format($total, 1));
-                        $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, $member->nama);
-                        $sheet->setCellValue($colLetters[$category][$colIdx++] . $row, number_format($poinPerMember, 2));
+
+                        $sheet->setCellValue($cols[$colIdx++] . $row, number_format($taskSum, 2));
+                        $sheet->setCellValue($cols[$colIdx++] . $row, $member->nama);
+                        $sheet->setCellValue($cols[$colIdx++] . $row, number_format($poinPerMember, 2));
 
                         for ($i = 0; $i < count($headers); $i++) {
-                            $cell = $colLetters[$category][$i] . $row;
-                            $sheet->getStyle($cell)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-                            $sheet->getStyle($cell)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                            if (!isset($cols[$i])) continue;
+                            $cell = $cols[$i] . $row;
+                            $sheet->getStyle($cell)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                            $sheet->getStyle($cell)->getFill()->setFillType(Fill::FILL_SOLID)
                                 ->getStartColor()->setRGB($fillColor);
                         }
 
                         $row++;
                     }
-                    $currentColorIdx++;
                 }
 
-                $currentRows[$category] = $row;
+                $row += 2;
+                $currentRows[$memberCount] = $row;
             }
         }
 
-        foreach ($colLetters as $cols) {
-            foreach ($cols as $col) {
-                $sheet->getColumnDimension($col)->setAutoSize(true);
-            }
+        foreach (array_merge(...array_values($colLetters)) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = __('dashboardCleaning.controller.filename_cleaning') . now()->format('Ymd_His') . '.xlsx';
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'Cleaning_Report_' . now()->format('Ymd_His') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
         $temp_file = tempnam(sys_get_temp_dir(), $filename);
         $writer->save($temp_file);
 
@@ -363,15 +372,16 @@ class DataController extends Controller
     public function exportCheckerData(Request $request)
     {
         $startDate = $request->get('start_date');
-        $endDate = $request->get('end_date');
-        $userId = $request->get('user_id');
+        $endDate   = $request->get('end_date');
+        $userId    = $request->get('user_id');
 
-        $formula = \App\Models\FormulaCheck::where('active', true)->first();
-        if (!$formula) {
-            return back()->with('error', __('dashboardCleaning.controller.no_active_formula'));
-        }
+        // Ambil semua task aktif (urutan tetap agar kolom konsisten)
+        $tasks = CheckerTask::where('active', true)
+            ->orderBy('id')
+            ->get();
 
-        $checks = Checks::with(['user', 'poinRecord'])
+        // Ambil data checker record sesuai filter
+        $records = CheckerRecord::with(['user', 'details.task'])
             ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
             ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
             ->when($userId, fn($q) => $q->where('user_id', $userId))
@@ -379,63 +389,94 @@ class DataController extends Controller
             ->orderBy('user_id')
             ->get();
 
+        if ($records->isEmpty()) {
+            return back()->with('error', __('dashboardCleaning.controller.no_data_found'));
+        }
+
+        // Buat spreadsheet baru
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $fields = [
-            __('checker.teaching'),
-            __('checker.special_cleaning'),
-            __('checker.lifting'),
-            __('checker.warehouse_cleaning'),
-            __('checker.pool_chemicals'),
-            __('checker.pool_cleaning'),
-            __('checker.waste_disposal')
+        // =====================
+        // HEADER
+        // =====================
+        $headers = [
+            __('dashboardCleaning.controller.headers.no'),
+            __('dashboardCleaning.controller.headers.date'),
+            __('dashboardCleaning.controller.headers.name'),
         ];
 
-        $headers = array_merge([__('dashboardCleaning.controller.headers.no'), __('dashboardCleaning.controller.headers.date'), __('dashboardCleaning.controller.headers.name'), __('dashboardCleaning.controller.headers.room_count')], array_map(fn($f) => ucfirst(str_replace('_', ' ', $f)), $fields), [__('dashboardCleaning.controller.headers.total_points')]);
-
-        $headerStyle = [
-            'font' => ['bold' => true],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D6EAF8']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
-        ];
-
-        foreach ($headers as $i => $header) {
-            $col = Coordinate::stringFromColumnIndex($i + 1);
-            $cell = "{$col}1";
-            $sheet->setCellValue($cell, $header);
-            $sheet->getStyle($cell)->applyFromArray($headerStyle);
+        // Tambahkan header dinamis dari task aktif
+        foreach ($tasks as $task) {
+            $headers[] = ucfirst($task->name);
         }
 
+        $headers[] = __('dashboardCleaning.controller.headers.total_points');
+
+        // Style header
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'D6EAF8']
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => Border::BORDER_THIN]
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            ],
+        ];
+
+        // Tulis header
+        foreach ($headers as $i => $header) {
+            $col = Coordinate::stringFromColumnIndex($i + 1);
+            $sheet->setCellValue("{$col}1", $header);
+            $sheet->getStyle("{$col}1")->applyFromArray($headerStyle);
+        }
+
+        // =====================
+        // ISI DATA
+        // =====================
         $rowIndex = 2;
         $no = 1;
 
-        foreach ($checks as $check) {
-            if (!$check->poinRecord) continue;
-
+        foreach ($records as $record) {
             $sheet->setCellValue("A{$rowIndex}", $no++);
-            $sheet->setCellValue("B{$rowIndex}", $check->date);
-            $sheet->setCellValue("C{$rowIndex}", $check->user->nama ?? '-');
-            $sheet->setCellValue("D{$rowIndex}", $check->poinRecord->jumlah_kamar ?? 0);
+            $sheet->setCellValue("B{$rowIndex}", $record->date);
+            $sheet->setCellValue("C{$rowIndex}", $record->user->nama ?? '-');
 
-            $total = ($check->poinRecord->jumlah_kamar ?? 0) * $formula->jumlah_kamar;
-            $colIndex = 5;
+            $colIndex = 4; // kolom setelah nama
+            $total = 0;
 
-            foreach ($fields as $field) {
-                $val = $check->poinRecord->$field ?? 0;
-                $weight = $formula->$field ?? 0;
-                $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIndex++) . $rowIndex, $val);
-                $total += $val * $weight;
+            foreach ($tasks as $task) {
+                $detail = $record->details->firstWhere('checker_task_id', $task->id);
+                $value = $detail->value ?? 0;
+                $calc  = $detail->calculated ?? (($value * $task->formula) ?? 0);
+
+                // Jika type boolean, tampilkan 'Ya'/'Tidak'
+                if ($task->type === 'boolean') {
+                    $display = $value == 1 ? 'Ya' : 'Tidak';
+                } else {
+                    $display = $value;
+                }
+
+                $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIndex++) . $rowIndex, $display);
+                $total += $calc;
             }
 
+            // total point (dari kolom terakhir)
             $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIndex) . $rowIndex, round($total, 1));
-
             $rowIndex++;
         }
 
-        // AutoSize dan border
+        // =====================
+        // FORMAT TABEL
+        // =====================
         $lastCol = Coordinate::stringFromColumnIndex(count($headers));
+
+        // autosize kolom & border
         foreach (range('A', $lastCol) as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
             for ($r = 1; $r < $rowIndex; $r++) {
@@ -443,8 +484,11 @@ class DataController extends Controller
             }
         }
 
-        $filename = __('dashboardCleaning.controller.filename');
-        $tempPath = tempnam(sys_get_temp_dir(), $filename);
+        // =====================
+        // EXPORT FILE
+        // =====================
+        $filename = 'checker_data_' . now()->format('Y_m_d_His') . '.xlsx';
+        $tempPath = tempnam(sys_get_temp_dir(), 'checker_');
         (new Xlsx($spreadsheet))->save($tempPath);
 
         return response()->download($tempPath, $filename)->deleteFileAfterSend(true);
