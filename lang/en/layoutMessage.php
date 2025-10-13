@@ -25,5 +25,13 @@ return [
     'sidebar_officetask' => 'Office Task',
     'sidebar_reportdata' => 'Report Data',
     'sidebar_settingsvalue' => 'Settings Value',
+    // new menu items
+    'sidebar_cleaning_manage' => 'Cleaning Management',
+    'sidebar_cleaning_task' => 'Cleaning Task',
+    'sidebar_cleaning_group' => 'Cleaning Group',
+    'sidebar_checker' => 'Checker',
+    'sidebar_lostfound' => 'Lost & Found',
+    'sidebar_lostitem' => 'Lost Item',
+    'sidebar_founditem' => 'Returned Item',
 
 ];

@@ -25,5 +25,13 @@ return [
     'sidebar_officetask' => 'Tugas Office',
     'sidebar_reportdata' => 'Laporan Data',
     'sidebar_settingsvalue' => 'Pengaturan Nilai',
+    'sidebar_cleaning_manage' => 'Manajemen Cleaning',
+    'sidebar_cleaning_task' => 'Tugas Cleaning',
+    'sidebar_cleaning_group' => 'Grup Cleaning',
+    'sidebar_checker' => 'Checker',
+    'sidebar_lostfound' => 'Barang Hilang & Ditemukan',
+    'sidebar_lostitem' => 'Barang Hilang',
+    'sidebar_founditem' => 'Barang Ditemukan',
+
 
 ];

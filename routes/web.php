@@ -10,12 +10,13 @@ use App\Http\Controllers\FormulaController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AddValueController;
 use App\Http\Controllers\BuildingController;
-use App\Http\Controllers\CheckerTaskController;
 use App\Http\Controllers\HomepageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TaskGroupController;
+use App\Http\Controllers\CheckerTaskController;
 use App\Http\Controllers\CleaningTaskController;
 use App\Http\Controllers\FormulaCheckController;
+use App\Http\Controllers\LostandFoundController;
 use App\Http\Controllers\CleaningGroupController;
 
 Route::middleware('guest')->group(function () {
@@ -34,10 +35,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/homepage/history', [HomepageController::class, 'history'])->name('history');
     Route::get('/homepage/report', [HomepageController::class, 'report'])->name('report');
     Route::post('/homepage/report', [HomepageController::class, 'reportStore'])->name('reportStore');
+    Route::get('/homepage/lost', [HomepageController::class, 'lost'])->name('lost');
+    Route::post('/homepage/lost', [HomepageController::class, 'lostStore'])->name('lostStore');
     Route::get('/homepage/reportHistory', [HomepageController::class, 'reportHistory'])->name('reportHistory');
     Route::get('/homepage/userprofile', [HomepageController::class, 'profile'])->name('userprofile');
     Route::post('/homepage/userprofile/{slug}', [HomepageController::class, 'userprofileUpdate'])->name('userprofileUpdate');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+
+Route::middleware('frontoffice:admin,FO')->group(function () {
+    Route::resource('/homepage/lostitem', LostandFoundController::class);
+    Route::get('/homepage/founditem', [LostandFoundController::class, 'founditem'])->name('founditem');
 });
 
 Route::middleware('admin')->group(function () {

@@ -23,6 +23,7 @@ return [
     'office' => 'Kantor',
     'history' => 'Riwayat',
     'report' => 'Laporan',
+    'lostfound' => 'Barang Hilang',
 
     'dropdown' => [
         'open' => 'Buka dropdown',

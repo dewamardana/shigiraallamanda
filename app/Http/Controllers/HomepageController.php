@@ -32,6 +32,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\CheckerRecordDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
+use App\Models\FoundItem;
 
 class HomepageController extends Controller
 {
@@ -79,7 +82,6 @@ class HomepageController extends Controller
 
         return response()->json($tasks);
     }
-
 
     public function cleaningStore(Request $request)
     {
@@ -240,8 +242,6 @@ class HomepageController extends Controller
         return redirect()->route('homepage')->with('success', __('homepageControllerMessage.checker.success_store'));
     }
 
-
-
     public function office(Request $request)
     {
         $title = __('homepageControllerMessage.office.title');
@@ -260,7 +260,6 @@ class HomepageController extends Controller
 
         return view('Homepage.office', compact('title', 'user', 'tasksActive', 'date'));
     }
-
 
     public function officeStore(Request $request)
     {
@@ -389,8 +388,6 @@ class HomepageController extends Controller
         json_decode($string);
         return json_last_error() === JSON_ERROR_NONE;
     }
-
-
 
     public function report()
     {
@@ -674,6 +671,60 @@ class HomepageController extends Controller
             'user',
         ));
     }
+
+    public function lost()
+    {
+        $title = "Report Lost Item";
+        $user = Auth::user();
+
+        return view('Homepage.lost', compact('title', 'user'));
+    }
+
+    public function lostStore(Request $request)
+    {
+
+        // 🔹 Validasi input
+        $validator = Validator::make($request->all(), [
+            'date' => ['required', 'date'],
+            'found_by_id' => ['required', 'exists:users,id'],
+            'nameItem' => ['required', 'string', 'max:255'],
+            'location' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'serial_number' => ['nullable', 'string', 'max:255'],
+            'media_files.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,mp4,mov,avi', 'max:5000'], // 5MB per file
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // 🔹 Simpan file media (jika ada)
+        $mediaPaths = [];
+        if ($request->hasFile('media_files')) {
+            foreach ($request->file('media_files') as $file) {
+                if ($file->isValid()) {
+                    // simpan di folder storage/app/public/found_items
+                    $path = $file->store('found_items', 'public');
+                    $mediaPaths[] = $path;
+                }
+            }
+        }
+
+        // 🔹 Simpan ke database
+        FoundItem::create([
+            'date' => $request->date,
+            'found_by_id' => $request->found_by_id,
+            'name' => $request->nameItem,
+            'location' => $request->location,
+            'description' => $request->description,
+            'serial_number' => $request->serial_number,
+            'media_files' => $mediaPaths,
+            'status' => 0,
+        ]);
+
+        return redirect()->route('homepage')->with('success', 'Data barang ditemukan berhasil disimpan.');
+    }
+
 
     // public function userprofileUpdate(Request $request, $slug)
     // {

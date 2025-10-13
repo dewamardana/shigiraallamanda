@@ -25,6 +25,7 @@ return [
     'office' => 'Office',
     'history' => 'History',
     'report' => 'Report',
+    'lostfound' => 'Lost and Found',
 
     'dropdown' => [
         'open' => 'Open dropdown',

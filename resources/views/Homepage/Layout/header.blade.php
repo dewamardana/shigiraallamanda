@@ -124,6 +124,12 @@
                 class="block py-2 px-3 text-gold rounded-sm hover:bg-teal-1000 md:hover:text-white ">{{ __('HomepageLayout.header.menu.dashboard') }}</a>
             </li>
           @endcan
+          @can('FO')
+            <li>
+              <a href="{{ route('lostitem.index') }}"
+                class="block py-2 px-3 text-gold rounded-sm hover:bg-teal-1000 md:hover:text-white ">Lost & Found</a>
+            </li>
+          @endcan
         </ul>
       </div>
     @else

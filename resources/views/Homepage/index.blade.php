@@ -120,6 +120,11 @@
               <a href="{{ route('office') }}"><button type="button"
                   class="text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-4 focus:ring-yellow-300 font-medium rounded-sm text-sm w-full px-5 py-2.5 text-center me-2 mb-2">{{ __('homepageIndex.office') }}</button></a>
             @endcan
+            <a href="{{ route('lost') }}"><button type="button"
+                class="text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-4 focus:ring-cyan-300 font-medium rounded-sm text-sm w-full px-5 py-2.5 text-center">
+                {{ __('homepageIndex.lostfound') }}
+              </button>
+            </a>
             <a href="{{ route('history') }}"><button type="button"
                 class="text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300 font-medium rounded-sm text-sm w-full px-5 py-2.5 text-center me-2 mb-2 ">{{ __('homepageIndex.history') }}</button></a>
             <a href="{{ route('report') }}"><button type="button"
