@@ -26,27 +26,21 @@
       const localeMap = {
         en: {
           flag: 'us',
-          label: '{{ __('general.language.en') }}'
         },
         id: {
           flag: 'id',
-          label: '{{ __('general.language.id') }}'
         },
         ja: {
           flag: 'jp',
-          label: '{{ __('general.language.ja') }}'
         },
         km: {
           flag: 'kh',
-          label: '{{ __('general.language.km') }}'
         },
         my: {
           flag: 'mm',
-          label: '{{ __('general.language.my') }}'
         },
         vi: {
           flag: 'vn',
-          label: '{{ __('general.language.vi') }}'
         },
       };
 

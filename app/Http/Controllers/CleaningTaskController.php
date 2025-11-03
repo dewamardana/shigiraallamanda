@@ -15,7 +15,7 @@ class CleaningTaskController extends Controller
     {
         $tasks = CleaningTask::latest()->paginate(10);
         return view('Dashboard.cleaning_tasks.index', [
-            'title' => 'Cleaning Task Master',
+            'title' => __('dashboardCleaningTask.controller.index.title'),
             'tasks' => $tasks,
         ]);
     }
@@ -26,7 +26,7 @@ class CleaningTaskController extends Controller
     public function create()
     {
         return view('Dashboard.cleaning_tasks.create', [
-            'title' => 'Create Cleaning Task'
+            'title' => __('dashboardCleaningTask.controller.create.title'),
         ]);
     }
     // public function create(Request $request)
@@ -50,7 +50,7 @@ class CleaningTaskController extends Controller
         CleaningTask::create($validated);
 
         return redirect()->route('cleaningTasks.index')
-            ->with('success', 'Cleaning Task created successfully');
+            ->with('success', __('dashboardCleaningTask.alert.success'));
     }
     // public function store(Request $request)
     // {
@@ -86,7 +86,7 @@ class CleaningTaskController extends Controller
     public function edit(CleaningTask $cleaningTask)
     {
         return view('Dashboard.cleaning_tasks.edit', [
-            'title' => 'Edit Cleaning Task',
+            'title' => __('dashboardCleaningTask.controller.edit.title'),
             'task'  => $cleaningTask,
         ]);
     }
@@ -109,7 +109,7 @@ class CleaningTaskController extends Controller
         $cleaningTask->update($validated);
 
         return redirect()->route('cleaningTasks.index')
-            ->with('success', 'Cleaning Task updated successfully');
+            ->with('success', __('dashboardCleaningTask.controller.edit.success_edit'));
     }
     // public function update(Request $request, CleaningTask $cleaningTask)
     // {
@@ -137,21 +137,12 @@ class CleaningTaskController extends Controller
             // kalau sudah dipakai, jangan hapus, hanya nonaktifkan
             $cleaningTask->update(['status' => 'inactive']);
             return redirect()->route('cleaningTasks.index')
-                ->with('warning', 'Task sudah digunakan, status diubah menjadi inactive.');
+                ->with('warning', __('dashboardCleaningTask.controller.delete.deactivated_warning'));
         }
 
         // kalau belum dipakai, baru bisa dihapus
         $cleaningTask->delete();
         return redirect()->route('cleaningTasks.index')
-            ->with('success', 'Cleaning Task deleted successfully');
+            ->with('success', __('dashboardCleaningTask.controller.delete.deleted_success'));
     }
-
-    // public function destroy(CleaningTask $cleaningTask)
-    // {
-    //     $cleaning_group = $cleaningTask->group->slug;
-    //     $cleaningTask->delete();
-
-    //     return redirect()->route('cleaningGroup.show', $cleaning_group)
-    //         ->with('success', 'Cleaning Task deleted successfully');
-    // }
 }

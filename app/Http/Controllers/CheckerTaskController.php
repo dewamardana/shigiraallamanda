@@ -13,7 +13,7 @@ class CheckerTaskController extends Controller
     public function index()
     {
         $tasks = CheckerTask::orderBy('id', 'desc')->get();
-        $title = 'Checker Tasks';
+        $title = __('dashboardCheckerTask.controller.index.title');
 
         return view('Dashboard.checker-tasks.index', compact('tasks', 'title'));
     }
@@ -23,7 +23,7 @@ class CheckerTaskController extends Controller
      */
     public function create()
     {
-        $title = 'Add Checker Task';
+        $title = __('dashboardCheckerTask.controller.create.title');
         return view('Dashboard.checker-tasks.create', compact('title'));
     }
 
@@ -42,7 +42,7 @@ class CheckerTaskController extends Controller
 
         return redirect()
             ->route('checker-tasks.index')
-            ->with('success', 'Checker Task berhasil ditambahkan.');
+            ->with('success', __('dashboardCheckerTask.controller.create.success_add'));
     }
 
     /**
@@ -58,7 +58,7 @@ class CheckerTaskController extends Controller
      */
     public function edit(CheckerTask $checkerTask)
     {
-        $title = 'Edit Checker Task';
+        $title = __('dashboardCheckerTask.controller.edit.title');
         return view('Dashboard.checker-tasks.edit', compact('checkerTask', 'title'));
     }
 
@@ -79,7 +79,7 @@ class CheckerTaskController extends Controller
 
         return redirect()
             ->route('checker-tasks.index')
-            ->with('success', 'Checker Task berhasil diperbarui.');
+            ->with('success', __('dashboardCheckerTask.controller.edit.success_edit'));
     }
 
     /**
@@ -93,7 +93,7 @@ class CheckerTaskController extends Controller
 
             return redirect()
                 ->route('checker-tasks.index')
-                ->with('success', 'Checker Task dinonaktifkan (tidak bisa dihapus karena sudah ada data).');
+                ->with('success', __('dashboardCheckerTask.controller.delete.disabled'));
         }
 
         // kalau belum ada data, baru boleh dihapus permanen
@@ -101,6 +101,6 @@ class CheckerTaskController extends Controller
 
         return redirect()
             ->route('checker-tasks.index')
-            ->with('success', 'Checker Task berhasil dihapus.');
+            ->with('success', __('dashboardCheckerTask.controller.delete.success_delete'));
     }
 }

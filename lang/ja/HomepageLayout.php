@@ -8,6 +8,8 @@ return [
             'checker'   => 'インスペクタ',
             'office'    => 'オーダー',
             'dashboard' => 'ダッシュボード',
+            'lostfound' => '忘れ物',
+            'profile' => 'プロフィール',
         ],
     ],
 

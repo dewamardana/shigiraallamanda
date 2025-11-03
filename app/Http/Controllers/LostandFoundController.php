@@ -13,7 +13,7 @@ class LostandFoundController extends Controller
      */
     public function index(Request $request)
     {
-        $title = "Lost Item Data | Dashboard";
+        $title = __('dashboardLostFound.controller.index.title');
         $query = FoundItem::with('foundBy')->where('status', 0)->orderByDesc('date');
 
         // 🔹 Filter tanggal
@@ -56,7 +56,7 @@ class LostandFoundController extends Controller
      */
     public function show(FoundItem $lostitem)
     {
-        $title = "Detail Item | Dashboard";
+        $title = __('dashboardLostFound.controller.show.title');
         $mediaUrls = $lostitem->media_files;
         return view('Dashboard.lostandfound.show', compact('title', 'lostitem', 'mediaUrls'));
     }
@@ -84,21 +84,37 @@ class LostandFoundController extends Controller
         // Redirect dengan pesan sukses
         return redirect()
             ->route('lostitem.index')
-            ->with('success', 'Status barang berhasil diperbarui.');
+            ->with('success', __('dashboardLostFound.controller.update.success_update'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(FoundItem $foundItem)
+    public function destroy(FoundItem $lostitem)
     {
-        //
+        // Hapus file media jika ada
+        if (!empty($lostitem->media_files)) {
+            foreach ($lostitem->media_files as $file) {
+                $path = storage_path('app/public/' . $file);
+                if (file_exists($path)) {
+                    unlink($path);
+                }
+            }
+        }
+
+        // Hapus data dari database
+        $lostitem->delete();
+
+        // Redirect dengan pesan sukses
+        return redirect()
+            ->back()
+            ->with('success', __('dashboardLostFound.controller.delete.success_deleted'));
     }
 
 
     public function founditem(Request $request)
     {
-        $title = "Return Item Data | Dashboard";
+        $title = __('dashboardLostFound.controller.founditem.title');
         $query = FoundItem::with('foundBy')->where('status', 1)->orderByDesc('date');
 
         // 🔹 Filter tanggal

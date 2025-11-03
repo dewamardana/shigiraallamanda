@@ -2,7 +2,7 @@
 
 @section('content')
   <div class="w-full max-w-screen-2xl mx-auto h-[calc(100vh-80px)] overflow-y-auto px-4 py-6">
-    <h1 class="text-3xl font-bold mb-8 text-gray-800">📦 Dashboard Lost & Found</h1>
+    <h1 class="text-3xl font-bold mb-8 text-gray-800">{{ __('dashboardLostFound.index.title') }}</h1>
 
     {{-- Filter --}}
     <div class="mb-6">
@@ -14,7 +14,7 @@
           </div>
           <input id="start_date" name="start_date" type="date" value="{{ request('start_date') }}"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-[180px] ps-10 p-2.5"
-            placeholder="Start Date">
+            placeholder="{{ __('dashboardLostFound.filter.start_date') }}">
         </div>
 
         {{-- End Date --}}
@@ -24,15 +24,16 @@
           </div>
           <input id="end_date" name="end_date" type="date" value="{{ request('end_date') }}"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-[180px] ps-10 p-2.5"
-            placeholder="End Date">
+            placeholder="{{ __('dashboardLostFound.filter.end_date') }}">
         </div>
 
         {{-- User --}}
         <div class="w-full sm:w-auto">
-          <label for="user_id" class="block mb-1 text-sm font-medium text-gray-900">Ditemukan Oleh</label>
+          <label for="user_id"
+            class="block mb-1 text-sm font-medium text-gray-900">{{ __('dashboardLostFound.filter.user') }}</label>
           <select id="user_id" name="user_id"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full sm:w-[200px] p-2.5">
-            <option value="">Semua</option>
+            <option value="">{{ __('dashboardLostFound.filter.all') }}</option>
             @foreach ($users as $u)
               <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>
                 {{ $u->nama }}
@@ -44,14 +45,14 @@
         {{-- Filter Button --}}
         <button type="submit"
           class="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center">
-          Filter
+          {{ __('button.filter') }}
         </button>
 
         {{-- Reset Button --}}
         <a href="{{ route('lostitem.index') }}">
           <button type="button"
             class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-sm text-sm px-5 py-2.5">
-            Reset
+            {{ __('button.reset') }}
           </button>
         </a>
       </form>
@@ -62,12 +63,13 @@
       <table class="w-full text-sm text-left rtl:text-right text-gray-500">
         <thead class="text-xs text-white bg-teal-1001 uppercase text-center">
           <tr>
-            <th class="border border-gray-300 px-4 py-3 text-center">Tanggal</th>
-            <th class="border border-gray-300 px-4 py-3 text-center">Nama Barang</th>
-            <th class="border border-gray-300 px-4 py-3 text-center">Lokasi</th>
-            <th class="border border-gray-300 px-4 py-3 text-center">Deskripsi</th>
-            <th class="border border-gray-300 px-4 py-3 text-center">Status</th>
-            <th class="border border-gray-300 px-4 py-3 text-center">Aksi</th>
+            <th class="border border-gray-300 px-4 py-3 text-center">{{ __('dashboardLostFound.table.date') }}</th>
+            <th class="border border-gray-300 px-4 py-3 text-center">{{ __('dashboardLostFound.table.name') }}</th>
+            <th class="border border-gray-300 px-4 py-3 text-center">{{ __('dashboardLostFound.table.location') }}</th>
+            <th class="border border-gray-300 px-4 py-3 text-center">{{ __('dashboardLostFound.table.description') }}
+            </th>
+            <th class="border border-gray-300 px-4 py-3 text-center">{{ __('dashboardLostFound.table.status') }}</th>
+            <th class="border border-gray-300 px-4 py-3 text-center">{{ __('dashboardLostFound.table.action') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -81,9 +83,9 @@
               <td class="px-6 py-4">
                 <span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-200 text-yellow-800">
                   @if ($item->status == 0)
-                    Belum Diambil
+                    {{ __('dashboardLostFound.common.not_taken') }}
                   @else
-                    Sudah Diambil
+                    {{ __('dashboardLostFound.common.taken') }}
                   @endif
                 </span>
               </td>
@@ -92,15 +94,15 @@
                 <div class="flex justify-center items-center gap-2">
                   <a href="{{ route('lostitem.show', $item->id) }}"
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none">
-                    Detail
+                    {{ __('dashboardLostFound.common.detail') }}
                   </a>
                   <form action="{{ route('lostitem.destroy', $item->id) }}" method="POST" class="inline-block"
-                    data-confirm="Yakin ingin menghapus data ini?">
+                    data-confirm="{{ __('button.delete_confirm') }}">
                     @csrf
                     @method('DELETE')
                     <button type="submit"
                       class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2">
-                      Hapus
+                      {{ __('button.delete') }}
                     </button>
                   </form>
                 </div>
@@ -108,7 +110,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="7" class="text-center text-gray-500 py-6">Tidak ada data ditemukan.</td>
+              <td colspan="7" class="text-center text-gray-500 py-6">{{ __('dashboardLostFound.table.empty') }}</td>
             </tr>
           @endforelse
         </tbody>

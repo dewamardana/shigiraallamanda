@@ -45,17 +45,17 @@
     {{-- End Alert Component --}}
 
     <h1 class="text-3xl font-bold mb-8 text-gray-800">
-      {{ $title ?? 'Cleaning Groups' }}
+      {{ __('dashboardCleaningGroup.index.title') }}
     </h1>
 
     <div class="flex justify-end gap-4 mb-4">
       <a href="{{ route('cleaningGroups.create') }}"
         class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-2.5">
-        Add Group
+        {{ __('button.add') }}
       </a>
       <a href="{{ route('dashboard') }}"
         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5">
-        Back
+        {{ __('button.back') }}
       </a>
     </div>
 
@@ -63,13 +63,13 @@
       <table class="w-full text-sm text-left rtl:text-right text-gray-500">
         <thead class="text-xs text-white bg-teal-1001 uppercase text-center">
           <tr>
-            <th class="px-6 py-3">No</th>
-            <th class="px-6 py-3">Building Name</th>
-            <th class="px-6 py-3">Description</th>
-            <th class="px-6 py-3">Foto</th>
-            <th class="px-6 py-3">Status</th>
-            <th class="px-6 py-3">Created At</th>
-            <th class="px-6 py-3">Actions</th>
+            <th class="px-6 py-3">{{ __('dashboardCleaningGroup.table.no') }}</th>
+            <th class="px-6 py-3">{{ __('dashboardCleaningGroup.table.building') }}</th>
+            <th class="px-6 py-3">{{ __('dashboardCleaningGroup.table.description') }}</th>
+            <th class="px-6 py-3">{{ __('dashboardCleaningGroup.table.photo') }}</th>
+            <th class="px-6 py-3">{{ __('dashboardCleaningGroup.table.status') }}</th>
+            <th class="px-6 py-3">{{ __('dashboardCleaningGroup.table.created_at') }}</th>
+            <th class="px-6 py-3">{{ __('dashboardCleaningGroup.table.action') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -82,7 +82,7 @@
                 @if ($group->foto)
                   <img src="{{ asset('storage/' . $group->foto) }}" class="h-12 w-12 object-cover rounded mx-auto">
                 @else
-                  <span class="text-gray-400 italic">No image</span>
+                  <span class="text-gray-400 italic">{{ __('dashboardCleaningGroup.table.no_image') }}</span>
                 @endif
               </td>
               <td class="px-6 py-4">
@@ -95,19 +95,19 @@
               <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                 <a href="{{ route('cleaningGroups.show', $group->slug) }}"
                   class="focus:outline-none text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-1">
-                  Show
+                  {{ __('button.show') }}
                 </a>
                 <a href="{{ route('cleaningGroups.edit', $group->slug) }}"
                   class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-4 py-1">
-                  Edit
+                  {{ __('button.edit') }}
                 </a>
                 <form action="{{ route('cleaningGroups.destroy', $group->slug) }}" method="POST" class="inline-block"
-                  data-confirm="Are you sure you want to delete this group?">
+                  data-confirm="{{ __('dashboardCleaningGroup.table.delete_confirm') }}">
                   @csrf
                   @method('DELETE')
                   <button type="submit"
                     class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-1">
-                    Delete
+                    {{ __('button.delete') }}
                   </button>
                 </form>
               </td>
@@ -115,7 +115,7 @@
           @empty
             <tr>
               <td colspan="7" class="px-6 py-4 text-center text-gray-500 italic">
-                No Cleaning Group found.
+                {{ __('dashboardCleaningGroup.table.no_data') }}
               </td>
             </tr>
           @endforelse

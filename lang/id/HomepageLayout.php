@@ -9,6 +9,8 @@ return [
             'checker'   => 'Pemeriksa',
             'office'    => 'Kantor',
             'dashboard' => 'Dasbor',
+            'lostfound' => 'Barang Hilang',
+            'profile' => 'Profile',
         ],
     ],
 

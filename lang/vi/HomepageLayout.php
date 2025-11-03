@@ -8,6 +8,8 @@ return [
             'checker'   => 'Người kiểm tra',
             'office'    => 'Văn phòng',
             'dashboard' => 'Bảng điều khiển',
+            'lostfound' => 'Đồ thất lạc & tìm thấy',
+            'profile' => 'Hồ sơ cá nhân',
         ],
     ],
 

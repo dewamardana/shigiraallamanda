@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/homepage/lost', [HomepageController::class, 'lostStore'])->name('lostStore');
     Route::get('/homepage/reportHistory', [HomepageController::class, 'reportHistory'])->name('reportHistory');
     Route::get('/homepage/userprofile', [HomepageController::class, 'profile'])->name('userprofile');
-    Route::post('/homepage/userprofile/{slug}', [HomepageController::class, 'userprofileUpdate'])->name('userprofileUpdate');
+    Route::put('/homepage/userprofile/{slug}', [HomepageController::class, 'userprofileUpdate'])->name('userprofileUpdate');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 

@@ -878,54 +878,6 @@ class DataController extends Controller
         return view('Dashboard.cleaning.checkRecord', compact('title', 'checkandoffice'));
     }
 
-
-    // public function CheckOfficeHistoryData()
-    // {
-    //     $title = __('dashboardCleaning.controller.CheckOfficeHistoryData.title');
-    //     $checkandoffice = [];
-
-    //     // Ambil data CHECKER
-    //     $checks = Checks::with(['user', 'poinRecord'])
-    //         ->orderBy('date', 'desc')
-    //         ->get();
-
-    //     foreach ($checks as $check) {
-    //         $checkandoffice[] = [
-    //             'type'             => 'check',
-    //             'date'             => \Carbon\Carbon::parse($check->date)->format('Y-m-d'),
-    //             'user_name'        => $check->user->nama ?? '-',
-    //             'total_point'      => $check->poinRecord->total ?? 0,
-    //             'point_per_member' => $check->poinRecord->total ?? 0,
-    //         ];
-    //     }
-
-    //     // Ambil data OFFICE
-    //     $officeRecords = OfficeRecord::with(['details.task', 'details.user', 'group'])
-    //         ->orderBy('date', 'desc')
-    //         ->get();
-
-    //     foreach ($officeRecords as $record) {
-    //         $details    = $record->details ?? collect(); // pastikan jadi collection
-    //         $totalPoint = $details->sum('point');
-    //         $members    = $details->pluck('user.name')->unique()->values()->all();
-
-    //         $checkandoffice[] = [
-    //             'type'             => 'office',
-    //             'date'             => \Carbon\Carbon::parse($record->date)->format('Y-m-d'),
-    //             'user_name'        => $details->first()->user->nama ?? '-',
-    //             'total_point'      => $totalPoint,
-    //             'point_per_member' => $members ? round($totalPoint / count($members), 1) : 0,
-    //         ];
-    //     }
-
-    //     // Urutkan semua data berdasarkan tanggal (desc)
-    //     usort($checkandoffice, function ($a, $b) {
-    //         return strtotime($b['date']) - strtotime($a['date']);
-    //     });
-
-    //     return view('Dashboard.cleaning.checkRecord', compact('title', 'checkandoffice'));
-    // }
-
     public function userPointRekap($userId, $year, $month)
     {
         $user = User::findOrFail($userId);

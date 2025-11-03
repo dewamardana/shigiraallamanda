@@ -2,7 +2,7 @@
 
 @section('content')
   <div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-1/2">
-    <h2 class="font-bold text-4xl text-center text-black-500 mb-8">{{ $title }}</h2>
+    <h2 class="font-bold text-4xl text-center text-black-500 mb-8">{{ __('dashboardCleaningTask.create.title') }}</h2>
 
     <form action="{{ route('cleaningTasks.store') }}" method="POST">
       @csrf
@@ -11,7 +11,8 @@
         <div class="w-1/2 space-y-5">
           {{-- Task Name --}}
           <div>
-            <label for="name" class="block mb-2 text-sm font-medium text-teal-1001">Task Name</label>
+            <label for="name"
+              class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardCleaningTask.table.task_name') }}</label>
             <input type="text" name="name" id="name" value="{{ old('name') }}"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 
                      focus:border-blue-500 block w-full p-2.5"
@@ -23,12 +24,15 @@
 
           {{-- Status --}}
           <div>
-            <label for="status" class="block mb-2 text-sm font-medium text-teal-1001">Status</label>
+            <label for="status"
+              class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardCleaningTask.table.status') }}</label>
             <select name="status" id="status"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 
                      focus:border-blue-500 block w-full p-2.5">
-              <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
-              <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+              <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>
+                {{ __('dashboardCleaningTask.table.active') }}</option>
+              <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>
+                {{ __('dashboardCleaningTask.table.inactive') }}</option>
             </select>
             @error('status')
               <p class="text-sm text-red-600 mt-1">{{ $message }}</p>

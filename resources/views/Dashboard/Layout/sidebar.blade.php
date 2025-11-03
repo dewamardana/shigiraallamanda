@@ -93,27 +93,6 @@
           </a>
         </li>
         <li>
-          <button type="button"
-            class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-teal-1000 hover:text-white {{ request()->routeIs(['lostitem*', 'founditem*']) ? 'bg-teal-1001 text-white' : '' }}"
-            aria-controls="dropdown-lostandfound" data-collapse-toggle="dropdown-lostandfound">
-            <i data-feather="search" class="text-accent-1000"></i>
-            <span
-              class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ __('layoutMessage.sidebar_lostfound') }}</span>
-            <i data-feather="chevron-down"></i>
-          </button>
-          <ul id="dropdown-lostandfound" class="hidden py-2 space-y-2">
-            <li>
-              <a href="{{ route('lostitem.index') }}"
-                class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-teal-1000 hover:text-white {{ request()->routeIs('lostitem*') ? 'bg-teal-1001 text-white' : '' }}">
-                {{ __('layoutMessage.sidebar_lostitem') }}</a>
-            </li>
-            <li>
-              <a href="{{ route('founditem') }}"
-                class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-teal-1000 hover:text-white {{ request()->routeIs('founditem*') ? 'bg-teal-1001 text-white' : '' }}">{{ __('layoutMessage.sidebar_founditem') }}</a>
-            </li>
-          </ul>
-        </li>
-        <li>
           <a href="{{ route('settings.index') }}"
             class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-teal-1000 hover:text-white {{ request()->routeIs('reportData.*') ? 'bg-teal-1001 text-white' : '' }}">
             <i data-feather="settings" class="text-accent-1000"></i>

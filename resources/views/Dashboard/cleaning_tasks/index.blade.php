@@ -45,7 +45,7 @@
     {{-- End Alert Component --}}
 
     <h1 class="text-3xl font-bold mb-8 text-gray-800">
-      {{ $title }}
+      {{ __('dashboardCleaningTask.index.title') }}
     </h1>
 
     <div class="flex justify-end gap-4">
@@ -63,10 +63,10 @@
       <table class="w-full text-sm text-left rtl:text-right text-gray-500">
         <thead class="text-xs text-white bg-teal-1001 uppercase text-center">
           <tr>
-            <th scope="col" class="px-6 py-3">No</th>
-            <th scope="col" class="px-6 py-3">Task Name</th>
-            <th scope="col" class="px-6 py-3">Status</th>
-            <th scope="col" class="px-6 py-3">Action</th>
+            <th scope="col" class="px-6 py-3">{{ __('dashboardCleaningTask.table.no') }}</th>
+            <th scope="col" class="px-6 py-3">{{ __('dashboardCleaningTask.table.task_name') }}</th>
+            <th scope="col" class="px-6 py-3">{{ __('dashboardCleaningTask.table.status') }}</th>
+            <th scope="col" class="px-6 py-3">{{ __('dashboardCleaningTask.table.action') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -86,7 +86,7 @@
                   {{ __('button.edit') }}
                 </a>
                 <form action="{{ route('cleaningTasks.destroy', $task->id) }}" method="POST" class="inline-block"
-                  data-confirm="{{ __('button.delete_confirm') }}">
+                  data-confirm="{{ __('dashboardCleaningTask.table.delete_confirm') }}">
                   @csrf
                   @method('DELETE')
                   <button type="submit"
@@ -99,7 +99,7 @@
           @empty
             <tr>
               <td colspan="4" class="px-6 py-4 text-center text-gray-500">
-                No Task found.
+                {{ __('dashboardCleaningTask.table.no_data') }}
               </td>
             </tr>
           @endforelse

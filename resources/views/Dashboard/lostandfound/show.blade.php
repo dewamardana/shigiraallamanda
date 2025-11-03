@@ -2,7 +2,7 @@
 
 @section('content')
   <div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-full">
-    <h2 class="font-bold text-3xl text-center text-teal-900 mb-8">Detail Barang Ditemukan</h2>
+    <h2 class="font-bold text-3xl text-center text-teal-900 mb-8">{{ __('dashboardLostFound.show.title') }}</h2>
 
     <form action="{{ route('lostitem.update', $lostitem->id) }}" method="POST">
       @csrf
@@ -10,7 +10,8 @@
       <div class="flex flex-col md:flex-row gap-8 justify-center p-6">
         {{-- Media Section --}}
         <div class="w-full md:max-w-xs">
-          <h6 class="mb-2 text-lg font-semibold text-center text-teal-900">Media Barang</h6>
+          <h6 class="mb-2 text-lg font-semibold text-center text-teal-900">
+            {{ __('dashboardLostFound.show.media_section') }}</h6>
           <div class="flex flex-wrap justify-center gap-2">
             @if (!empty($mediaUrls))
               @foreach ($mediaUrls as $index => $media)
@@ -46,7 +47,7 @@
                           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                         </svg>
-                        <span class="sr-only">Close modal</span>
+                        <span class="sr-only">{{ __('dashboardLostFound.common.close') }}</span>
                       </button>
 
                       {{-- Konten media --}}
@@ -64,7 +65,7 @@
                 </div>
               @endforeach
             @else
-              <p class="text-gray-400 text-sm text-center w-full">Tidak ada media</p>
+              <p class="text-gray-400 text-sm text-center w-full">{{ __('dashboardLostFound.common.no_media') }}</p>
             @endif
           </div>
         </div>
@@ -72,41 +73,45 @@
         {{-- Detail Section --}}
         <div class="w-full space-y-5">
           <div>
-            <label class="block text-sm font-medium text-teal-900">Tanggal Ditemukan</label>
+            <label class="block text-sm font-medium text-teal-900">{{ __('dashboardLostFound.show.date_found') }}</label>
             <input type="text" class="p-2.5 border border-gray-300 rounded-lg w-full bg-gray-50"
               value="{{ $lostitem->date }}" readonly>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-teal-900">Yang Menemukan</label>
+            <label class="block text-sm font-medium text-teal-900">{{ __('dashboardLostFound.show.found_by') }}</label>
             <input type="text" class="p-2.5 border border-gray-300 rounded-lg w-full bg-gray-50"
               value="{{ $lostitem->foundby->nama }}" readonly>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-teal-900">Tempat Ditemukan</label>
+            <label class="block text-sm font-medium text-teal-900">{{ __('dashboardLostFound.show.location') }}</label>
             <input type="text" class="p-2.5 border border-gray-300 rounded-lg w-full bg-gray-50"
               value="{{ $lostitem->location }}" readonly>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-teal-900">Deskripsi Barang</label>
+            <label
+              class="block text-sm font-medium text-teal-900">{{ __('dashboardLostFound.show.description') }}</label>
             <textarea rows="4" class="p-2.5 border border-gray-300 rounded-lg w-full bg-gray-50" readonly>{{ $lostitem->description }}</textarea>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-teal-900">Nomor Seri</label>
+            <label
+              class="block text-sm font-medium text-teal-900">{{ __('dashboardLostFound.show.serial_number') }}</label>
             <input type="text" class="p-2.5 border border-gray-300 rounded-lg w-full bg-gray-50"
               value="{{ $lostitem->serial_number ?? '-' }}" readonly>
           </div>
           @if ($lostitem->status == 0)
             {{-- Status Update --}}
             <div>
-              <label class="block text-sm font-medium text-teal-900">Status Barang</label>
+              <label class="block text-sm font-medium text-teal-900">{{ __('dashboardLostFound.common.status') }}</label>
               <select name="status" class="p-2.5 border border-gray-300 rounded-lg w-full">
-                <option value="0" {{ $lostitem->status == 0 ? 'selected' : '' }}>Belum Diambil
+                <option value="0" {{ $lostitem->status == 0 ? 'selected' : '' }}>
+                  {{ __('dashboardLostFound.common.not_taken') }}
                 </option>
-                <option value="1" {{ $lostitem->status == 1 ? 'selected' : '' }}>Sudah Diambil
+                <option value="1" {{ $lostitem->status == 1 ? 'selected' : '' }}>
+                  {{ __('dashboardLostFound.common.taken') }}
                 </option>
               </select>
             </div>
@@ -117,9 +122,10 @@
               </button>
             @else
               <div>
-                <label class="block text-sm font-medium text-teal-900">Status</label>
+                <label
+                  class="block text-sm font-medium text-teal-900">{{ __('dashboardLostFound.common.status') }}</label>
                 <input type="text" class="p-2.5 border border-gray-300 rounded-lg w-full bg-gray-50"
-                  value="Sudah Diambil" readonly>
+                  value="{{ __('dashboardLostFound.common.taken') }}" readonly>
               </div>
           @endif
           {{-- Tombol --}}

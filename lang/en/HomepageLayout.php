@@ -3,14 +3,16 @@
 return [
 
     'header' => [
-            'menu' => [
-                'homepage' => 'Homepage',
-                'cleaning' => 'Cleaning',
-                'checker' => 'Checker',
-                'office' => 'Office',
-                'dashboard' => 'Dashboard',
-            ],
+        'menu' => [
+            'homepage' => 'Homepage',
+            'cleaning' => 'Cleaning',
+            'checker' => 'Checker',
+            'office' => 'Office',
+            'dashboard' => 'Dashboard',
+            'lostfound' => 'Lost and Found',
+            'profile' => 'Profile',
         ],
+    ],
 
     'brand_name' => 'SHIGIRA',
     'footer' => [
@@ -21,5 +23,5 @@ return [
         'contact' => 'Contact',
     ],
 
-        'open_main_menu' => 'Open main menu',
+    'open_main_menu' => 'Open main menu',
 ];

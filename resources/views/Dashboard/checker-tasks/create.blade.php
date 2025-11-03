@@ -2,7 +2,7 @@
 
 @section('content')
   <div class="bg-white p-5 rounded-xl shadow-2xl m-5 mx-auto max-w-5xl w-1/2">
-    <h2 class="font-bold text-4xl text-center text-black-500 mb-8">Add Checker Task</h2>
+    <h2 class="font-bold text-4xl text-center text-black-500 mb-8">{{ __('dashboardCheckerTask.create.title') }}</h2>
 
     <form action="{{ route('checker-tasks.store') }}" method="POST">
       @csrf
@@ -10,7 +10,8 @@
         {{-- Form Input --}}
         <div class="w-1/2 space-y-5">
           <div>
-            <label for="name" class="block mb-2 text-sm font-medium text-teal-1001">Task Name</label>
+            <label for="name"
+              class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardCheckerTask.form.name') }}</label>
             <input type="text" name="name" id="name" value="{{ old('name') }}"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               required />
@@ -20,12 +21,15 @@
           </div>
 
           <div>
-            <label for="type" class="block mb-2 text-sm font-medium text-teal-1001">Type</label>
+            <label for="type"
+              class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardCheckerTask.form.type') }}</label>
             <select name="type" id="type"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               required>
-              <option value="boolean" {{ old('type') == 'boolean' ? 'selected' : '' }}>Boolean</option>
-              <option value="number" {{ old('type') == 'number' ? 'selected' : '' }}>Number</option>
+              <option value="boolean" {{ old('type') == 'boolean' ? 'selected' : '' }}>
+                {{ __('dashboardCheckerTask.option.boolean') }}</option>
+              <option value="number" {{ old('type') == 'number' ? 'selected' : '' }}>
+                {{ __('dashboardCheckerTask.option.number') }}</option>
             </select>
             @error('type')
               <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
@@ -33,7 +37,8 @@
           </div>
 
           <div>
-            <label for="formula" class="block mb-2 text-sm font-medium text-teal-1001">Formula</label>
+            <label for="formula"
+              class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardCheckerTask.form.formula') }}</label>
             <input type="number" step="0.01" name="formula" id="formula" value="{{ old('formula') }}"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               required />

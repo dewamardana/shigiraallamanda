@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\User;
+use App\Models\Skill;
 use App\Models\Checks;
 use App\Models\Report;
 use App\Models\Formula;
 use App\Models\Building;
 use App\Models\Cleaning;
+use App\Models\FoundItem;
 use App\Models\TaskGroup;
 use App\Models\DailyPoint;
 use App\Models\ReportType;
@@ -30,11 +32,11 @@ use App\Models\DailyCleaningPoint;
 use App\Traits\HandlesDailyPoints;
 use Illuminate\Support\Facades\DB;
 use App\Models\CheckerRecordDetail;
+use App\Models\CleaningRecordDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
-use App\Models\FoundItem;
 
 class HomepageController extends Controller
 {
@@ -521,157 +523,6 @@ class HomepageController extends Controller
         ]);
     }
 
-    public function profile(Request $request)
-    {
-        $user = Auth::user();
-        $title = $user->nama . ' Profile ';
-
-        $startDate = \DateTime::createFromFormat('d/m/Y', request('start_date'));
-        $endDate   = \DateTime::createFromFormat('d/m/Y', request('end_date'));
-
-
-        // Statistik harian dari tabel cleanings
-        $dailyStats = Cleaning::selectRaw('date')
-            ->selectRaw('SUM(oa) as total_oa')
-            ->selectRaw('SUM(ov) as total_ov')
-            ->selectRaw('SUM(stay) as total_stay')
-            ->selectRaw('SUM(vec) as total_vec')
-            ->selectRaw('SUM(premier) as total_premier')
-            ->selectRaw('SUM(total_room) as total_room')
-            ->when($request->building_id, fn($q) => $q->where('building_id', $request->building_id))
-            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate,   fn($q) => $q->whereDate('date', '<=', $endDate))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        // Tentukan range tanggal
-        if ($startDate && $endDate) {
-            $period = Carbon::parse($startDate)->daysUntil($endDate);
-            $dates = [];
-            foreach ($period as $date) {
-                $dates[] = $date->format('Y-m-d');
-            }
-        } else {
-            $dates = [];
-            for ($i = 6; $i >= 0; $i--) {
-                $dates[] = Carbon::now()->subDays($i)->format('Y-m-d');
-            }
-        }
-
-        $oaData        = [];
-        $ovData        = [];
-        $stayData      = [];
-        $vecData       = [];
-        $premierData   = [];
-        $totalRoomData = [];
-
-        foreach ($dates as $date) {
-            $stat = $dailyStats->firstWhere('date', $date);
-            $oaData[]        = $stat ? $stat->total_oa : 0;
-            $ovData[]        = $stat ? $stat->total_ov : 0;
-            $stayData[]      = $stat ? $stat->total_stay : 0;
-            $vecData[]       = $stat ? $stat->total_vec : 0;
-            $premierData[]   = $stat ? $stat->total_premier : 0;
-            $totalRoomData[] = $stat ? $stat->total_room : 0;
-        }
-
-        // Statistik per user
-        $userStats = User::with(['cleanings' => function ($q) use ($startDate, $endDate, $request) {
-            if ($request->building_id) {
-                $q->where('building_id', $request->building_id);
-            }
-            if ($startDate) {
-                $q->whereDate('cleanings.date', '>=', $startDate);
-            }
-            if ($endDate) {
-                $q->whereDate('cleanings.date', '<=', $endDate);
-            }
-        }])
-            ->get()
-            ->map(function ($user) use ($dates) {
-                $dailyTotals = array_fill_keys($dates, 0);
-
-                foreach ($user->cleanings as $cleaning) {
-                    $date = $cleaning->date;
-                    if (isset($dailyTotals[$date])) {
-                        $memberCount = $cleaning->members->count();
-                        $dailyTotals[$date] += $memberCount ? ($cleaning->total_room / $memberCount) : 0;
-                    }
-                }
-
-                return [
-                    'nama'  => $user->nama,
-                    'total' => array_sum($dailyTotals),
-                    'data'  => array_values($dailyTotals)
-                ];
-            })->sortByDesc('total')->values();
-
-        // Total Poin Per User dari tabel daily_cleaning_points
-        $totalPointsPerUser = DailyPoint::select('user_id', DB::raw('SUM(point) as total_point'))
-            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
-            ->groupBy('user_id')
-            ->orderByDesc('total_point')
-            ->with('user')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'nama'  => $item->user->nama ?? 'Unknown',
-                    'total' => $item->total_point
-                ];
-            });
-
-        // Ambil daftar aktivitas (activity_type & activity_detail)
-        $activityLogs = DailyPoint::with('user')
-            ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-            ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
-            ->orderBy('date', 'desc')
-            ->get();
-
-        // Mapping activity_type => label
-        $activityTypes = [
-            Cleaning::class => 'Cleaning',
-            Checks::class  => 'Checker',
-            OfficeRecord::class   => 'Office',
-        ];
-        $topUsersPerActivity = [];
-
-        foreach ($activityTypes as $type => $label) {
-            $topUsersPerActivity[$label] = DailyPoint::with('user')
-                ->select('user_id', DB::raw('SUM(point) as total'))
-                ->where('activity_type', $type)
-                ->when($startDate, fn($q) => $q->whereDate('date', '>=', $startDate))
-                ->when($endDate, fn($q) => $q->whereDate('date', '<=', $endDate))
-                ->groupBy('user_id')
-                ->orderByDesc('total')
-                ->limit(6)
-                ->get()
-                ->map(fn($item) => [
-                    'nama'  => $item->user->nama ?? 'Unknown',
-                    'total' => $item->total,
-                ]);
-        }
-
-        return view('Homepage.profile', compact(
-            'title',
-            'dates',
-            'oaData',
-            'ovData',
-            'stayData',
-            'vecData',
-            'premierData',
-            'totalRoomData',
-            'totalPointsPerUser',
-            'userStats',
-            'startDate',
-            'endDate',
-            'activityLogs',
-            'topUsersPerActivity',
-            'user',
-        ));
-    }
-
     public function lost()
     {
         $title = "Report Lost Item";
@@ -726,59 +577,332 @@ class HomepageController extends Controller
     }
 
 
-    // public function userprofileUpdate(Request $request, $slug)
+    // public function profile(Request $request)
     // {
-    //     $user = User::where('slug', $slug)->firstOrFail();
+    //     $userGet = Auth::user();
+    //     $title = $userGet->nama . ' Profile ';
+    //     $user = User::with('skills')->where('id', $userGet->id)->first();
+    //     $skills = Skill::all();
 
-    //     $validated = $request->validate([
-    //         'nama'        => 'required|string|max:255',
-    //         'username'    => 'required|string|max:255|unique:users,username,' . $user->id,
-    //         'email'       => 'required|email|max:255|unique:users,email,' . $user->id,
-    //         'password'    => 'nullable|string|min:6',
-    //         'nomor_telp'  => 'required|string|max:20',
-    //         'gender'      => 'required|in:L,P',
-    //         'foto'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    //     ], [
-    //         'nama.required'        => __('userControllerMessage.upload.name_required'),
-    //         'username.required'    => __('userControllerMessage.upload.username_required'),
-    //         'username.unique'      => __('userControllerMessage.upload.username_unique'),
-    //         'email.required'       => __('userControllerMessage.upload.email_required'),
-    //         'email.unique'         => __('userControllerMessage.upload.email_unique'),
-    //         'password.min'         => __('userControllerMessage.upload.password_min'),
-    //         'nomor_telp.required'  => __('userControllerMessage.upload.phone_required'),
-    //         'gender.in'            => __('userControllerMessage.upload.gender_in'),
-    //         'foto.image'           => __('userControllerMessage.upload.photo_error'),
-    //         'foto.mimes'           => __('userControllerMessage.upload.photo_mimes'),
-    //         'foto.max'             => __('userControllerMessage.upload.photo_max'),
-    //     ]);
-
-    //     // Update basic fields
-    //     $user->nama       = $validated['nama'];
-    //     $user->username   = $validated['username'];
-    //     $user->email      = $validated['email'];
-    //     $user->nomor_telp = $validated['nomor_telp'];
-    //     $user->gender     = $validated['gender'];
-
-    //     // Jika password diisi
-    //     if (!empty($validated['password'])) {
-    //         $user->password = bcrypt($validated['password']);
-    //     }
-
-    //     // Jika ada foto baru
-    //     if ($request->hasFile('foto')) {
-    //         // Hapus foto lama
-    //         if ($user->foto && Storage::exists('public/' . $user->foto)) {
-    //             Storage::delete('public/' . $user->foto);
-    //         }
-    //         // Simpan foto baru
-    //         $fotoPath = $request->file('foto')->store('foto', 'public');
-    //         $user->foto = $fotoPath;
-    //     }
-
-    //     $user->save();
-
-    //     return redirect()
-    //         ->route('homepage')
-    //         ->with('success', 'Profile Berhasil di Perbarui');
+    //     return view('Homepage.profile', compact(
+    //         'title',
+    //         'user',
+    //         'skills',
+    //     ));
     // }
+
+    public function profile(Request $request)
+    {
+        $userdata = Auth::user();
+        $userId = $userdata->id;
+        $title = $userdata->nama . ' Profile ';
+        $user = User::with('skills')->where('id', $userdata->id)->first();
+        $skills = Skill::all();
+
+        $year = now()->year;
+        $month = now()->month;
+
+        // 1. Banyak Activity (misal daily_activity)
+        $activitiesCount = DailyPoint::where('user_id', $userId)
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->count();
+
+        // Update personal_value untuk user ini sebelum pagination
+        CleaningRecord::with('details')
+            ->whereHas('members', fn($q) => $q->where('user_id', $userId))
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->get()
+            ->each(function ($c) {
+                $c->details->each(function ($detail) use ($c) {
+                    if (is_null($detail->personal_value)) {
+                        $detail->personal_value = $c->member_count > 0 ? ($detail->value / $c->member_count) : 0;
+                        $detail->save();
+                    }
+                });
+            });
+
+        // 2. Banyak Cleaning (user ikut di cleaning_records)
+        $cleanings = CleaningRecord::with(['group', 'details.task'])
+            ->whereHas('members', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->orderBy('date', 'desc')
+            ->paginate(8, ['*'], 'cleaning_page'); // ✅ pagination (8 item per halaman)
+
+        // Buat array baru berisi poin per member
+        $cleaningsWithPoint = $cleanings->map(function ($c) {
+            $poinPerMember = $c->member_count > 0 ? $c->total_point / $c->member_count : 0;
+            // Ambil semua detail
+            $c->details->each(function ($detail) use ($c) {
+                // Jika personal_value kosong
+                if (is_null($detail->personal_value)) {
+                    // Hitung personal_value
+                    $detail->personal_value = $c->member_count > 0 ? ($detail->value / $c->member_count) : 0;
+                    // Simpan ke DB agar selanjutnya tidak kosong
+                    $detail->save();
+                }
+            });
+            return [
+                'record' => $c,
+                'poin_per_member' => $poinPerMember,
+            ];
+        });
+
+
+        // 2. Banyak Cleaning (user ikut di cleaning_records)
+        $cleaningsAll = CleaningRecord::with(['group', 'details.task'])
+            ->whereHas('members', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->orderBy('date', 'desc')
+            ->get();
+
+
+        $totalCleaningPoint = $cleaningsWithPoint->sum('poin_per_member');
+
+        $cleaningsCount = $cleaningsAll->count();
+
+        // Ambil semua cleaning_record_id yang user ini ikut di bulan tersebut
+        $cleaningIds = $cleaningsAll->pluck('id');
+
+
+        // Ambil detail berdasarkan cleaning_record_id yang sudah difilter
+        $details = CleaningRecordDetail::with('task')
+            ->whereIn('cleaning_record_id', $cleaningIds)
+            ->get();
+
+        $taskSummary = $details->groupBy('cleaning_task_id')->map(function ($items) {
+            return [
+                'task_name'   => $items->first()->task->name ?? 'Unknown',
+                'total_times' => $items->count(),
+                'total_point' => $items->sum('calculated'),
+            ];
+        });
+
+        // Ambil total point dari daily_points (sudah dibagi per member)
+        $totalCleaningPoint = DailyPoint::where('user_id', $userId)
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->where('activity_type', 'cleaning')
+            ->sum('point');
+
+        // hitung total point dari semua task
+        $totalPoint = $totalCleaningPoint;
+
+        // ================= GROUP SUMMARY =================
+        $groups = CleaningGroup::with(['records' => function ($q) use ($userId, $year, $month) {
+            $q->whereYear('date', $year)
+                ->whereMonth('date', $month)
+                ->whereHas('members', function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                })
+                ->with('details.task');
+        }])->get();
+
+
+        $groupSummary = $groups->map(function ($group) {
+            $taskSummary = [];
+
+            foreach ($group->records as $record) {   // 🔄 records, bukan cleanings
+                foreach ($record->details as $detail) {
+                    $taskSummary[$detail->task->id]['task_name'] = $detail->task->name ?? 'Unknown';
+
+                    // TOTAL PERSONAL VALUE, bukan hanya count
+                    $taskSummary[$detail->task->id]['total_times'] =
+                        ($taskSummary[$detail->task->id]['total_times'] ?? 0) + ($detail->personal_value ?? 0);
+
+                    $taskSummary[$detail->task->id]['total_point'] =
+                        ($taskSummary[$detail->task->id]['total_point'] ?? 0) + ($detail->calculated ?? 0);
+                }
+            }
+
+            return [
+                'group_id'    => $group->id,
+                'group_name'  => $group->building_name, // ✅ pakai building_name (bukan name)
+                'taskSummary' => array_values($taskSummary),
+            ];
+        });
+
+
+
+        // Checker Section
+        $checkersAll = CheckerRecord::where('user_id', $userId)
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->orderBy('date', 'desc')
+            ->get();
+        $checkers = CheckerRecord::where('user_id', $userId)
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->orderBy('date', 'desc')
+            ->paginate(8, ['*'], 'checker_page');
+
+        $checkersCount = $checkersAll->count();
+        $checkerIds    = $checkersAll->pluck('id');
+
+        $checkerDetails = CheckerRecordDetail::with('task')
+            ->whereIn('checker_record_id', $checkerIds)
+            ->get();
+
+        $checkerSummary = $checkerDetails->groupBy('checker_task_id')->map(function ($items) {
+            return [
+                'task_name'   => $items->first()->task->name ?? 'Unknown',
+                'total_times' => $items->sum('value'),
+                'total_point' => $items->sum('calculated'),
+            ];
+        });
+
+        $totalCheckerPoint = $checkerSummary->sum('total_point');
+
+        // ================= OFFICE =================
+        $office = OfficeRecord::with(['group', 'details.task', 'details.user'])
+            ->whereHas('details', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->orderBy('date', 'desc')
+            ->paginate(8, ['*'], 'office_page'); // ✅ pagination
+
+        // Hitung poin user per record
+        $officeWithPoint = $office->map(function ($record) use ($userId) {
+            $userPoint = $record->details
+                ->where('user_id', $userId)
+                ->sum('point');
+
+            return [
+                'record' => $record,
+                'point'  => $userPoint,
+            ];
+        });
+
+        // untuk summary (ambil semua, no paginate)
+        $officeAll = OfficeRecord::with('details')
+            ->whereHas('details', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->get();
+
+        // hitung total activity office
+        $officeCount = $officeAll->count();
+
+        // hitung total point office
+        $totalOfficePoint = $officeAll->sum(function ($record) use ($userId) {
+            return $record->details->where('user_id', $userId)->sum('point');
+        });
+
+
+        // Office Task Summary per user
+        $officeTaskDetails = OfficeTaskDetail::with('task')
+            ->whereHas('record', function ($q) use ($year, $month) {
+                $q->whereYear('date', $year)
+                    ->whereMonth('date', $month);
+            })
+            ->where('user_id', $userId)
+            ->get();
+
+        $officeTaskSummary = $officeTaskDetails->groupBy('task_id')->map(function ($items) {
+            return [
+                'task_name'   => $items->first()->task->name ?? 'Unknown',
+                'total_times' => $items->count(),
+                'total_point' => $items->sum('point'),
+            ];
+        });
+
+
+
+        return view('Homepage.profile', [
+            'skills'            => $skills,
+            'title'             => $title,
+            'user'              => $user,
+            'year'              => $year,
+            'month'             => $month,
+            'activitiesCount'   => $activitiesCount,
+
+            // Cleaning
+            'cleaningsCount'    => $cleaningsCount,
+            'cleaningsWithPoint' => $cleaningsWithPoint,
+            'taskSummary'       => $taskSummary,
+            'totalPoint'        => $totalPoint,
+            'cleanings'         => $cleanings,
+            'groupSummary' => $groupSummary,
+            'totalCleaningPoint' => $totalCleaningPoint,
+
+
+            // Checker
+            'checkersCount'     => $checkersCount,
+            'checkerSummary'    => $checkerSummary,
+            'totalCheckerPoint' => $totalCheckerPoint,
+            'checkers'          => $checkers,
+
+            // Office
+            'office'              => $office,
+            'officeWithPoint'     => $officeWithPoint,
+            'officeTaskSummary'   => $officeTaskSummary,
+            'totalOfficePoint'    => $totalOfficePoint,
+            'officeCount'         => $officeCount,
+
+        ]);
+    }
+
+    public function userprofileUpdate(Request $request, $slug)
+    {
+        $user = User::where('slug', $slug)->firstOrFail();
+
+        $validated = $request->validate([
+            'nama'        => 'required|string|max:255',
+            'email'       => 'required|email|max:255|unique:users,email,' . $user->id,
+            'nomor_telp'  => 'nullable|string|max:20',
+            'gender'      => 'required|in:L,P',
+            'skills'      => 'nullable|array',
+            'skills.*'    => 'exists:skills,id',
+            'foto'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'nama.required'        => __('dashboardUser.controller.upload.name_required'),
+            'email.required'       => __('dashboardUser.controller.upload.email_required'),
+            'email.unique'         => __('dashboardUser.controller.upload.email_unique'),
+            'nomor_telp.max'       => __('dashboardUser.controller.upload.phone_max'),
+            'gender.in'            => __('dashboardUser.controller.upload.gender_in'),
+            'foto.image'           => __('dashboardUser.controller.upload.photo_error'),
+            'foto.mimes'           => __('dashboardUser.controller.upload.photo_mimes'),
+            'foto.max'             => __('dashboardUser.controller.upload.photo_max'),
+        ]);
+
+        // Update data utama
+        $user->fill([
+            'nama'       => $validated['nama'],
+            'email'      => $validated['email'],
+            'nomor_telp' => $validated['nomor_telp'] ?? $user->nomor_telp,
+            'gender'     => $validated['gender'],
+        ]);
+
+        // Jika ada foto baru
+        if ($request->hasFile('foto')) {
+            // hapus foto lama
+            if ($user->foto && Storage::exists('public/' . $user->foto)) {
+                Storage::delete('public/' . $user->foto);
+            }
+
+            // simpan foto baru
+            $fotoPath = $request->file('foto')->store('foto', 'public');
+            $user->foto = $fotoPath;
+        }
+
+        $user->save();
+
+        // Sinkronisasi skills (jika ada)
+        $user->skills()->sync($request->skills ?? []);
+
+        return redirect()
+            ->route('userprofile')
+            ->with('success', __('dashboardUser.controller.upload.success_edit'));
+    }
 }

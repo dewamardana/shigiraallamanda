@@ -1,7 +1,7 @@
 <nav class="bg-teal-1001">
   <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
     @auth
-      <a href="{{ route('homepage') }}" class="flex ms-2 md:me-24">
+      <a href="{{ route('homepage') }}" class="flex ms-2 md:me-4">
         <img src="{{ asset('images/Logo.png') }}" class="h-8 me-3" alt="FlowBite Logo" />
         <span
           class="self-center text-xl text-gold font-semibold sm:text-2xl whitespace-nowrap">{{ __('general.brand_name') }}</span>
@@ -127,9 +127,13 @@
           @can('FO')
             <li>
               <a href="{{ route('lostitem.index') }}"
-                class="block py-2 px-3 text-gold rounded-sm hover:bg-teal-1000 md:hover:text-white ">Lost & Found</a>
+                class="block py-2 px-3 text-gold rounded-sm hover:bg-teal-1000 md:hover:text-white ">{{ __('HomepageLayout.header.menu.lostfound') }}</a>
             </li>
           @endcan
+          <li>
+            <a href="{{ route('userprofile') }}"
+              class="block py-2 px-3 text-gold rounded-sm hover:bg-teal-1000 md:hover:text-white">{{ __('HomepageLayout.header.menu.profile') }}</a>
+          </li>
         </ul>
       </div>
     @else
