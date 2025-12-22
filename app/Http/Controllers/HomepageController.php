@@ -617,6 +617,26 @@ class HomepageController extends Controller
         ]);
     }
 
+    public function replyAndUpdate(Request $request, Report $report)
+    {
+        $user = Auth::user();
+        $validated = $request->validate([
+            'reply'  => 'required|string',
+            'point'  => 'nullable|integer|min:0',
+            'status' => 'required|in:pending,in_progress,resolved,rejected',
+        ]);
+
+        // 🔹 Update report utama
+        $report->update([
+            'reply'             => $validated['reply'], // ← dipakai sebagai status message
+            'point'             => $validated['point'] ?? 0,
+            'status'            => $validated['status'],
+            'status_updated_by' => $user->id,
+        ]);
+
+        return redirect()->back()->with('success', __('dashboardReportData.controller.reply.success_reply'));
+    }
+
     public function reportHistoryDetail(Report $report)
     {
         // 🔒 Security: pastikan report milik user login

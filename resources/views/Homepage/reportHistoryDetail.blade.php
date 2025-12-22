@@ -86,7 +86,7 @@
         </p>
       </div>
     @endif
-    <form action="{{ route('reports.reply', $report) }}" method="POST"
+    <form action="{{ route('reportsUpdate', $report) }}" method="POST"
       class="bg-gray-50 rounded-xl shadow p-6 space-y-4">
       @csrf
 
@@ -121,11 +121,6 @@
           class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-6 py-2.5">
           {{ __('button.edit') }}
         </button>
-
-        <a href="{{ route('reportData') }}"
-          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 focus:outline-none">
-          {{ __('button.back') }}
-        </a>
       </div>
     </form>
   </div>

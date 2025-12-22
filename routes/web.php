@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/homepage/lost', [HomepageController::class, 'lost'])->name('lost');
     Route::post('/homepage/lost', [HomepageController::class, 'lostStore'])->name('lostStore');
     Route::get('/homepage/reportHistory', [HomepageController::class, 'reportHistory'])->name('reportHistory');
-    Route::post('/homepage/reportData/{report}/reply', [ReportController::class, 'replyAndUpdate'])->name('reports.reply');
+    Route::post('/homepage/reportData/{report}/reply', [HomepageController::class, 'replyAndUpdate'])->name('reportsUpdate');
     Route::get('/homepage/reportHistory/{report}', [HomepageController::class, 'reportHistoryDetail'])->name('reportHistory.show');
     Route::get('/homepage/userprofile', [HomepageController::class, 'profile'])->name('userprofile');
     Route::put('/homepage/userprofile/{slug}', [HomepageController::class, 'userprofileUpdate'])->name('userprofileUpdate');
@@ -83,6 +83,7 @@ Route::middleware('admin')->group(function () {
     Route::resource('/dashboard/task-groups', TaskGroupController::class);
     Route::resource('dashboard/task-groups/tasks', TaskController::class);
     Route::get('/dashboard/reportData', [ReportController::class, 'reportData'])->name('reportData');
+    Route::post('/dashboard/reportData/{report}/reply', [ReportController::class, 'replyAndUpdate'])->name('reports.reply');
     Route::get('/dashboard/reportData/{report}', [ReportController::class, 'show'])->name('reports.show');
     Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
 
