@@ -26,9 +26,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             TaskSeeder::class,
             ReportTypeSeeder::class,
-            CheckerTaskSeeder::class,
-            CheckOfficeSeeder::class,
-            CleaningSeeder::class,
+            // CheckerTaskSeeder::class,
+            // CheckOfficeSeeder::class,
+            // CleaningSeeder::class,
             // PostSeeder::class,
             // CommentSeeder::class,
         ]);
