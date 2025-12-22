@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        //Update harus dijadikan master dengan nama Building
         Schema::create('cleaning_groups', function (Blueprint $table) {
             $table->id();
             $table->string('building_name')->unique();

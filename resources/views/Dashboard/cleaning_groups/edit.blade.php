@@ -15,8 +15,7 @@
           <p class="text-xs text-slate-500 mb-6 text-center">{{ __('dashboardCleaningGroup.common.image_desc') }}</p>
           <div
             class="relative w-40 h-40 rounded-xl overflow-hidden mb-6 border-2 border-indigo-600 group cursor-pointer block mx-auto">
-            <img id="preview-foto"
-              src="{{ $group->foto ? asset('storage/' . $group->foto) : 'https://via.placeholder.com/150' }}"
+            <img id="preview-foto" src="{{ $group->foto ? asset('storage/' . $group->foto) : '' }}"
               class="object-cover w-full h-full">
             <div
               class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
@@ -77,24 +76,54 @@
             @enderror
           </div>
 
-          {{-- Cleaning Tasks --}}
+          {{-- Assign Rooms --}}
           <div>
-            <label
-              class="block mb-2 text-sm font-medium text-teal-1001">{{ __('dashboardCleaningGroup.edit.cleaning_tasks') }}</label>
-            <div class="space-y-3">
-              @foreach ($tasks as $task)
-                <div class="flex items-center gap-3">
-                  <input type="checkbox" name="tasks[]" value="{{ $task->id }}"
-                    {{ $group->tasks->contains($task->id) ? 'checked' : '' }}
-                    class="rounded text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm">{{ $task->name }}</span>
-                  <input type="number" step="0.1" name="formulas[{{ $task->id }}]"
-                    value="{{ $group->tasks->find($task->id)?->pivot->formula ?? 0 }}"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-1 w-24 focus:ring-blue-500 focus:border-blue-500" />
-                </div>
-              @endforeach
+            <label class="block mb-2 text-sm font-medium text-teal-1001">Assign Rooms</label>
+            <div
+              class="border border-gray-200 rounded-lg bg-gray-50 p-3 shadow-sm hover:shadow-md transition-all duration-200">
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                @foreach ($allRooms as $room)
+                  @php
+                    $checked = in_array($room->id, $groupRoomIds);
+                  @endphp
+                  <label
+                    class="flex items-center gap-2 bg-white border border-gray-200 rounded-md p-2 text-sm cursor-pointer transition-all duration-150 hover:border-blue-400 hover:shadow-sm">
+                    <input type="checkbox" name="rooms[]" value="{{ $room->id }}" {{ $checked ? 'checked' : '' }}
+                      class="text-blue-600 focus:ring-blue-500 rounded" />
+                    <span class="truncate">{{ $room->room_name }}</span>
+                  </label>
+                @endforeach
+              </div>
             </div>
           </div>
+
+          {{-- Cleaning Tasks --}}
+          <div>
+            <label class="block mb-2 mt-4 text-sm font-medium text-teal-1001">
+              {{ __('dashboardCleaningGroup.edit.cleaning_tasks') }}
+            </label>
+            <div
+              class="border border-gray-200 rounded-lg bg-gray-50 p-3 shadow-sm hover:shadow-md transition-all duration-200 max-h-40 overflow-y-auto">
+              <div class="space-y-2">
+                @foreach ($tasks as $task)
+                  <div
+                    class="flex items-center justify-between bg-white border border-gray-200 rounded-md px-3 py-2 text-sm hover:border-blue-400 hover:shadow-sm transition-all duration-150">
+                    <div class="flex items-center gap-2 flex-1">
+                      <input type="checkbox" name="tasks[]" value="{{ $task->id }}"
+                        {{ $group->tasks->contains($task->id) ? 'checked' : '' }}
+                        class="text-blue-600 focus:ring-blue-500 rounded" />
+                      <span class="truncate">{{ $task->name }}</span>
+                    </div>
+                    <input type="number" step="0.1" name="formulas[{{ $task->id }}]"
+                      value="{{ $group->tasks->find($task->id)?->pivot->formula ?? 0 }}"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-md p-1 w-16 focus:ring-blue-500 focus:border-blue-500" />
+                  </div>
+                @endforeach
+              </div>
+            </div>
+          </div>
+
+
         </div>
       </div>
 

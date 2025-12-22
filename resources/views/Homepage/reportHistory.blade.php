@@ -58,11 +58,10 @@
               <th class="px-6 py-3">{{ __('reportHistory.table.reporter_name') }}</th>
               <th class="px-6 py-3">{{ __('reportHistory.table.report_type') }}</th>
               <th class="px-6 py-3">{{ __('reportHistory.table.date') }}</th>
-              <th class="px-6 py-3">{{ __('reportHistory.table.description') }}</th>
               <th class="px-6 py-3">{{ __('reportHistory.table.media') }}</th>
-              <th class="px-6 py-3">{{ __('reportHistory.table.member_name') }}</th>
-              <th class="px-6 py-3">{{ __('reportHistory.table.point') }}</th>
               <th class="px-6 py-3">{{ __('reportHistory.table.reply') }}</th>
+              <th class="px-6 py-3">Lokasi</th>
+              <th class="px-6 py-3">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -85,11 +84,6 @@
                   {{ \Carbon\Carbon::parse($report->date)->format('d M Y') }}
                 </td>
 
-                {{-- Deskripsi dengan tooltip --}}
-                <td class="px-6 py-4 max-w-[200px] truncate" title="{{ $report->description }}">
-                  {{ $report->description }}
-                </td>
-
                 {{-- Media --}}
                 <td class="px-6 py-4 flex flex-wrap gap-2">
                   @foreach ($report->media as $media)
@@ -104,20 +98,6 @@
                   @endforeach
                 </td>
 
-
-                {{-- Nama Member --}}
-                <td class="px-6 py-4 text-gray-700">
-                  @foreach ($report->members as $member)
-                    <span class="block">{{ $member->nama }}</span>
-                  @endforeach
-                </td>
-
-                {{-- Poin --}}
-                <td
-                  class="px-6 py-4 font-semibold text-center {{ $report->point ? 'text-green-600' : 'text-gray-400' }}">
-                  {{ $report->point ?? '-' }}
-                </td>
-
                 {{-- Aksi --}}
                 <td class="px-6 py-4">
                   @if (!is_null($report->point))
@@ -126,6 +106,22 @@
                     <p>{{ __('reportHistory.table.waiting_reply') }}</p>
                   @endif
                 </td>
+
+                <td class="px-6 py-4 text-gray-700">
+                  <div class="font-medium">
+                    {{ $report->group->building_name ?? '-' }}
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    Room: {{ $report->room->room_name ?? '-' }}
+                  </div>
+                </td>
+
+
+                <td class="px-6 py-4">
+                  <a href="{{ route('reportHistory.show', $report) }}"
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">{{ __('button.show') }}</a>
+                </td>
+
               </tr>
             @empty
               <tr>

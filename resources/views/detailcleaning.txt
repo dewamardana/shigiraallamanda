@@ -8,7 +8,7 @@ Schema::create('cleaning_groups', function (Blueprint $table) {
             $table->timestamps();
         });        
 
-Schema::create('cleaning_tasks', function (Blueprint $table) {
+        Schema::create('cleaning_tasks', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();   // ex: OV, OA, Stay, Vec
             $table->enum('status', ['active', 'inactive'])->default('active');
@@ -30,8 +30,10 @@ Schema::create('cleaning_tasks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cleaning_record_id')->constrained()->cascadeOnDelete();
             $table->foreignId('cleaning_task_id')->constrained()->cascadeOnDelete();
-            $table->string('value');             // contoh: "OA", "OV", "Stay", "Vec"
+            $table->string('value');             // contoh: "1 (untuk OA)", "2 (untuk OV)", " 5 (untuk Stay)", "4 (untuk Vec)"
             $table->float('formula')->default(1); // untuk formula dasar
+            $table->float('personal_value')->nullable()->after('value');
+            $table->json('rooms')->nullable()->after('value'); // contoh "1,3,4,5,6"
             $table->float('calculated')->nullable();
             $table->timestamps();
         });
@@ -53,12 +55,19 @@ Schema::create('cleaning_tasks', function (Blueprint $table) {
             $table->unique(['cleaning_group_id', 'cleaning_task_id']); // supaya 1 task tidak dobel di satu group
         });
 
+        Schema::create('rooms', function (Blueprint $table) {
+            $table->id();
+            $table->string('room_name')->unique(); // contoh: "101", "102", "201-A"
+            $table->timestamps();
+        });
+
 dan modelnya :
 class CleaningGroup extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['building_name', 'slug', 'description', 'status', 'foto', 'status'];
+    protected $fillable = ['building_name', 'slug', 'description', 'foto', 'status'];
+
 
     public function tasks()
     {
@@ -72,12 +81,17 @@ class CleaningGroup extends Model
         return $this->hasMany(CleaningRecord::class);
     }
 
+    public function cleaningRooms()
+    {
+        return $this->hasMany(CleaningRoom::class);
+    }
+
+
     public function getRouteKeyName(): string
     {
         return 'slug';
     }
 }
-
 class CleaningRecord extends Model
 {
     use HasFactory;
@@ -121,21 +135,26 @@ class CleaningRecordDetail extends Model
         'cleaning_record_id',
         'cleaning_task_id',
         'value',
+        'rooms',
+        'personal_value',
         'formula',
         'calculated',
     ];
 
     public function record()
     {
-        return $this->belongsTo(CleaningRecord::class);
+        return $this->belongsTo(CleaningRecord::class, 'cleaning_record_id');
     }
 
     public function task()
     {
-        return $this->belongsTo(CleaningTask::class);
+        return $this->belongsTo(CleaningTask::class, 'cleaning_task_id');
     }
-}
 
+    protected $casts = [
+        'rooms' => 'array', // ✅ tambahkan ini
+    ];
+}
 class CleaningTask extends Model
 {
     use HasFactory;
@@ -154,3 +173,15 @@ class CleaningTask extends Model
         return $this->hasMany(CleaningRecordDetail::class);
     }
 }
+
+class Room extends Model
+{
+    use HasFactory;
+    protected $fillable = ['room_name', 'cleaning_group_id'];
+
+    public function group()
+    {
+        return $this->belongsTo(CleaningGroup::class, 'cleaning_group_id');
+    }
+}
+

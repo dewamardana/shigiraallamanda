@@ -98,7 +98,7 @@
               class="block mb-2 text-sm font-medium text-teal-900">{{ __('lostfound.description_label') }}</label>
             <textarea name="description" id="description" rows="4"
               class="p-2.5 border border-gray-300 rounded-lg w-full focus:ring-blue-500 focus:border-blue-500"
-              placeholder="{{ __('lostfound.description_placeholder') }}">{{ old('description') }}</textarea>
+              placeholder="{{ __('lostfound.description_placeholder') }}" required>{{ old('description') }}</textarea>
             @error('description')
               <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror

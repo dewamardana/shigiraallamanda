@@ -13,6 +13,7 @@ class CleaningRecordDetail extends Model
         'cleaning_record_id',
         'cleaning_task_id',
         'value',
+        'rooms',
         'personal_value',
         'formula',
         'calculated',
@@ -27,4 +28,8 @@ class CleaningRecordDetail extends Model
     {
         return $this->belongsTo(CleaningTask::class, 'cleaning_task_id');
     }
+
+    protected $casts = [
+        'rooms' => 'array', // ✅ tambahkan ini
+    ];
 }

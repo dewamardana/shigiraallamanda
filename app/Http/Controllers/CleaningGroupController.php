@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Room;
 use Illuminate\Support\Str;
 use App\Models\CleaningTask;
 use Illuminate\Http\Request;
@@ -69,35 +70,6 @@ class CleaningGroupController extends Controller
         return redirect()->route('cleaningGroups.index')
             ->with('success', 'Cleaning Group created successfully');
     }
-    // public function store(Request $request)
-    // {
-    //     $validatedData = $request->validate(
-    //         [
-    //             'building_name' => 'required|unique:cleaning_groups,building_name',
-    //             'description'   => 'required|string',
-    //             'foto'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    //         ],
-    //         [
-    //             'building_name.required' => __('dashboardBuilding.controller.validation.building_name_required'),
-    //             'slug.required'          => __('dashboardBuilding.controller.validation.slug_required'),
-    //             'slug.unique'            => __('dashboardBuilding.controller.validation.slug_unique'),
-    //             'description.required'   => __('dashboardBuilding.controller.validation.description_required'),
-    //             'foto.image'             => __('dashboardBuilding.controller.validation.photo_image'),
-    //             'foto.mimes'             => __('dashboardBuilding.controller.validation.photo_mimes'),
-    //             'foto.max'               => __('dashboardBuilding.controller.validation.photo_max')
-    //         ]
-    //     );
-    //     $validatedData['slug'] = $this->generateSlug($request->building_name);
-
-    //     if ($request->hasFile('foto')) {
-    //         $fotoPath = $request->file('foto')->store('building-images', 'public');
-    //         $validatedData['foto'] = $fotoPath;
-    //     }
-
-    //     CleaningGroup::create($validatedData);
-
-    //     return redirect()->route('cleaningGroup.index')->with('success', __('dashboardBuilding.controller.create.success_add'));
-    // }
 
     /**
      * Display the specified resource.
@@ -119,20 +91,24 @@ class CleaningGroupController extends Controller
     public function edit(CleaningGroup $cleaningGroup)
     {
         $tasks = CleaningTask::where('status', 'active')->get();
+        // Ambil semua room
+        $allRooms = Room::where(function ($query) use ($cleaningGroup) {
+            // room yang belum punya grup atau yang punya grup ini
+            $query->whereNull('cleaning_group_id')
+                ->orWhere('cleaning_group_id', $cleaningGroup->id);
+        })->get();
+
+        // Daftar id room yang sudah terpilih di group ini
+        $groupRoomIds = $cleaningGroup->rooms()->pluck('id')->toArray();
 
         return view('Dashboard.cleaning_groups.edit', [
             'title' => 'Edit Cleaning Group',
             'group' => $cleaningGroup,
             'tasks' => $tasks,
+            'allRooms' => $allRooms,
+            'groupRoomIds' => $groupRoomIds,
         ]);
     }
-    // public function edit(CleaningGroup $cleaningGroup)
-    // {
-    //     return view('Dashboard.building.edit', [
-    //         'building' => $cleaningGroup,
-    //         'title' => __('dashboardBuilding.controller.edit.title')
-    //     ]);
-    // }
 
     /**
      * Update the specified resource in storage.
@@ -147,6 +123,7 @@ class CleaningGroupController extends Controller
             'tasks'         => 'array', // id task
             'tasks.*'       => 'exists:cleaning_tasks,id',
             'formulas'      => 'array',
+            'rooms'         => 'array', // ini berisi nomor kamar (bukan id)
         ]);
 
         $validated['slug'] = $this->generateSlug($validated['building_name']);
@@ -170,39 +147,20 @@ class CleaningGroupController extends Controller
         }
         $cleaningGroup->tasks()->sync($syncData);
 
+        // Update room assignment
+        $selectedRoomIds = $request->input('rooms', []);
+
+        // 1. Lepas semua room yang sebelumnya punya grup ini
+        Room::where('cleaning_group_id', $cleaningGroup->id)->update(['cleaning_group_id' => null]);
+
+        // 2. Update hanya room yang dipilih sekarang
+        if (!empty($selectedRoomIds)) {
+            Room::whereIn('id', $selectedRoomIds)->update(['cleaning_group_id' => $cleaningGroup->id]);
+        }
+
         return redirect()->route('cleaningGroups.index')
             ->with('success', 'Cleaning Group updated successfully');
     }
-    // public function update(Request $request, CleaningGroup $cleaningGroup)
-    // {
-    //     $validatedData = $request->validate([
-    //         'building_name' => 'required|unique:cleaning_groups,building_name,' . $cleaningGroup->id,
-    //         'description'   => 'required|string',
-    //         'foto'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-    //     ], [
-    //         'building_name.required' => __('dashboardBuilding.controller.validation.building_name_required'),
-    //         'description.required'   => __('dashboardBuilding.controller.validation.description_required'),
-    //         'foto.image'             => __('dashboardBuilding.controller.validation.photo_image'),
-    //         'foto.mimes'             => __('dashboardBuilding.controller.validation.photo_mimes'),
-    //         'foto.max'               => __('dashboardBuilding.controller.validation.photo_max')
-    //     ]);
-
-    //     // handle foto baru
-    //     if ($request->hasFile('foto')) {
-    //         // hapus foto lama jika ada
-    //         if ($cleaningGroup->foto && Storage::exists('public/' . $cleaningGroup->foto)) {
-    //             Storage::delete('public/' . $cleaningGroup->foto);
-    //         }
-
-    //         // simpan foto baru
-    //         $fotoPath = $request->file('foto')->store('building-images', 'public');
-    //         $validatedData['foto'] = $fotoPath;
-    //     }
-
-    //     $cleaningGroup->update($validatedData);
-
-    //     return redirect()->route('cleaningGroup.index')->with('success', __('dashboardBuilding.controller.edit.success_update'));
-    // }
 
     /**
      * Remove the specified resource from storage.

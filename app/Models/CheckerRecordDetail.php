@@ -27,4 +27,9 @@ class CheckerRecordDetail extends Model
     {
         return $this->belongsTo(CheckerTask::class, 'checker_task_id');
     }
+
+    public function locations()
+    {
+        return $this->hasMany(CheckerRecordLocation::class);
+    }
 }

@@ -54,6 +54,31 @@ class CheckerRecord extends Model
     }
 }
 
+    class CheckerRecordLocation extends Model
+    {
+        use HasFactory;
+
+        protected $fillable = [
+            'checker_record_detail_id',
+            'cleaning_group_id',
+            'rooms',
+        ];
+
+        protected $casts = [
+            'rooms' => 'array',
+        ];
+
+        public function detail()
+        {
+            return $this->belongsTo(CheckerRecordDetail::class);
+        }
+
+        public function group()
+        {
+            return $this->belongsTo(CleaningGroup::class, 'cleaning_group_id');
+        }
+    }
+
 
 migrasi 
 public function up(): void
@@ -91,3 +116,11 @@ public function up(): void
             $table->timestamps();
         });
     }
+
+    Schema::create('checker_record_locations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('checker_record_detail_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('cleaning_group_id')->constrained()->cascadeOnDelete(); // gedung
+            $table->json('rooms'); // [1,2,3] atau ["101","102"]
+            $table->timestamps();
+        });

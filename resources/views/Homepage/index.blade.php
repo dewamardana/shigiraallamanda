@@ -129,7 +129,9 @@
                 class="text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300 font-medium rounded-sm text-sm w-full px-5 py-2.5 text-center me-2 mb-2 ">{{ __('homepageIndex.history') }}</button></a>
             <a href="{{ route('report') }}"><button type="button"
                 class="text-white bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-4 focus:ring-yellow-300 font-medium rounded-sm text-sm w-full px-5 py-2.5 text-center me-2 mb-2 ">{{ __('homepageIndex.report') }}</button></a>
-
+            <a href="{{ route('showGroup') }}"><button type="button"
+                class="text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300 font-medium rounded-sm text-sm w-full px-5 py-2.5 text-center me-2 mb-2 ">Room
+                History</button></a>
           </div>
 
         </div>

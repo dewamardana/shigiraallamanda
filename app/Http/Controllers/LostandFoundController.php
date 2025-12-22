@@ -14,7 +14,7 @@ class LostandFoundController extends Controller
     public function index(Request $request)
     {
         $title = __('dashboardLostFound.controller.index.title');
-        $query = FoundItem::with('foundBy')->where('status', 0)->orderByDesc('date');
+        $query = FoundItem::with('foundBy')->orderByDesc('date');
 
         // 🔹 Filter tanggal
         if ($request->filled('start_date')) {
@@ -109,30 +109,5 @@ class LostandFoundController extends Controller
         return redirect()
             ->back()
             ->with('success', __('dashboardLostFound.controller.delete.success_deleted'));
-    }
-
-
-    public function founditem(Request $request)
-    {
-        $title = __('dashboardLostFound.controller.founditem.title');
-        $query = FoundItem::with('foundBy')->where('status', 1)->orderByDesc('date');
-
-        // 🔹 Filter tanggal
-        if ($request->filled('start_date')) {
-            $query->whereDate('date', '>=', $request->start_date);
-        }
-        if ($request->filled('end_date')) {
-            $query->whereDate('date', '<=', $request->end_date);
-        }
-
-        // 🔹 Filter user
-        if ($request->filled('user_id')) {
-            $query->where('found_by_id', $request->user_id);
-        }
-
-        $foundItems = $query->paginate(20);
-        $users = User::select('id', 'nama')->get();
-
-        return view('Dashboard.lostandfound.found', compact('title', 'foundItems', 'users'));
     }
 }

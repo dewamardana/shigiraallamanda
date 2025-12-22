@@ -81,14 +81,12 @@
               <td class="px-6 py-4">{{ Str::limit($item->description, 50) }}</td>
 
               <td class="px-6 py-4">
-                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-200 text-yellow-800">
-                  @if ($item->status == 0)
-                    {{ __('dashboardLostFound.common.not_taken') }}
-                  @else
-                    {{ __('dashboardLostFound.common.taken') }}
-                  @endif
+                <span
+                  class="px-3 py-1 text-xs font-semibold rounded-full {{ $item->status == 1 ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800' }}">
+                  {{ $item->status == 1 ? __('dashboardLostFound.common.taken') : __('dashboardLostFound.common.not_taken') }}
                 </span>
               </td>
+
 
               <td class="px-6 py-4">
                 <div class="flex justify-center items-center gap-2">

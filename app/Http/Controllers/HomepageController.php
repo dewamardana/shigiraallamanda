@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Room;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Skill;
@@ -34,6 +35,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\CheckerRecordDetail;
 use App\Models\CleaningRecordDetail;
 use Illuminate\Support\Facades\Auth;
+use App\Models\CheckerRecordLocation;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
@@ -85,6 +87,22 @@ class HomepageController extends Controller
         return response()->json($tasks);
     }
 
+    public function getRooms($groupId)
+    {
+        $group = CleaningGroup::with('rooms')->find($groupId);
+
+        if (!$group) {
+            return response()->json([], 404);
+        }
+
+        $rooms = $group->rooms->map(fn($r) => [
+            'id' => $r->id,
+            'name' => $r->room_name,
+        ]);
+
+        return response()->json($rooms);
+    }
+
     public function cleaningStore(Request $request)
     {
         $validated = $request->validate([
@@ -96,6 +114,7 @@ class HomepageController extends Controller
             'members.*'         => 'exists:users,id',
             'tasks'             => 'required|array',
             'tasks.*'           => 'integer|min:0',
+            'rooms_selected'    => 'nullable|array',
         ]);
 
         $group = CleaningGroup::with('tasks')->findOrFail($validated['cleaning_group_id']);
@@ -125,7 +144,17 @@ class HomepageController extends Controller
                 if ($task) {
                     $formula    = $task->pivot->formula ?? 1;
                     $calculated = $value * $formula;
-                    $personalValue = $memberCount > 0 ? $value / $memberCount : 0;
+                    $personalValue = $memberCount > 0 ? $calculated / $memberCount : 0;
+
+                    // 🔹 Ambil rooms dari input hidden (bisa array)
+                    $rooms = $validated['rooms_selected'][$taskId] ?? [];
+
+                    // Pastikan yang disimpan selalu array (agar cocok dengan kolom JSON)
+                    if (!is_array($rooms)) {
+                        $rooms = explode(',', (string) $rooms);
+                    }
+
+                    $rooms = array_map('intval', $rooms);
 
                     $record->details()->create([
                         'cleaning_task_id' => $taskId,
@@ -133,6 +162,7 @@ class HomepageController extends Controller
                         'personal_value'   => $personalValue,
                         'formula'          => $formula,
                         'calculated'       => $calculated,
+                        'rooms'            => $rooms,
                     ]);
 
                     $totalPoint += $calculated;
@@ -173,76 +203,124 @@ class HomepageController extends Controller
         // ambil semua task aktif
         $tasks = CheckerTask::where('active', true)->get();
 
+        // GEDUNG (cleaning_groups)
+        $groups = CleaningGroup::with('rooms')
+            ->where('status', 'active')
+            ->get();
+
         return view('Homepage.checker', [
             'title' => $title,
             'user'  => $user,
             'tasks' => $tasks,
+            'groups' => $groups,
         ]);
     }
 
     public function checkerStore(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'date'    => 'required|date',
+            'user_id'    => 'required|exists:users,id',
+            'date'       => 'required|date',
+            'total_room' => 'required|numeric|min:0',
         ]);
 
-        // simpan header record
-        $record = CheckerRecord::create([
-            'user_id'     => $request->user_id,
-            'date'        => $request->date,
-            'total_point' => 0, // akan diupdate
-        ]);
+        DB::transaction(function () use ($request) {
 
-        $total = 0;
-
-        // loop semua task aktif
-        $tasks = CheckerTask::where('active', true)->get();
-
-        $detail = [];
-        foreach ($tasks as $task) {
-            $value = $request->input("task_{$task->id}");
-
-            // boolean => 1/0
-            if ($task->type === 'boolean') {
-                $value = $value ? 1 : 0;
-            }
-
-            // hitung
-            $calculated = $value * $task->formula;
-            $total += $calculated;
-
-            CheckerRecordDetail::create([
-                'checker_record_id' => $record->id,
-                'checker_task_id'   => $task->id,
-                'value'             => $value,
-                'formula'           => $task->formula,
-                'calculated'        => $calculated,
+            /* =============================
+           1. SIMPAN HEADER RECORD
+        ============================= */
+            $record = CheckerRecord::create([
+                'user_id'     => $request->user_id,
+                'date'        => $request->date,
+                'total_point' => 0, // update di akhir
             ]);
 
-            // buat detail activity untuk history
-            if ($value > 0) {
-                $detail[$task->name] = $value;
+            $grandTotal = 0;
+
+            /* =============================
+           2. LOOP TASK AKTIF
+        ============================= */
+            $tasks = CheckerTask::where('active', true)->get();
+
+            foreach ($tasks as $task) {
+
+                // 🔹 value = jumlah room
+                $value = (int) $request->input("tasks.{$task->id}", 0);
+
+                if ($value <= 0) {
+                    continue;
+                }
+
+                /* =============================
+               3. HITUNG POINT
+            ============================= */
+                $calculated = $value * $task->formula;
+                $grandTotal += $calculated;
+
+                /* =============================
+               4. SIMPAN DETAIL TASK
+            ============================= */
+                $detail = CheckerRecordDetail::create([
+                    'checker_record_id' => $record->id,
+                    'checker_task_id'   => $task->id,
+                    'value'             => $value,
+                    'formula'           => $task->formula,
+                    'calculated'        => $calculated,
+                ]);
+
+                /* =============================
+               5. SIMPAN LOKASI (GEDUNG & ROOM)
+            ============================= */
+                $groups = $request->input("groups_selected.{$task->id}");
+                $rooms  = $request->input("rooms_selected.{$task->id}");
+
+                if (!$groups || !$rooms) {
+                    continue;
+                }
+
+                $roomMap = [];
+
+                foreach (explode(',', $rooms) as $pair) {
+                    [$groupId, $roomId] = explode(':', $pair);
+                    $roomMap[$groupId][] = $roomId;
+                }
+
+                foreach ($roomMap as $groupId => $roomIds) {
+                    CheckerRecordLocation::create([
+                        'checker_record_detail_id' => $detail->id,
+                        'cleaning_group_id'        => $groupId,
+                        'rooms'                    => $roomIds, // otomatis json
+                    ]);
+                }
             }
-        }
 
-        // update total point
-        $record->update([
-            'total_point' => $total
-        ]);
+            /* =============================
+           6. UPDATE TOTAL POINT
+        ============================= */
+            $record->update([
+                'total_point' => $grandTotal,
+            ]);
 
-        // tambahkan ke daily point
-        $this->addDailyPoint(
-            $request->user_id,
-            $request->date,
-            $total,
-            'Checker', // type activity
-            $record->id,
-            $detail
-        );
+            /* =============================
+           7. DAILY POINT
+        ============================= */
+            $this->addDailyPoint(
+                $request->user_id,
+                $request->date,
+                $grandTotal,
+                'Checker',
+                $record->id,
+                [
+                    'total_room' => $request->total_room
+                ]
+            );
+        });
 
-        return redirect()->route('homepage')->with('success', __('homepageControllerMessage.checker.success_store'));
+        return redirect()
+            ->route('homepage')
+            ->with('success', __('homepageControllerMessage.checker.success_store'));
     }
+
 
     public function office(Request $request)
     {
@@ -399,8 +477,16 @@ class HomepageController extends Controller
 
         // Ambil semua user kecuali yang sedang login
         $users = User::all();
+        $groups = CleaningGroup::all();
 
-        return view('Homepage.report', compact('title', 'authUser', 'users', 'reportType'));
+        return view('Homepage.report', compact('title', 'authUser', 'users', 'groups', 'reportType'));
+    }
+
+    public function getRoomsNumber($group_id)
+    {
+        $rooms = Room::where('cleaning_group_id', $group_id)->get();
+
+        return response()->json($rooms);
     }
 
     public function reportStore(Request $request)
@@ -409,6 +495,8 @@ class HomepageController extends Controller
             'user_id'      => 'required|exists:users,id',
             'report_type'  => 'required|string|max:255',
             'description'  => 'required|',
+            'group_id'     => 'required|exists:cleaning_groups,id',
+            'room_id'      => 'required|exists:rooms,id',
             'photos.*'     => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'videos.*'     => 'nullable|mimetypes:video/mp4,video/avi,video/mpeg,video/quicktime|max:102400', // 100MB
             'members'      => 'nullable|array',
@@ -440,6 +528,8 @@ class HomepageController extends Controller
                 'user_id'     => $validated['user_id'],
                 'report_type' => $validated['report_type'],
                 'description' => $validated['description'] ?? null,
+                'group_id'    => $validated['group_id'],
+                'room_id'     => $validated['room_id'],
                 'date'        => $validated['date'],
             ]);
 
@@ -493,8 +583,12 @@ class HomepageController extends Controller
         $title = __('homepageControllerMessage.reportHistory.title');
         $user = Auth::user();
 
-        $reportsQuery = Report::with(['media', 'members'])
-            ->where('user_id', $user->id);
+        $reportsQuery = Report::with([
+            'media',
+            'members',
+            'group',
+            'room'
+        ])->where('user_id', $user->id);
 
         // Filter berdasarkan start_date dan end_date
         if ($request->filled('start_date')) {
@@ -523,6 +617,21 @@ class HomepageController extends Controller
         ]);
     }
 
+    public function reportHistoryDetail(Report $report)
+    {
+        // 🔒 Security: pastikan report milik user login
+        if ($report->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $report->load(['user', 'media', 'members']);
+
+        return view('Homepage.reportHistoryDetail', [
+            'title'  => 'Report Detail',
+            'report' => $report,
+        ]);
+    }
+
     public function lost()
     {
         $title = "Report Lost Item";
@@ -540,7 +649,7 @@ class HomepageController extends Controller
             'found_by_id' => ['required', 'exists:users,id'],
             'nameItem' => ['required', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'description' => ['required', 'string'],
             'serial_number' => ['nullable', 'string', 'max:255'],
             'media_files.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,mp4,mov,avi', 'max:5000'], // 5MB per file
         ]);
@@ -575,21 +684,6 @@ class HomepageController extends Controller
 
         return redirect()->route('homepage')->with('success', 'Data barang ditemukan berhasil disimpan.');
     }
-
-
-    // public function profile(Request $request)
-    // {
-    //     $userGet = Auth::user();
-    //     $title = $userGet->nama . ' Profile ';
-    //     $user = User::with('skills')->where('id', $userGet->id)->first();
-    //     $skills = Skill::all();
-
-    //     return view('Homepage.profile', compact(
-    //         'title',
-    //         'user',
-    //         'skills',
-    //     ));
-    // }
 
     public function profile(Request $request)
     {
@@ -904,5 +998,115 @@ class HomepageController extends Controller
         return redirect()
             ->route('userprofile')
             ->with('success', __('dashboardUser.controller.upload.success_edit'));
+    }
+
+
+    public function selectGroup()
+    {
+        $title = 'All Buillding | Homepage';
+        $groups = CleaningGroup::where('status', 'active')->get();
+        return view('Homepage.RoomHistory.index', compact('title', 'groups'));
+    }
+
+    public function showGroup($slug)
+    {
+        $title = 'All Rooms | Homepage';
+        $group = CleaningGroup::where('slug', $slug)->firstOrFail();
+        $today = now()->toDateString();
+
+        // Semua room milik group ini
+        $rooms = Room::where('cleaning_group_id', $group->id)->get();
+
+        // Ambil semua record detail milik group ini
+        $details = CleaningRecordDetail::whereHas('record', function ($q) use ($group) {
+            $q->where('cleaning_group_id', $group->id);
+        })->get();
+
+        // 🔹 Buat array untuk menyimpan tanggal terakhir setiap room dibersihkan
+        $lastCleaned = [];
+
+        foreach ($details as $detail) {
+            foreach ($detail->rooms ?? [] as $roomId) {
+                $recordDate = $detail->record->date ?? null;
+                if ($recordDate) {
+                    // Simpan tanggal terbaru
+                    if (!isset($lastCleaned[$roomId]) || $recordDate > $lastCleaned[$roomId]) {
+                        $lastCleaned[$roomId] = $recordDate;
+                    }
+                }
+            }
+        }
+
+        // 🔹 Ambil semua room yang sudah dibersihkan hari ini
+        $doneRooms = array_keys(array_filter($lastCleaned, fn($date) => $date === $today));
+
+        return view('Homepage.RoomHistory.group', compact('title', 'group', 'rooms', 'doneRooms', 'lastCleaned', 'today'));
+    }
+
+    public function show($id)
+    {
+        $title = 'Room History | Homepage';
+        $room = Room::findOrFail($id);
+
+        // ================= CLEANING =================
+        $cleaningPaginated = CleaningRecordDetail::with([
+            'task',
+            'record.members',
+            'record.group'
+        ])
+            ->whereJsonContains('rooms', $room->id)
+            ->orderByDesc('created_at')
+            ->paginate(6, ['*'], 'cleaning_page'); // pagination langsung dari query
+
+        // ================= CHECKER =================
+        $checkerPaginated = CheckerRecordLocation::with([
+            'detail.task',
+            'detail.record.user',
+            'group'
+        ])
+            ->whereJsonContains('rooms', (string) $room->id)
+            ->orderByDesc('created_at')
+            ->paginate(6, ['*'], 'checker_page'); // pagination terpisah
+
+        // ================= REPORT =================
+        $reports = Report::where('room_id', $room->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('Homepage.RoomHistory.show', compact(
+            'title',
+            'room',
+            'cleaningPaginated',
+            'checkerPaginated',
+            'reports'
+        ));
+    }
+
+
+    public function showAjax($id)
+    {
+        $room = Room::findOrFail($id);
+
+        $history = CleaningRecordDetail::with([
+            'task',
+            'record.user',
+            'record.group'
+        ])
+            ->whereJsonContains('rooms', $room->id)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($detail) {
+                return [
+                    'tanggal' => $detail->record->date,
+                    'task' => $detail->task->name,
+                    'petugas' => $detail->record->user->name ?? '-',
+                    'group' => $detail->record->group->building_name ?? '-',
+                ];
+            });
+
+        return response()->json([
+            'room_name' => $room->room_name,
+            'history' => $history,
+        ]);
     }
 }

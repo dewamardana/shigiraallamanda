@@ -9,7 +9,8 @@ class CleaningGroup extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['building_name', 'slug', 'description', 'status', 'foto', 'status'];
+    protected $fillable = ['building_name', 'slug', 'description', 'foto', 'status'];
+
 
     public function tasks()
     {
@@ -22,6 +23,18 @@ class CleaningGroup extends Model
     {
         return $this->hasMany(CleaningRecord::class);
     }
+
+
+    public function rooms()
+    {
+        return $this->hasMany(Room::class, 'cleaning_group_id');
+    }
+
+    public function checkerLocations()
+    {
+        return $this->hasMany(CheckerRecordLocation::class, 'cleaning_group_id');
+    }
+
 
     public function getRouteKeyName(): string
     {

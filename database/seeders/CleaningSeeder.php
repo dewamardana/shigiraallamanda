@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Room;
 use App\Models\User;
 use App\Models\CleaningTask;
 use App\Models\CleaningGroup;
@@ -26,13 +27,14 @@ class CleaningSeeder extends Seeder
             return;
         }
 
-        // Data building + task
+        // Data group dan task
         $groups = [
             [
                 'building_name' => 'Lagoon',
                 'slug' => 'lagoon',
                 'description' => 'Gedung Lagoon',
                 'foto' => null,
+                'room_count' => 50,
                 'tasks' => [
                     ['name' => 'OA',   'formula' => 4],
                     ['name' => 'OV',   'formula' => 3],
@@ -45,6 +47,7 @@ class CleaningSeeder extends Seeder
                 'slug' => 'jacuzzi',
                 'description' => 'Gedung Jacuzzi',
                 'foto' => null,
+                'room_count' => 30,
                 'tasks' => [
                     ['name' => 'OA',   'formula' => 3],
                     ['name' => 'OV',   'formula' => 2],
@@ -57,6 +60,7 @@ class CleaningSeeder extends Seeder
                 'slug' => 'main-building',
                 'description' => 'Gedung Utama',
                 'foto' => null,
+                'room_count' => 60,
                 'tasks' => [
                     ['name' => 'OA',   'formula' => 2.5],
                     ['name' => 'OV',   'formula' => 2],
@@ -69,6 +73,7 @@ class CleaningSeeder extends Seeder
                 'slug' => 'premier',
                 'description' => 'Gedung Premier',
                 'foto' => null,
+                'room_count' => 40,
                 'tasks' => [
                     ['name' => 'OA',   'formula' => 3.5],
                     ['name' => 'OV',   'formula' => 3],
@@ -81,6 +86,7 @@ class CleaningSeeder extends Seeder
                 'slug' => 'royal',
                 'description' => 'Gedung Royal',
                 'foto' => null,
+                'room_count' => 80,
                 'tasks' => [
                     ['name' => 'OA',      'formula' => 5],
                     ['name' => 'OV',      'formula' => 4],
@@ -91,40 +97,42 @@ class CleaningSeeder extends Seeder
             ],
         ];
 
-        $startDate = Carbon::now()->subDays(6); // 7 hari ke belakang
+        $startDate = Carbon::now()->subDays(6);
 
         foreach ($groups as $groupData) {
             $tasks = $groupData['tasks'];
-            unset($groupData['tasks']);
+            $roomCount = $groupData['room_count'];
+            unset($groupData['tasks'], $groupData['room_count']);
 
-            // Buat cleaning group
+            // Buat group
             $group = CleaningGroup::firstOrCreate(
                 ['slug' => $groupData['slug']],
                 $groupData
             );
 
-            // Attach tasks ke group (pivot dengan formula)
-            foreach ($tasks as $taskData) {
-                $task = CleaningTask::firstOrCreate(
-                    ['name' => $taskData['name']]
-                );
+            // Tambahkan Room untuk setiap Group
+            for ($i = 1; $i <= $roomCount; $i++) {
+                Room::firstOrCreate([
+                    'room_name' => "{$group->building_name} - {$i}",
+                ], [
+                    'cleaning_group_id' => $group->id,
+                ]);
+            }
 
-                // hubungkan lewat pivot dengan formula
+            // Hubungkan task ke group (pivot)
+            foreach ($tasks as $taskData) {
+                $task = CleaningTask::firstOrCreate(['name' => $taskData['name']]);
                 $group->tasks()->syncWithoutDetaching([
                     $task->id => ['formula' => $taskData['formula']]
                 ]);
             }
 
-            // Generate cleaning record selama 7 hari
+            // Generate record selama 7 hari
             for ($i = 0; $i < 7; $i++) {
                 $date = $startDate->copy()->addDays($i)->toDateString();
-                $memberCount = ($group->slug == 'royal') ? rand(2, 5) : rand(2, 3);
-                $memberCount = min($memberCount, $users->count());
-
-                // pilih siapa yg input
+                $memberCount = rand(2, 4);
                 $inputter = $users->random();
 
-                // Buat record
                 $record = CleaningRecord::create([
                     'cleaning_group_id' => $group->id,
                     'user_id'           => $inputter->id,
@@ -133,21 +141,22 @@ class CleaningSeeder extends Seeder
                     'date'              => $date,
                 ]);
 
-                // assign members ke record
                 $assignedUsers = $users->random($memberCount)->pluck('id');
                 $record->members()->attach($assignedUsers);
 
-                // isi detail task
                 $totalRoomCalc = 0;
                 foreach ($group->tasks as $task) {
-                    $value = rand(0, 5); // jumlah kamar
-                    $formula = $task->pivot->formula; // formula dari pivot
+                    $value = rand(1, 5);
+                    $formula = $task->pivot->formula;
                     $calculated = $value * $formula;
+
+                    $rooms = $group->rooms()->inRandomOrder()->limit($value)->pluck('id')->toArray();
 
                     CleaningRecordDetail::create([
                         'cleaning_record_id' => $record->id,
                         'cleaning_task_id'   => $task->id,
                         'value'              => $value,
+                        'rooms'              => $rooms,
                         'formula'            => $formula,
                         'calculated'         => $calculated,
                     ]);
@@ -155,23 +164,21 @@ class CleaningSeeder extends Seeder
                     $totalRoomCalc += $value;
                 }
 
-                // update total room & total_point
                 $record->update([
                     'total_room'  => $totalRoomCalc,
                     'total_point' => $record->details()->sum('calculated'),
                 ]);
 
-                // Tambahkan ke DailyPoint untuk semua member yang ikut cleaning
                 foreach ($assignedUsers as $uid) {
                     $this->addDailyPoint(
                         $uid,
                         $date,
-                        $record->total_point / $memberCount, // bagi rata poin
+                        $record->total_point / $memberCount,
                         'cleaning',
                         $record->id,
                         [
-                            'group'   => $group->building_name,
-                            'tasks'   => $record->details->pluck('value', 'cleaning_task_id'),
+                            'group' => $group->building_name,
+                            'tasks' => $record->details->pluck('value', 'cleaning_task_id'),
                         ]
                     );
                 }

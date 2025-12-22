@@ -9,10 +9,25 @@ class Report extends Model
     protected $fillable = [
         'user_id',
         'report_type',
+        'group_id',
+        'room_id',
         'description',
         'date',
+        'reply',
         'point',
+        'status',
+        'status_updated_by',
     ];
+
+    public function group()
+    {
+        return $this->belongsTo(CleaningGroup::class, 'group_id');
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class, 'room_id');
+    }
 
     public function user()
     {

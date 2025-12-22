@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/homepage', [HomepageController::class, 'index'])->name('homepage');
     Route::get('/homepage/cleaning', [HomepageController::class, 'cleaning'])->name('cleaning');
     Route::get('/homepage/cleaning/getTask/{id}', [HomepageController::class, 'getTasks'])->name('getTask');
+    Route::get('/cleaning/rooms/{groupId}', [HomepageController::class, 'getRooms'])->name('getRooms');
     Route::post('/homepage/cleaning', [HomepageController::class, 'cleaningStore'])->name('cleaningStore');
     Route::get('/homepage/checker', [HomepageController::class, 'checker'])->name('checker');
     Route::post('/homepage/checker', [HomepageController::class, 'checkerStore'])->name('checkerStore');
@@ -35,11 +36,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/homepage/history', [HomepageController::class, 'history'])->name('history');
     Route::get('/homepage/report', [HomepageController::class, 'report'])->name('report');
     Route::post('/homepage/report', [HomepageController::class, 'reportStore'])->name('reportStore');
+    Route::get('/homepage/report/get-rooms/{group_id}', [HomepageController::class, 'getRoomsNumber'])->name('ajax.getRooms');
     Route::get('/homepage/lost', [HomepageController::class, 'lost'])->name('lost');
     Route::post('/homepage/lost', [HomepageController::class, 'lostStore'])->name('lostStore');
     Route::get('/homepage/reportHistory', [HomepageController::class, 'reportHistory'])->name('reportHistory');
+    Route::get('/homepage/reportHistory/{report}', [HomepageController::class, 'reportHistoryDetail'])->name('reportHistory.show');
     Route::get('/homepage/userprofile', [HomepageController::class, 'profile'])->name('userprofile');
     Route::put('/homepage/userprofile/{slug}', [HomepageController::class, 'userprofileUpdate'])->name('userprofileUpdate');
+    Route::get('/homepage/roomHistory', [HomepageController::class, 'showGroup'])->name('showGroup');
+    Route::get('/homepage/room/{roomID}', [HomepageController::class, 'showRoomHistory'])->name('showRoomHistory');
+    Route::get('/homepage/group/{slug}', [HomepageController::class, 'showRoom'])->name('showRoom');
+    Route::get('/homepage/room-history', [HomepageController::class, 'selectGroup'])->name('showGroup');
+    Route::get('/homepage/room-history/{slug}/tracker', [HomepageController::class, 'showGroup'])->name('roomTracker');
+    Route::get('/homepage/room-history/{id}', [HomepageController::class, 'show'])->name('roomHistory');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
@@ -76,7 +85,11 @@ Route::middleware('admin')->group(function () {
     Route::resource('/dashboard/task-groups', TaskGroupController::class);
     Route::resource('dashboard/task-groups/tasks', TaskController::class);
     Route::get('/dashboard/reportData', [ReportController::class, 'reportData'])->name('reportData');
-    Route::post('/dashboard/reportData', [ReportController::class, 'reply'])->name('reply');
+    Route::get('/dashboard/reportData/{report}', [ReportController::class, 'show'])->name('reports.show');
+    Route::post('/dashboard/reportData/{report}/reply', [ReportController::class, 'replyAndUpdate'])->name('reports.reply');
+    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
+
+
 
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/role', [SettingController::class, 'storeRole'])->name('settings.role.store');
@@ -85,6 +98,8 @@ Route::middleware('admin')->group(function () {
     Route::delete('/settings/skill/{id}', [SettingController::class, 'deleteSkill'])->name('settings.skill.delete');
     Route::post('/settings/report-type', [SettingController::class, 'storeReportType'])->name('settings.reporttype.store');
     Route::delete('/settings/report-type/{id}', [SettingController::class, 'deleteReportType'])->name('settings.reporttype.delete');
+    Route::post('/settings/room/store', [SettingController::class, 'storeRoom'])->name('settings.room.store');
+    Route::delete('/settings/room/{id}/delete', [SettingController::class, 'deleteRoom'])->name('settings.room.delete');
 });
 
 
