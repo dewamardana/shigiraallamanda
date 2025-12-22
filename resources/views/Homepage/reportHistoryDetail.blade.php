@@ -75,33 +75,59 @@
       </div>
     @endif
 
-    {{-- Admin Reply --}}
+    {{-- Reply / Form --}}
     @if ($report->reply)
       <div class="bg-green-50 border border-green-200 rounded-xl p-6">
         <p class="text-sm text-green-700 font-medium mb-2">
-          Catatan Admin
+          Catatan Terakhir
         </p>
         <p class="text-gray-800 leading-relaxed">
           {{ $report->reply }}
         </p>
       </div>
-    @else
-      <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-        <p class="text-sm text-yellow-700">
-          Belum ada balasan dari admin.
-        </p>
-      </div>
     @endif
+    <form action="{{ route('reports.reply', $report) }}" method="POST"
+      class="bg-gray-50 rounded-xl shadow p-6 space-y-4">
+      @csrf
 
-    {{-- Back Button
-    <div class="bg-white rounded-xl shadow p-2">
-      <div class="flex justify-end">
-        <a href="{{ route('reportHistory') }}"
-          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+      <h3 class="text-lg font-semibold text-gray-700">
+        Update Status & Catatan
+      </h3>
+
+      {{-- Status --}}
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">
+          Status
+        </label>
+        <select name="status" required class="w-full border rounded-lg p-2">
+          <option value="pending" @selected($report->status === 'pending')>Pending</option>
+          <option value="in_progress" @selected($report->status === 'in_progress')>In Progress</option>
+          <option value="resolved" @selected($report->status === 'resolved')>Resolved</option>
+          <option value="rejected" @selected($report->status === 'rejected')>Rejected</option>
+        </select>
+      </div>
+
+      {{-- Reply --}}
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">
+          Catatan / Balasan
+        </label>
+        <textarea name="reply" rows="4" class="w-full border rounded-lg p-2"
+          placeholder="Update progres / catatan baru...">{{ old('reply', $report->reply) }}</textarea>
+      </div>
+
+      <div class="flex justify-center gap-4 mt-6">
+        <button type="submit"
+          class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-6 py-2.5">
+          {{ __('button.edit') }}
+        </button>
+
+        <a href="{{ route('reportData') }}"
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-2.5 focus:outline-none">
           {{ __('button.back') }}
         </a>
       </div>
-    </div> --}}
+    </form>
   </div>
 
 
