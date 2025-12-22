@@ -43,9 +43,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/homepage/reportHistory/{report}', [HomepageController::class, 'reportHistoryDetail'])->name('reportHistory.show');
     Route::get('/homepage/userprofile', [HomepageController::class, 'profile'])->name('userprofile');
     Route::put('/homepage/userprofile/{slug}', [HomepageController::class, 'userprofileUpdate'])->name('userprofileUpdate');
-    Route::get('/homepage/roomHistory', [HomepageController::class, 'showGroup'])->name('showGroup');
-    Route::get('/homepage/room/{roomID}', [HomepageController::class, 'showRoomHistory'])->name('showRoomHistory');
-    Route::get('/homepage/group/{slug}', [HomepageController::class, 'showRoom'])->name('showRoom');
     Route::get('/homepage/room-history', [HomepageController::class, 'selectGroup'])->name('showGroup');
     Route::get('/homepage/room-history/{slug}/tracker', [HomepageController::class, 'showGroup'])->name('roomTracker');
     Route::get('/homepage/room-history/{id}', [HomepageController::class, 'show'])->name('roomHistory');
