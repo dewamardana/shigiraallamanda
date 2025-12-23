@@ -1,7 +1,9 @@
 @extends('Dashboard.Layout.main')
 
 @section('content')
-  <div class="w-full max-w-screen-xl mx-auto h-[calc(100vh-80px)] overflow-y-auto px-4 py-6" x-data="{ tab: 'roles' }">
+  <div class="w-full max-w-screen-xl mx-auto h-[calc(100vh-80px)] overflow-y-auto px-4 py-6" x-data="{
+      tab: new URLSearchParams(window.location.search).get('tab') || 'roles'
+  }">
 
     {{-- Alert Component --}}
     @if (session('success'))
@@ -49,32 +51,37 @@
 
     {{-- Tabs --}}
     <div class="flex space-x-4 border-b border-gray-300 mb-6">
-      <button @click="tab = 'roles'"
+      <button @click=" tab = 'roles'; history.replaceState(null, '', '?tab=roles')"
         :class="tab === 'roles' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
-        class="pb-2 font-semibold focus:outline-none">
-        {{ __('dashboardSettingValue.tabs.roles') }}
+        class="pb-2 font-semibold">
+        Roles
       </button>
-      <button @click="tab = 'skills'"
+
+      <button @click=" tab = 'skills'; history.replaceState(null, '', '?tab=skills')"
         :class="tab === 'skills' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
-        class="pb-2 font-semibold focus:outline-none">
-        {{ __('dashboardSettingValue.tabs.skills') }}
+        class="pb-2 font-semibold">
+        Skills
       </button>
-      <button @click="tab = 'reportTypes'"
+
+      <button @click=" tab = 'reportTypes'; history.replaceState(null, '', '?tab=reportTypes')"
         :class="tab === 'reportTypes' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
-        class="pb-2 font-semibold focus:outline-none">
-        {{ __('dashboardSettingValue.tabs.report_types') }}
+        class="pb-2 font-semibold">
+        Report Types
       </button>
-      <button @click="tab = 'rooms'"
+
+      <button @click=" tab = 'rooms'; history.replaceState(null, '', '?tab=rooms') "
         :class="tab === 'rooms' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
-        class="pb-2 font-semibold focus:outline-none">
+        class="pb-2 font-semibold">
         Rooms
       </button>
+
     </div>
 
     {{-- Roles Tab --}}
     <div x-show="tab === 'roles'" class="space-y-4">
       <form action="{{ route('settings.role.store') }}" method="POST" class="flex gap-2">
         @csrf
+        <input type="hidden" name="tab" value="roles">
         <input type="text" name="name" placeholder="{{ __('dashboardSettingValue.placeholders.role_name') }}"
           required class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
         <button type="submit"
@@ -87,7 +94,10 @@
               <span>{{ $role->name }}</span>
               <form action="{{ route('settings.role.delete', $role->id) }}" method="POST"
                 onsubmit="return confirm('{{ __('dashboardSettingValue.confirm.delete_role') }}')">
-                @csrf @method('DELETE')
+                @csrf
+                @method('DELETE')
+
+                <input type="hidden" name="tab" value="roles">
                 <button type="submit"
                   class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.delete') }}</button>
               </form>
@@ -101,6 +111,7 @@
     <div x-show="tab === 'skills'" class="space-y-4" x-cloak>
       <form action="{{ route('settings.skill.store') }}" method="POST" class="flex gap-2">
         @csrf
+        <input type="hidden" name="tab" value="skills">
         <input type="text" name="name" placeholder="{{ __('dashboardSettingValue.placeholders.skill_name') }}"
           required class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
         <button type="submit"
@@ -113,7 +124,9 @@
               <span>{{ $skill->name }}</span>
               <form action="{{ route('settings.skill.delete', $skill->id) }}" method="POST"
                 onsubmit="return confirm('{{ __('dashboardSettingValue.confirm.delete_skill') }}')">
-                @csrf @method('DELETE')
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="tab" value="skills">
                 <button type="submit"
                   class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.delete') }}</button>
               </form>
@@ -127,6 +140,7 @@
     <div x-show="tab === 'reportTypes'" class="space-y-4" x-cloak>
       <form action="{{ route('settings.reporttype.store') }}" method="POST" class="flex gap-2">
         @csrf
+        <input type="hidden" name="tab" value="reportTypes">
         <input type="text" name="name"
           placeholder="{{ __('dashboardSettingValue.placeholders.report_type_name') }}" required
           class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
@@ -140,7 +154,10 @@
               <span>{{ $type->name }}</span>
               <form action="{{ route('settings.reporttype.delete', $type->id) }}" method="POST"
                 onsubmit="return confirm('{{ __('dashboardSettingValue.confirm.delete_report_type') }}')">
-                @csrf @method('DELETE')
+                @csrf
+                @method('DELETE')
+
+                <input type="hidden" name="tab" value="reportTypes">
                 <button type="submit"
                   class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">{{ __('button.delete') }}</button>
               </form>
@@ -154,6 +171,7 @@
     <div x-show="tab === 'rooms'" class="space-y-4" x-cloak>
       <form action="{{ route('settings.room.store') }}" method="POST" class="flex gap-2">
         @csrf
+        <input type="hidden" name="tab" value="rooms">
         <input type="text" name="room_name" placeholder="Input Room Number" required
           class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
         <button type="submit"
@@ -169,7 +187,9 @@
               <span>{{ $room->room_name }}</span>
               <form action="{{ route('settings.room.delete', $room->id) }}" method="POST"
                 onsubmit="return confirm('{{ __('button.delete_confirm') }}')">
-                @csrf @method('DELETE')
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="tab" value="rooms">
                 <button type="submit"
                   class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">
                   {{ __('button.delete') }}

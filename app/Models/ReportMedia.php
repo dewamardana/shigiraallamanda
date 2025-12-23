@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReportMedia extends Model
 {
-     protected $fillable = [
+    protected $table = 'report_media';
+
+    protected $fillable = [
         'report_id',
         'type',
         'path',

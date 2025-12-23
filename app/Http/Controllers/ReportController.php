@@ -57,23 +57,68 @@ class ReportController extends Controller
             'report' => $report,
         ]);
     }
-
     public function replyAndUpdate(Request $request, Report $report)
     {
         $user = Auth::user();
+
         $validated = $request->validate([
-            'reply'  => 'required|string',
-            'point'  => 'nullable|integer|min:0',
-            'status' => 'required|in:pending,in_progress,resolved,rejected',
+            'reply'           => 'required|string',
+            'status'          => 'required|in:pending,in_progress,resolved,rejected',
+            'point'           => 'nullable|integer|min:0',
+
+            'delete_media'    => 'nullable|array',
+            'delete_media.*'  => 'integer|exists:report_media,id',
+
+            'new_photos.*'    => 'nullable|image|mimes:jpg,jpeg,png|max:20480',
+            'new_videos.*'    => 'nullable|mimetypes:video/mp4,video/quicktime|max:20480',
         ]);
 
-        // 🔹 Update report utama
-        $report->update([
-            'reply'             => $validated['reply'], // ← dipakai sebagai status message
-            'point'             => $validated['point'] ?? 0,
-            'status'            => $validated['status'],
-            'status_updated_by' => $user->id,
-        ]);
+        DB::transaction(function () use ($request, $report, $validated, $user) {
+
+            // ================= UPDATE REPORT =================
+            $report->update([
+                'reply'             => $validated['reply'],
+                'point'             => $validated['point'] ?? 0,
+                'status'            => $validated['status'],
+                'status_updated_by' => $user->id,
+            ]);
+
+            // ================= DELETE MEDIA =================
+            if ($request->filled('delete_media')) {
+                $medias = $report->media()
+                    ->whereIn('id', $request->delete_media)
+                    ->get();
+
+                foreach ($medias as $media) {
+                    Storage::disk('public')->delete($media->path);
+                    $media->delete();
+                }
+            }
+
+            // ================= UPLOAD PHOTO =================
+            if ($request->hasFile('new_photos')) {
+                foreach ($request->file('new_photos') as $photo) {
+                    $path = $photo->store('reports/photos', 'public');
+
+                    $report->media()->create([
+                        'type' => 'photo',
+                        'path' => $path,
+                    ]);
+                }
+            }
+
+            // ================= UPLOAD VIDEO =================
+            if ($request->hasFile('new_videos')) {
+                foreach ($request->file('new_videos') as $video) {
+                    $path = $video->store('reports/videos', 'public');
+
+                    $report->media()->create([
+                        'type' => 'video',
+                        'path' => $path,
+                    ]);
+                }
+            }
+        });
 
         // 🔹 Tambahkan poin HANYA jika > 0 (Aktifkan jika suatu saat menggunakan poin lagi)
         // if (!empty($validated['point']) && $validated['point'] > 0) {
@@ -96,6 +141,7 @@ class ReportController extends Controller
         //         );
         //     }
         // }
+
         return redirect()
             ->route('reports.show', $report)
             ->with('success', __('dashboardReportData.controller.reply.success_reply'));

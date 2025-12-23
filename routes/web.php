@@ -83,8 +83,8 @@ Route::middleware('admin')->group(function () {
     Route::resource('/dashboard/task-groups', TaskGroupController::class);
     Route::resource('dashboard/task-groups/tasks', TaskController::class);
     Route::get('/dashboard/reportData', [ReportController::class, 'reportData'])->name('reportData');
-    Route::post('/dashboard/reportData/{report}/reply', [ReportController::class, 'replyAndUpdate'])->name('reports.reply');
     Route::get('/dashboard/reportData/{report}', [ReportController::class, 'show'])->name('reports.show');
+    Route::post('/dashboard/reportData/{report}/reply', [ReportController::class, 'replyAndUpdate'])->name('reports.reply');
     Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
 
 

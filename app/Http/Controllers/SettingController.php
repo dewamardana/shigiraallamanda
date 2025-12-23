@@ -28,39 +28,52 @@ class SettingController extends Controller
     {
         $request->validate(['name' => 'required|unique:roles']);
         Role::create(['name' => $request->name]);
-        return back()->with('success', __('dashboardSettingValue.controller.create.success_add_role'));
+
+        return redirect()->route('settings.index', [
+            'tab' => request('tab', 'roles')
+        ])->with('success', __('dashboardSettingValue.controller.create.success_add_role'));
     }
 
     public function deleteRole($id)
     {
         Role::destroy($id);
-        return back()->with('success', __('dashboardSettingValue.controller.delete.success_delete_role'));
+        return redirect()->route('settings.index', [
+            'tab' => request('tab', 'roles')
+        ])->with('success', __('dashboardSettingValue.controller.delete.success_delete_role'));
     }
 
     public function storeSkill(Request $request)
     {
         $request->validate(['name' => 'required|unique:skills']);
         Skill::create(['name' => $request->name]);
-        return back()->with('success', __('dashboardSettingValue.controller.create.success_add_skill'));
+        return redirect()->route('settings.index', [
+            'tab' => request('tab', 'skills')
+        ])->with('success', __('dashboardSettingValue.controller.create.success_add_skill'));
     }
 
     public function deleteSkill($id)
     {
         Skill::destroy($id);
-        return back()->with('success', __('dashboardSettingValue.controller.delete.success_delete_skills'));
+        return redirect()->route('settings.index', [
+            'tab' => request('tab', 'skills')
+        ])->with('success', __('dashboardSettingValue.controller.delete.success_delete_skills'));
     }
 
     public function storeReportType(Request $request)
     {
         $request->validate(['name' => 'required|unique:report_types']);
         ReportType::create(['name' => $request->name]);
-        return back()->with('success', __('dashboardSettingValue.controller.create.success_add_report'));
+        return redirect()->route('settings.index', [
+            'tab' => request('tab', 'reportTypes')
+        ])->with('success', __('dashboardSettingValue.controller.create.success_add_report'));
     }
 
     public function deleteReportType($id)
     {
         ReportType::destroy($id);
-        return back()->with('success', __('dashboardSettingValue.controller.delete.success_delete_report'));
+        return redirect()->route('settings.index', [
+            'tab' => request('tab', 'reportTypes')
+        ])->with('success', __('dashboardSettingValue.controller.delete.success_delete_report'));
     }
 
     public function storeRoom(Request $request)
@@ -71,25 +84,51 @@ class SettingController extends Controller
 
         Room::create(['room_name' => $request->room_name]);
 
-        return back()->with('success', 'Berhasil Menambahkan Room');
+        return redirect()->route('settings.index', [
+            'tab' => request('tab', 'rooms')
+        ])->with('success', 'Berhasil Menambahkan Room');
     }
 
     public function deleteRoom($id)
     {
         $room = Room::findOrFail($id);
 
-        // Cek apakah room sedang digunakan di tabel lain
-        $isUsedInGroup = DB::table('cleaning_group_room')->where('room_id', $id)->exists();
-        $isUsedInRecord = DB::table('cleaning_record_details')
-            ->whereJsonContains('rooms', (string)$id) // jika rooms disimpan dalam bentuk JSON/string
-            ->exists();
-
-        if ($isUsedInGroup || $isUsedInRecord) {
-            return back()->with('error', 'Room ini sudah digunakan, Tidak bisa Menghapus Room');
+        // ===============================
+        // 1. Masih terikat Cleaning Group?
+        // ===============================
+        if (!is_null($room->cleaning_group_id)) {
+            return back()->with('error', 'Room masih terdaftar di Cleaning Group, lepaskan terlebih dahulu.');
         }
 
+        // =====================================
+        // 2. Dipakai di Cleaning Record Detail?
+        // =====================================
+        $usedInCleaning = DB::table('cleaning_record_details')
+            ->whereJsonContains('rooms', $room->id)
+            ->exists();
+
+        if ($usedInCleaning) {
+            return back()->with('error', 'Room sudah digunakan pada data Cleaning.');
+        }
+
+        // =====================================
+        // 3. Dipakai di Checker Record Location?
+        // =====================================
+        $usedInChecker = DB::table('checker_record_locations')
+            ->whereJsonContains('rooms', $room->id)
+            ->exists();
+
+        if ($usedInChecker) {
+            return back()->with('error', 'Room sudah digunakan pada data Checker.');
+        }
+
+        // ===============================
+        // 4. AMAN → BOLEH DIHAPUS
+        // ===============================
         $room->delete();
 
-        return back()->with('success', 'Berhasil Menghapus Room');
+        return redirect()
+            ->route('settings.index', ['tab' => 'rooms'])
+            ->with('success', 'Room berhasil dihapus.');
     }
 }

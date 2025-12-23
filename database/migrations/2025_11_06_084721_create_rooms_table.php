@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists(['rooms', 'cleaning_group_room']);
+        Schema::dropIfExists('rooms');
     }
 };

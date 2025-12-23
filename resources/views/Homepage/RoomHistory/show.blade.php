@@ -2,109 +2,322 @@
 
 @section('content')
   <div class="max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 space-y-10">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 mt-5">
 
-      {{-- STATUS --}}
-      <div
-        class="p-4 rounded-lg shadow bg-white border-l-8
-  {{ $reports->where('status', 'pending')->count() ? 'border-red-500' : 'border-green-500' }}">
-        <p class="text-sm text-gray-500">Status Kamar</p>
-        <p class="text-xl font-bold">
-          {{ $reports->where('status', 'pending')->count() ? '⚠️ Bermasalah' : '✅ Aman' }}
-        </p>
+    {{-- ================= QUICK INFO ================= --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+      {{-- ROOM INFO --}}
+      <div class="p-5 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow">
+        <p class="text-xs opacity-80">Room</p>
+        <p class="text-2xl font-bold">{{ $room->room_name ?? 'Room' }}</p>
+        <p class="text-xs mt-1 opacity-90">Quick Status Overview</p>
       </div>
 
       {{-- LAST CLEANING --}}
-      @php
-        $lastCleaning = $cleaningPaginated->first();
-      @endphp
-      <div class="p-4 rounded-lg shadow bg-white">
-        <p class="text-sm text-gray-500">Cleaning Terakhir</p>
-        <p class="font-semibold">{{ $lastCleaning->record->date ?? '-' }}</p>
-        <p class="text-xs text-gray-400">{{ $lastCleaning->record->members->pluck('nama')->join(', ') ?? '' }}</p>
+      <div class="p-5 rounded-xl bg-white shadow border-l-4 border-purple-600">
+        <p class="text-xs text-gray-500">Cleaning Terakhir</p>
+        <p class="text-lg font-semibold text-purple-700">
+          {{ $lastCleaning?->date ?? '-' }}
+        </p>
+        <p class="text-xs text-gray-600 mt-1">
+          {{ $lastCleaning?->members?->pluck('nama')->join(', ') ?? '-' }}
+        </p>
       </div>
 
       {{-- LAST CHECKER --}}
-      @php
-        $lastChecker = $checkerPaginated->first();
-      @endphp
-      <div class="p-4 rounded-lg shadow bg-white">
-        <p class="text-sm text-gray-500">Checker Terakhir</p>
-        <p class="font-semibold">{{ $lastChecker->detail->record->date ?? '-' }}</p>
-        <p class="text-xs text-gray-400">{{ $lastChecker->detail->record->user->nama ?? '-' }}</p>
+      <div class="p-5 rounded-xl bg-white shadow border-l-4 border-green-600">
+        <p class="text-xs text-gray-500">Checker Terakhir</p>
+        <p class="text-lg font-semibold text-green-700">
+          {{ $lastChecker?->date ?? '-' }}
+        </p>
+        <p class="text-xs text-gray-600 mt-1">
+          {{ $lastChecker?->user?->nama ?? '-' }}
+        </p>
       </div>
 
-      {{-- REPORT --}}
-      <div class="p-4 rounded-lg shadow bg-white">
-        <p class="text-sm text-gray-500">Report Aktif</p>
-        <p class="text-2xl font-bold text-red-600">
-          {{ $reports->whereIn('status', ['pending', 'in_progress'])->count() }}
+      {{-- ACTIVE REPORT --}}
+      <div
+        class="p-5 rounded-xl shadow text-white {{ $activeReportsCount > 0 ? 'bg-gradient-to-br from-red-600 to-red-500' : 'bg-gradient-to-br from-green-600 to-green-500' }}">
+        <p class="text-xs opacity-90">Report Aktif</p>
+        <p class="text-3xl font-bold">
+          {{ $activeReportsCount }}
+        </p>
+        <p class="text-xs opacity-90 mt-1">
+          {{ $activeReportsCount > 0 ? 'Perlu perhatian' : 'Aman' }}
         </p>
       </div>
     </div>
 
+    <div class="flex flex-wrap items-center gap-3 mb-6 bg-white p-4 rounded-xl shadow border">
 
-    <h2 class="text-lg font-bold text-purple-700">🧹 Riwayat Cleaning</h2>
+      {{-- Cleaning Filter --}}
+      <form method="GET" class="flex items-center gap-2">
+        <input type="hidden" name="checker_task" value="{{ request('checker_task') }}">
 
-    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-      @foreach ($cleaningPaginated as $c)
-        <div class="bg-white rounded-xl shadow p-4 cursor-pointer" onclick="openModal('cleaning-{{ $c->id }}')">
-          <span class="text-xs bg-purple-100 px-2 py-1 rounded">{{ $c->record->date }}</span>
-          <p class="font-semibold mt-1">{{ $c->task->name }}</p>
-          <p class="text-sm text-gray-600 mt-1">Petugas: {{ $c->record->members->pluck('nama')->join(', ') }}</p>
-          <p class="text-sm text-gray-600">Gedung: {{ $c->record->group->building_name ?? '-' }}</p>
+        <select name="cleaning_task" onchange="this.form.submit()"
+          class="px-3 py-2 text-sm rounded-lg border border-purple-300
+             focus:ring-purple-500 focus:border-purple-500">
+
+          <option value="">🧹 Semua Task Cleaning</option>
+
+          @foreach ($cleaningTasks as $task)
+            <option value="{{ $task->id }}" @selected(request('cleaning_task') == $task->id)>
+              {{ $task->name }}
+            </option>
+          @endforeach
+        </select>
+      </form>
+
+      {{-- Checker Filter --}}
+      <form method="GET" class="flex items-center gap-2">
+        <input type="hidden" name="cleaning_task" value="{{ request('cleaning_task') }}">
+
+        <select name="checker_task" onchange="this.form.submit()"
+          class="px-3 py-2 text-sm rounded-lg border border-green-300
+             focus:ring-green-500 focus:border-green-500">
+
+          <option value="">✅ Semua Task Checker</option>
+
+          @foreach ($checkerTasks as $task)
+            <option value="{{ $task->id }}" @selected(request('checker_task') == $task->id)>
+              {{ $task->name }}
+            </option>
+          @endforeach
+        </select>
+      </form>
+
+      {{-- Reset --}}
+      @if (request()->has('cleaning_task') || request()->has('checker_task'))
+        <a href="{{ route('roomHistory', $room->id) }}"
+          class="px-4 py-2 text-sm rounded-lg bg-gray-200 hover:bg-gray-300">
+          Reset Filter
+        </a>
+      @endif
+
+    </div>
+
+
+
+
+
+    {{-- CLEANING SESSION --}}
+    <h2 class="text-xl font-semibold mb-4 text-center text-purple-700">
+      🧹 Riwayat Cleaning
+    </h2>
+
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+      @foreach ($cleaningPaginated as $record)
+        {{-- CARD --}}
+        <div class="rounded-xl shadow bg-white border border-gray-100 hover:shadow-lg transition cursor-pointer"
+          onclick="openModal('cleaning-{{ $record->id }}')">
+
+          <div class="p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-3 py-1 text-xs rounded-full bg-purple-100 text-purple-700 font-medium">
+                {{ \Carbon\Carbon::parse($record->date)->format('d M Y') }}
+              </span>
+              <i data-feather="check-circle" class="text-green-500 w-5 h-5"></i>
+            </div>
+
+            <h3 class="text-gray-900 font-semibold text-lg">
+              {{ $record->group->building_name }}
+            </h3>
+
+            <p class="text-sm text-gray-600 mt-1">
+              Petugas: {{ $record->members->pluck('nama')->join(', ') }}
+            </p>
+
+            <p class="text-sm text-gray-500 mt-2">
+              {{ $record->details->count() }} task dikerjakan
+            </p>
+          </div>
         </div>
 
-        {{-- Modal per record --}}
-        <div id="cleaning-{{ $c->id }}" class="fixed inset-0 hidden items-center justify-center bg-black/50 z-50">
-          <div class="bg-white rounded-xl max-w-3xl w-full p-6">
-            <h3 class="font-bold mb-4">Detail Cleaning {{ $c->record->date }}</h3>
-            <p class="font-semibold">{{ $c->task->name }}</p>
-            <p class="text-sm">Petugas: {{ $c->record->members->pluck('nama')->join(', ') }}</p>
-            <p class="text-sm">Gedung: {{ $c->record->group->building_name ?? '-' }}</p>
-            <button onclick="closeModal('cleaning-{{ $c->id }}')"
-              class="mt-4 px-4 py-2 bg-purple-600 text-white rounded">
-              Tutup
-            </button>
+        {{-- MODAL --}}
+        <div id="cleaning-{{ $record->id }}"
+          class="fixed inset-0 backdrop-blur-sm bg-black/50 z-50 hidden items-center justify-center">
+
+          <div
+            class="bg-white mx-4 p-6 rounded-xl w-full max-w-3xl border border-gray-200 shadow-lg
+               overflow-auto max-h-[90vh]">
+
+            <h3 class="text-xl font-bold mb-4 text-center">
+              Detail Cleaning – {{ \Carbon\Carbon::parse($record->date)->format('d M Y') }}
+            </h3>
+
+            <div class="text-sm text-gray-700 mb-4 space-y-1">
+              <p>
+                Gedung:
+                <strong>{{ $record->group->building_name }}</strong>
+              </p>
+              <p>
+                Petugas:
+                {{ $record->members->pluck('nama')->join(', ') }}
+              </p>
+            </div>
+
+            {{-- TABEL TASK --}}
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+              <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-white bg-purple-600 uppercase text-center">
+                  <tr>
+                    <th class="px-6 py-3">No</th>
+                    <th class="px-6 py-3">Task</th>
+                    <th class="px-6 py-3">Nilai</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach ($record->details as $detail)
+                    <tr class="bg-white even:bg-purple-50 border-b hover:bg-yellow-50 text-center">
+                      <td class="px-6 py-4">{{ $loop->iteration }}</td>
+                      <td class="px-6 py-4 text-left">{{ $detail->task->name }}</td>
+                      <td class="px-6 py-4">{{ $detail->value }}</td>
+                    </tr>
+                  @endforeach
+
+                  @if ($record->details->isEmpty())
+                    <tr>
+                      <td colspan="3" class="px-6 py-4 text-center text-gray-500">
+                        Tidak ada detail task
+                      </td>
+                    </tr>
+                  @endif
+                </tbody>
+              </table>
+            </div>
+
+            {{-- ACTION --}}
+            <div class="flex justify-end pt-6">
+              <button onclick="closeModal('cleaning-{{ $record->id }}')"
+                class="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4
+                   focus:ring-purple-300 font-medium rounded-lg text-sm px-6 py-2.5">
+                Tutup
+              </button>
+            </div>
+
           </div>
         </div>
       @endforeach
     </div>
 
+    {{-- PAGINATION --}}
     <div class="mt-6">
       {{ $cleaningPaginated->links('vendor.pagination.flowbite') }}
     </div>
 
-    <h2 class="text-lg font-bold mb-4 text-green-700">✅ Riwayat Checker</h2>
+    {{-- ================= CHECKER ================= --}}
+    <h2 class="text-xl font-semibold mb-4 text-center text-green-700">Riwayat Checker</h2>
 
-    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-      @foreach ($checkerPaginated as $c)
-        <div class="bg-white rounded-xl shadow p-4 cursor-pointer" onclick="openModal('checker-{{ $c->id }}')">
-          <span class="text-xs bg-green-100 px-2 py-1 rounded">{{ $c->detail->record->date }}</span>
-          <p class="font-semibold mt-1">{{ $c->detail->task->name }}</p>
-          <p class="text-sm text-gray-600 mt-1">Checker: {{ $c->detail->record->user->nama ?? '-' }}</p>
-          <p class="text-sm text-gray-600">Gedung: {{ $c->group->building_name ?? '-' }}</p>
-        </div>
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
+      @forelse ($checkerPaginated as $c)
+        <div class="rounded-xl shadow bg-white border border-gray-100 hover:shadow-lg transition cursor-pointer"
+          onclick="openModal('checker-{{ $c->id }}')">
+          <div class="p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium">
+                {{ \Carbon\Carbon::parse($c->date)->format('d M Y') }}
+              </span>
+              <i data-feather="clipboard" class="text-green-600 w-5 h-5"></i>
+            </div>
 
-        {{-- Modal per record --}}
-        <div id="checker-{{ $c->id }}" class="fixed inset-0 hidden items-center justify-center bg-black/50 z-50">
-          <div class="bg-white rounded-xl max-w-3xl w-full p-6">
-            <h3 class="font-bold mb-4">Detail Checker {{ $c->detail->record->date }}</h3>
-            <p class="font-semibold">{{ $c->detail->task->name }}</p>
-            <p class="text-sm">Checker: {{ $c->detail->record->user->nama ?? '-' }}</p>
-            <p class="text-sm">Gedung: {{ $c->group->building_name ?? '-' }}</p>
-            <button onclick="closeModal('checker-{{ $c->id }}')"
-              class="mt-4 px-4 py-2 bg-green-600 text-white rounded">
-              Tutup
-            </button>
+            <h3 class="text-gray-900 font-semibold text-lg">
+              {{ optional($c->details->first()?->locations->first()?->group)->building_name ?? '-' }}
+            </h3>
+
+            <p class="text-sm text-gray-500 mt-1">
+              {{ $c->details->count() }} task dicek
+            </p>
+
+            <p class="text-sm text-gray-700 mt-2">
+              Checker:
+              <span class="font-semibold">{{ $c->user->nama ?? '-' }}</span>
+            </p>
           </div>
         </div>
-      @endforeach
+
+
+        <div id="checker-{{ $c->id }}"
+          class="fixed inset-0 backdrop-blur-sm bg-black/50 z-50 hidden items-center justify-center">
+
+          <div
+            class="bg-white mx-4 p-6 rounded-xl w-full max-w-3xl border border-gray-200 shadow-lg
+              overflow-auto max-h-[90vh]">
+
+            <h3 class="text-xl font-bold mb-4 text-center">
+              Detail Checker - {{ \Carbon\Carbon::parse($c->date)->format('d M Y') }}
+            </h3>
+
+            {{-- INFO --}}
+            <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+              <p>
+                <span class="font-semibold">Gedung:</span>
+                {{ optional($c->details->first()?->locations->first()?->group)->building_name ?? '-' }}
+              </p>
+              <p>
+                <span class="font-semibold">Checker:</span>
+                {{ $c->user->nama ?? '-' }}
+              </p>
+            </div>
+
+            {{-- TABEL TASK --}}
+            <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-4">
+              <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-white bg-green-700 uppercase text-center">
+                  <tr>
+                    <th class="px-6 py-3">No</th>
+                    <th class="px-6 py-3">Task</th>
+                    <th class="px-6 py-3">Value</th>
+                    <th class="px-6 py-3">Formula</th>
+                    <th class="px-6 py-3">Calculated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach ($c->details as $d)
+                    <tr class="bg-white even:bg-green-50 border-b hover:bg-yellow-50 text-center">
+                      <td class="px-6 py-4">{{ $loop->iteration }}</td>
+                      <td class="px-6 py-4 text-left">{{ $d->task->name ?? '-' }}</td>
+                      <td class="px-6 py-4">{{ $d->value }}</td>
+                      <td class="px-6 py-4">{{ $d->formula }}</td>
+                      <td class="px-6 py-4">{{ number_format($d->calculated ?? 0, 2) }}</td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+
+            {{-- RINGKASAN --}}
+            <div class="flex justify-between mt-6 px-2 text-sm">
+              <p class="font-semibold">
+                Total Point:
+                <span class="text-green-600">
+                  {{ number_format($c->total_point ?? 0, 2) }}
+                </span>
+              </p>
+            </div>
+
+            {{-- BUTTON --}}
+            <div class="flex justify-end gap-3 pt-6">
+              <button onclick="closeModal('checker-{{ $c->id }}')"
+                class="text-white bg-green-700 hover:bg-green-800 focus:ring-4
+               focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-2.5">
+                Tutup
+              </button>
+            </div>
+
+          </div>
+        </div>
+      @empty
+        <div class="col-span-full text-center py-10 bg-gray-50 rounded-xl shadow">
+          <p class="text-gray-500 italic">Tidak ada data checker</p>
+        </div>
+      @endforelse
     </div>
 
+    {{-- PAGINATION --}}
     <div class="mt-6">
       {{ $checkerPaginated->links('vendor.pagination.flowbite') }}
     </div>
+
 
 
     <h2 class="text-lg font-bold text-red-600 mb-4">🛠️ Report & Masalah</h2>

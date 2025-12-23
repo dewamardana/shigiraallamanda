@@ -31,11 +31,11 @@ use App\Models\CleaningRecords;
 use App\Models\OfficeTaskDetail;
 use App\Models\DailyCleaningPoint;
 use App\Traits\HandlesDailyPoints;
-use Illuminate\Support\Facades\DB;
 use App\Models\CheckerRecordDetail;
 use App\Models\CleaningRecordDetail;
-use Illuminate\Support\Facades\Auth;
 use App\Models\CheckerRecordLocation;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
@@ -617,24 +617,73 @@ class HomepageController extends Controller
         ]);
     }
 
+
     public function replyAndUpdate(Request $request, Report $report)
     {
         $user = Auth::user();
+
         $validated = $request->validate([
-            'reply'  => 'required|string',
-            'point'  => 'nullable|integer|min:0',
-            'status' => 'required|in:pending,in_progress,resolved,rejected',
+            'reply'           => 'required|string',
+            'status'          => 'required|in:pending,in_progress,resolved,rejected',
+            'point'           => 'nullable|integer|min:0',
+
+            'delete_media'    => 'nullable|array',
+            'delete_media.*'  => 'integer|exists:report_media,id',
+
+            'new_photos.*'    => 'nullable|image|mimes:jpg,jpeg,png|max:20480',
+            'new_videos.*'    => 'nullable|mimetypes:video/mp4,video/quicktime|max:20480',
         ]);
 
-        // 🔹 Update report utama
-        $report->update([
-            'reply'             => $validated['reply'], // ← dipakai sebagai status message
-            'point'             => $validated['point'] ?? 0,
-            'status'            => $validated['status'],
-            'status_updated_by' => $user->id,
-        ]);
+        DB::transaction(function () use ($request, $report, $validated, $user) {
 
-        return redirect()->back()->with('success', __('dashboardReportData.controller.reply.success_reply'));
+            // ================= UPDATE REPORT =================
+            $report->update([
+                'reply'             => $validated['reply'],
+                'point'             => $validated['point'] ?? 0,
+                'status'            => $validated['status'],
+                'status_updated_by' => $user->id,
+            ]);
+
+            // ================= DELETE MEDIA =================
+            if ($request->filled('delete_media')) {
+                $medias = $report->media()
+                    ->whereIn('id', $request->delete_media)
+                    ->get();
+
+                foreach ($medias as $media) {
+                    Storage::disk('public')->delete($media->path);
+                    $media->delete();
+                }
+            }
+
+            // ================= UPLOAD PHOTO =================
+            if ($request->hasFile('new_photos')) {
+                foreach ($request->file('new_photos') as $photo) {
+                    $path = $photo->store('reports/photos', 'public');
+
+                    $report->media()->create([
+                        'type' => 'photo',
+                        'path' => $path,
+                    ]);
+                }
+            }
+
+            // ================= UPLOAD VIDEO =================
+            if ($request->hasFile('new_videos')) {
+                foreach ($request->file('new_videos') as $video) {
+                    $path = $video->store('reports/videos', 'public');
+
+                    $report->media()->create([
+                        'type' => 'video',
+                        'path' => $path,
+                    ]);
+                }
+            }
+        });
+
+        return redirect()
+            ->back()
+            ->with('success', __('dashboardReportData.controller.reply.success_reply'));
     }
 
     public function reportHistoryDetail(Report $report)
@@ -1063,42 +1112,114 @@ class HomepageController extends Controller
         return view('Homepage.RoomHistory.group', compact('title', 'group', 'rooms', 'doneRooms', 'lastCleaned', 'today'));
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $title = 'Room History | Homepage';
         $room = Room::findOrFail($id);
 
-        // ================= CLEANING =================
-        $cleaningPaginated = CleaningRecordDetail::with([
-            'task',
-            'record.members',
-            'record.group'
-        ])
-            ->whereJsonContains('rooms', $room->id)
-            ->orderByDesc('created_at')
-            ->paginate(6, ['*'], 'cleaning_page'); // pagination langsung dari query
+        $cleaningTaskId = $request->query('cleaning_task');
+        $checkerTaskId  = $request->query('checker_task');
 
-        // ================= CHECKER =================
-        $checkerPaginated = CheckerRecordLocation::with([
-            'detail.task',
-            'detail.record.user',
-            'group'
+        // ================= QUICK INFO =================
+
+        // Cleaning terakhir
+        $lastCleaning = CleaningRecord::whereHas('details', function ($q) use ($room) {
+            $q->whereJsonContains('rooms', $room->id);
+        })
+            ->with(['members', 'group'])
+            ->orderByDesc('date')
+            ->first();
+
+        // Checker terakhir
+        $lastChecker = CheckerRecord::whereHas('details.locations', function ($q) use ($room) {
+            $q->whereJsonContains('rooms', (string) $room->id);
+        })
+            ->with('user')
+            ->orderByDesc('date')
+            ->first();
+
+        // Report aktif
+        $activeReportsCount = Report::where('room_id', $room->id)
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->count();
+
+
+        $cleaningPaginated = CleaningRecord::with([
+            'details' => function ($q) use ($room, $cleaningTaskId) {
+                $q->whereJsonContains('rooms', $room->id)
+                    ->when(
+                        $cleaningTaskId,
+                        fn($qq) =>
+                        $qq->where('cleaning_task_id', $cleaningTaskId)
+                    )
+                    ->with('task');
+            },
+            'members',
+            'group',
         ])
-            ->whereJsonContains('rooms', (string) $room->id)
-            ->orderByDesc('created_at')
-            ->paginate(6, ['*'], 'checker_page'); // pagination terpisah
+            ->whereHas('details', function ($q) use ($room, $cleaningTaskId) {
+                $q->whereJsonContains('rooms', $room->id)
+                    ->when(
+                        $cleaningTaskId,
+                        fn($qq) =>
+                        $qq->where('cleaning_task_id', $cleaningTaskId)
+                    );
+            })
+            ->orderByDesc('date')
+            ->paginate(8, ['*'], 'cleaning_page')
+            ->withQueryString();
+
+
+        // ================= CHECKER (FIXED) =================
+        $checkerPaginated = CheckerRecord::with([
+            'user',
+            'details' => function ($q) use ($room, $checkerTaskId) {
+                $q->whereHas('locations', function ($loc) use ($room) {
+                    $loc->whereJsonContains('rooms', (string) $room->id);
+                })
+                    ->when(
+                        $checkerTaskId,
+                        fn($qq) =>
+                        $qq->where('checker_task_id', $checkerTaskId)
+                    )
+                    ->with(['task', 'locations.group']);
+            }
+        ])
+            ->whereHas('details', function ($q) use ($room, $checkerTaskId) {
+                $q->whereHas('locations', function ($loc) use ($room) {
+                    $loc->whereJsonContains('rooms', (string) $room->id);
+                })
+                    ->when(
+                        $checkerTaskId,
+                        fn($qq) =>
+                        $qq->where('checker_task_id', $checkerTaskId)
+                    );
+            })
+            ->orderByDesc('date')
+            ->paginate(8, ['*'], 'checker_page')
+            ->withQueryString();
+
 
         // ================= REPORT =================
         $reports = Report::where('room_id', $room->id)
             ->orderByDesc('created_at')
             ->get();
 
+        // ================= MASTER TASK =================
+        $cleaningTasks = CleaningTask::where('status', 'active')->orderBy('name')->get();
+        $checkerTasks  = CheckerTask::where('active', true)->orderBy('name')->get();
+
         return view('Homepage.RoomHistory.show', compact(
             'title',
             'room',
             'cleaningPaginated',
             'checkerPaginated',
-            'reports'
+            'reports',
+            'lastCleaning',
+            'lastChecker',
+            'activeReportsCount',
+            'cleaningTasks',
+            'checkerTasks',
         ));
     }
 
